@@ -1,0 +1,12 @@
+HOST_OS=Darwin
+
+***************
+Program started
+***************
+Reference image loaded? 1
+current mouse position: 315, 412
+current mouse position: 486, 219
+current mouse position: 486, 219
+current mouse position: 483, 220
+current mouse position: 485, 220
+current mouse position: 484, 220
