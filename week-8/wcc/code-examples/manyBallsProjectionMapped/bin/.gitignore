@@ -1,0 +1,8 @@
+*.app
+data/*.jpg
+data/settings.xml
+data/surfaces.xml
+example_simpler
+example_simpler_debug
+libs
+readMe.txt
