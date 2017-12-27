@@ -47,7 +47,7 @@ void ofApp::update(){
         img_buffer.push_front(img); // add image to front of the queue
     }
 
-    // remove from back if buffer has reached maximum size
+    // remove from back of the queue if we have the reached maximum size
     if (img_buffer.size() > max_buffer_size) img_buffer.pop_back();
 }
 
