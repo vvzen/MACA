@@ -1,3 +1,11 @@
+//--------------------------------------------------------------
+// @brief:      Shapes from pixels
+// @shortcuts:
+//      i for showing the gui  
+// @author:     vvzen
+// @date:       27/12/2017
+//--------------------------------------------------------------
+
 #include "ofApp.h"
 
 //--------------------------------------------------------------
@@ -33,7 +41,7 @@ void ofApp::setup(){
     gui.add(GUI_quad_mode.set("Quads", 0));
     gui.add(GUI_circle_mode.set("Circles", 0));
     gui.add(GUI_text_mode.set("Text", 0));
-
+    // listeners
     GUI_additive_mode.addListener(this, &ofApp::additiveModeChanged);
     GUI_subtractive_mode.addListener(this, &ofApp::subtractiveModeChanged);
     GUI_line_mode.addListener(this, &ofApp::lineModeChanged);
@@ -73,7 +81,7 @@ void ofApp::draw(){
         ofBackground(0);
     }
 
-    // draw the tiles using camera color
+    // draw the tiles using camera pixels colors
     for (int x = 0; x < ofGetWidth(); x+=GUI_spacing){
         for (int y = 0; y < ofGetHeight(); y+=GUI_spacing){
 
@@ -86,6 +94,7 @@ void ofApp::draw(){
             
             ofSetColor(video_color);
 
+            // rotate shape based on brightness
             ofPushMatrix();
             ofTranslate(pos.x, pos.y, 0);
             ofRotateZ(ofMap(brightness, 0, 255, 0, 180));
@@ -110,7 +119,11 @@ void ofApp::draw(){
             }
             else if(GUI_text_mode){
                 ofPushMatrix();
-                font.drawString("a", 0, 0);
+                ofScale(radius/8, radius/8, 1);
+                // here we got a char casted to a string since ofTrueTypeFont wants strings!
+                // string current_letter = ofToString(ASCII_CHARS[ofMap(brightness, 0, 255, 0, ASCII_CHARS_SIZE)]);
+                string current_letter = ofToString(ASCII_CHARS[ofMap(x, 0, ofGetWidth(), 0, ASCII_CHARS_SIZE)]);
+                font.drawString(current_letter, 0, 0);
                 ofPopMatrix();
             }
             ofPopMatrix();
@@ -204,54 +217,4 @@ void ofApp::keyPressed(int key){
             break;
         }
     }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
 }
