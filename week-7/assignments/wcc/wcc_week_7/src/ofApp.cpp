@@ -41,15 +41,29 @@ void ofApp::draw(){
 
     // get the string as paths
     font_paths = font.getStringAsPoints(current_text);
-
-    // font.drawString(current_text, 0, 0);
     
     // draw polylines of font
     // outer loop is for chars
     vector <vector <ofPoint> > font_points = getStringAsPoints(font, current_text, 64);
     for (int c = 0; c < font_points.size(); c++){
+        
+        // cout << "c is " << c << endl;
+        // ofRectangle letter_bbox = font.getStringBoundingBox(ofToString(current_text[c]), 0, 0);
+        // ofPoint letter_center = letter_bbox.getCenter();
+
+        ofPolyline line;
+
+        // FIXME: better implementation in terms of useless repetition
+        // 1. first loop is only used for adding vertices to line
+        // and compute the centroid
         for (int p = 0; p < font_points[c].size(); p++){
-            ofDrawCircle(font_points[c][p], 3, 3);
+            line.addVertex(font_points[c][p]);
+        }
+        ofPoint centroid = line.getCentroid2D();
+        // 2. second loop is used to draw the lines
+        // now that we know the centroid
+        for (int p = 0; p < font_points[c].size(); p++){
+            ofDrawLine(centroid, font_points[c][p]);
         }
     }
 
@@ -84,11 +98,11 @@ vector <vector <ofPoint> > ofApp::getStringAsPoints(ofTrueTypeFont & font, strin
         // for every polyline, resample it
         for (int j = 0; j < polylines.size(); j++){
 
-            int numOfPoints = ofMap(polylines[j].getPerimeter(), 0, max_perimeter, 0, numOfSamples, true);
+            int num_of_points = ofMap(polylines[j].getPerimeter(), 0, max_perimeter, 0, numOfSamples, true);
 
-            for (int p = 0; p < numOfPoints; p++){
+            for (int p = 0; p < num_of_points; p++){
                 
-                ofPoint current_point = ofPoint(polylines[j].getPointAtPercent(float(p+1) / numOfPoints));
+                ofPoint current_point = ofPoint(polylines[j].getPointAtPercent(float(p+1) / num_of_points));
                 character_points.push_back(current_point);
             }
         }
