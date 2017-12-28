@@ -1,7 +1,8 @@
 //--------------------------------------------------------------
 // @brief:      Shapes from pixels
 // @shortcuts:
-//      i for showing the gui  
+//      i for showing the gui
+//      s for saving a screenshot
 // @author:     vvzen
 // @date:       27/12/2017
 //--------------------------------------------------------------
@@ -212,8 +213,10 @@ void ofApp::keyPressed(int key){
             show_gui = !show_gui;
             break;
         }
-        case 't': {
-            GUI_additive_mode.set(0);
+        case 's': {
+            ofImage grab;
+            grab.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+            grab.save("screenshot_" + ofToString(ofGetFrameNum()) + ".png");
             break;
         }
     }
