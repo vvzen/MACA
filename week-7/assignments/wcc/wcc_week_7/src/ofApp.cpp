@@ -4,10 +4,9 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    word_1 = "MAGIC";
-    word_2 = "VOICE";
+    word_1 = "MINDFUL";
+    word_2 = "ENERGIC";
     current_text = word_1;
-    morph = false;
     timer = 0.0f;
 
     // font
@@ -15,7 +14,7 @@ void ofApp::setup(){
 
     // GUI
     gui = new ofxDatGui();
-    gui->addLabel("TEST");
+    // gui->addLabel("TEST");
     // parameters
     GUI_noise_speed.set("Noise Speed", 0.38, 0.001, 1);
     GUI_noise_amount.set("Noise Amount", 18.3, 10, 500);
@@ -49,10 +48,23 @@ void ofApp::draw(){
 
     ofTranslate(ofGetWidth()/2, ofGetHeight()/2, 0);
 
-    // if (ofGetFrameNum() % 40 == 0){
-    //     current_text = (current_text == word_2) ? word_1 : word_2;  
-    // }
+    timer+= 0.1f;
 
+    cout << timer << endl;
+    cout << GUI_morph << endl;
+
+    if (timer > 5 && !morphed){
+        GUI_morph.set(ofMap(sin(timer), -1, 1, 0, 1));
+        if (GUI_morph > 0.98){
+            morphed = true;
+        }
+    }
+    if (timer > 20){
+        GUI_morph.set(0);
+        timer = 0.0f;
+        morphed = false;
+    }
+    
     // TEXT
     ofSetColor(255);
     // center the text
@@ -67,53 +79,19 @@ void ofApp::draw(){
     ofTranslate(wiggle_amount_x, wiggle_amount_y, 0);
     // twist
     ofRotateY(-10);
-
-    /*
-    // for each letter
-    for (int i = 0; i < word_1.size(); i++){
-
-        
-
-        ofSetColor(255, 0, 0);
-        ofDrawCircle(start_centroid.x, start_centroid.y, 3, 3);
-
-        // loop inside the points
-        for (int p = 0; p < start_letter_points.size(); p++){
-            
-            if (!morph){
-                ofSetColor(255);
-                ofDrawCircle(start_letter_points[p].x, start_letter_points[p].y, 3, 3);
-                ofSetColor(255, 0, 0);
-                ofDrawCircle(start_centroid.x, start_centroid.y, 3, 3);
-            }
-            else {
-                ofVec2f start(start_letter_points[p].x, start_letter_points[p].y);
-                ofVec2f target(target_letter_points[p].x, target_letter_points[p].y);
-                ofVec2f interpolated = start.getInterpolated(target, GUI_morph);
-                ofSetColor(255);
-                ofDrawCircle(interpolated.x, interpolated.y, 3, 3);
-                // centroid
-                ofVec2f interpolated_centroid = start_centroid.getInterpolated(end_centroid, GUI_morph);
-                ofSetColor(255, 0, 0);
-                ofDrawCircle(interpolated_centroid.x, interpolated_centroid.y, 3, 3);
-            }
-        }
-    } */
     
     // draw polylines of font
     // outer loop is for chars
     vector <vector <vector <ofPoint> > > font_points_start = getStringAsPoints3DMatrix(font, word_1, 120);
     vector <vector <vector <ofPoint> > > font_points_target = getStringAsPoints3DMatrix(font, word_2, 120);
 
-    cout << "number of letters in start:  " << font_points_start.size() << endl;
-    // cout << "number of letters in target: " << font_points_target.size() << endl;
-
     for (int c = 0; c < font_points_start.size(); c++){
 
         vector <vector <ofPoint> > start_lines = font_points_start[c];
         // we're computing the centroid just once even if we've got multiple lines inside the char
         int centroid_computed = 0;
-        ofPoint centroid;
+        ofVec2f start_centroid;
+        ofVec2f target_centroid;
 
         for (int l = 0; l < start_lines.size(); l++){
             vector <ofPoint> line_points = start_lines[l];
@@ -121,55 +99,40 @@ void ofApp::draw(){
             // FIXME: find a better implementation in terms of useless repetition!
             
             if (!centroid_computed){
-
-                ofPolyline line;
+                
+                ofPolyline start_line;
+                ofPolyline target_line;
                 // this additional loop is only used for adding vertices to compute the centroid
                 for (int p = 0; p < line_points.size(); p++){
-                    line.addVertex(line_points[p]);
+                    start_line.addVertex(line_points[p]);
+                    if (GUI_morph > 0) target_line.addVertex(font_points_target[c][l][p]);
                 }
-                centroid = line.getCentroid2D();
+                start_centroid = start_line.getCentroid2D();
+                if (GUI_morph > 0) target_centroid = target_line.getCentroid2D();
                 centroid_computed++;
             }
 
             for (int p = 0; p < line_points.size(); p++){
                 ofPoint current_point = line_points[p];
 
-                if (!morph){
-                    ofDrawLine(centroid.x, centroid.y, current_point.x, current_point.y);
+                if (GUI_morph == 0){
+                    ofDrawLine(start_centroid.x, start_centroid.y, current_point.x, current_point.y);
                 }
                 else {
-                    ofVec2f start(current_point.x, current_point.y);
+                    // lerp the points
                     ofVec2f target(font_points_target[c][l][p].x, font_points_target[c][l][p].y);
-                    ofVec2f interpolated = start.getInterpolated(target, GUI_morph);
-                    // ofDrawCircle(interpolated.x, interpolated.y, 3, 3);
-                    ofDrawLine(centroid.x, centroid.y, interpolated.x, interpolated.y);
+                    ofVec2f interpolated = current_point.getInterpolated(target, GUI_morph);
+                    // lerp the centroids
+                    ofVec2f interpolated_centroid = start_centroid.getInterpolated(target_centroid, GUI_morph);
+
+                    ofDrawLine(interpolated_centroid.x, interpolated_centroid.y, interpolated.x, interpolated.y);
                 }
             } 
         }
-
-
-        /* // 2. second loop is used to draw the lines
-        // now that we know the centroid
-        for (int p = 0; p < font_points_start[c].size(); p++){
-
-            if (!morph){
-                // ofDrawLine(centroid, font_points_start[c][p]);
-                ofDrawCircle(font_points_start[c][p].x, font_points_start[c][p].y, 3, 3);
-            }
-            else {
-                ofVec2f start(font_points_start[c][p].x, font_points_start[c][p].y);
-                // ofVec2f target(font_points_target[c][p].x, font_points_target[c][p].y);
-                ofVec2f interpolated = start.getInterpolated(target, GUI_morph);
-                ofDrawCircle(interpolated.x, interpolated.y, 3, 3);
-                // ofDrawLine(centroid.x, centroid.y, target.x, target.y);
-            }
-        } */
     }
 
     ofPopMatrix();
     ofPopStyle();
-
-    //  morph = false;
 }
 
 //--------------------------------------------------------------
@@ -268,12 +231,7 @@ void ofApp::onSliderEvent(ofxDatGuiSliderEvent e){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    switch(key){
-        case 'm':{
-            morph = true;
-            break;
-        }
-    }
+    
 }
 
 //--------------------------------------------------------------

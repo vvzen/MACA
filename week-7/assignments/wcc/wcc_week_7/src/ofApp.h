@@ -29,8 +29,8 @@ class ofApp : public ofBaseApp{
 		string word_1, word_2;
 		vector <vector <vector <ofPoint> > > getStringAsPoints3DMatrix(ofTrueTypeFont & font, string s, int numOfSamples);
 		vector <ofPoint> getStringAsPoints(ofTrueTypeFont & font, string s, int numOfSamples);
-		bool morph;
 		float timer;
+		bool morphed;
 
 		ofxDatGui* gui;
 		ofParameter <float> GUI_noise_speed;
