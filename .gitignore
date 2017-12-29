@@ -6,3 +6,6 @@
 escape
 torno-subito
 *.zip
+# c++ stuff
+*.d
+*.o
