@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include <typeinfo>
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -109,45 +110,39 @@ void ofApp::draw(){
 
     for (int c = 0; c < font_points_start.size(); c++){
 
-
-        cout << "----------------" << endl;
-        cout << "size of start:  " << font_points_start[c].size() << endl;
-        // cout << "size of target: " << font_points_target[c].size() << endl;
-        cout << "----------------" << endl;
-
-        // ofPolyline line;
-        // FIXME: better implementation in terms of useless repetition
-        // 1. first loop is only used for adding vertices to line
-        // and compute the centroid
-        // for (int p = 0; p < font_points_start[c].size(); p++){
-        //     line.addVertex(font_points_start[c][p]);
-        // }
-        // ofPoint centroid = line.getCentroid2D();
-
-        // find the centroid for the current letter
-        ofRectangle current_letter_bbox = font.getStringBoundingBox(ofToString(word_1[c]), 0, 0);
-        ofPoint current_letter_center = current_letter_bbox.getCenter();
-        ofSetColor(255, 0, 0);
-        ofDrawCircle(current_letter_center.x, current_letter_center.y, 3, 3);
-        ofSetColor(255);
-
         vector <vector <ofPoint> > start_lines = font_points_start[c];
+        // we're computing the centroid just once even if we've got multiple lines inside the char
+        int centroid_computed = 0;
+        ofPoint centroid;
 
         for (int l = 0; l < start_lines.size(); l++){
             vector <ofPoint> line_points = start_lines[l];
+
+            // FIXME: find a better implementation in terms of useless repetition!
+            
+            if (!centroid_computed){
+
+                ofPolyline line;
+                // this additional loop is only used for adding vertices to compute the centroid
+                for (int p = 0; p < line_points.size(); p++){
+                    line.addVertex(line_points[p]);
+                }
+                centroid = line.getCentroid2D();
+                centroid_computed++;
+            }
 
             for (int p = 0; p < line_points.size(); p++){
                 ofPoint current_point = line_points[p];
 
                 if (!morph){
-                    ofDrawCircle(current_point.x, current_point.y, 3, 3);
+                    ofDrawLine(centroid.x, centroid.y, current_point.x, current_point.y);
                 }
                 else {
                     ofVec2f start(current_point.x, current_point.y);
                     ofVec2f target(font_points_target[c][l][p].x, font_points_target[c][l][p].y);
                     ofVec2f interpolated = start.getInterpolated(target, GUI_morph);
-                    ofDrawCircle(interpolated.x, interpolated.y, 3, 3);
-                    // ofDrawLine(centroid.x, centroid.y, target.x, target.y);
+                    // ofDrawCircle(interpolated.x, interpolated.y, 3, 3);
+                    ofDrawLine(centroid.x, centroid.y, interpolated.x, interpolated.y);
                 }
             } 
         }

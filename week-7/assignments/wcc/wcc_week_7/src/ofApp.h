@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxDatGui.h"
 
 class ofApp : public ofBaseApp{
 
@@ -25,6 +26,18 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont font;
 		vector <ofTTFCharacter> font_paths;
 		string current_text;
-		vector <vector <ofPoint> > getStringAsPoints(ofTrueTypeFont & font, string s, int numOfSamples);
+		string word_1, word_2;
+		vector <vector <vector <ofPoint> > > getStringAsPoints3DMatrix(ofTrueTypeFont & font, string s, int numOfSamples);
+		vector <ofPoint> getStringAsPoints(ofTrueTypeFont & font, string s, int numOfSamples);
+		bool morph;
+		float timer;
+
+		ofxDatGui* gui;
+		ofParameter <float> GUI_noise_speed;
+		ofParameter <float> GUI_noise_amount;
+		ofParameter <float> GUI_line_width;
+		ofParameter <float> GUI_morph;
 		
+		// events
+		void onSliderEvent(ofxDatGuiSliderEvent e);
 };
