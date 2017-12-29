@@ -250,8 +250,17 @@ void ofApp::onSliderEvent(ofxDatGuiSliderEvent e){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if (key == 'i'){
-        show_gui = !show_gui;
-        gui->setVisible(show_gui);
+    switch (key){
+        case 'i': {
+            show_gui = !show_gui;
+            gui->setVisible(show_gui);
+            break;
+        }
+        case 's': {
+            ofImage grab;
+            grab.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+            grab.save("screenshot_" + ofToString(ofGetFrameNum()) + ".png");
+            break;
+        }
     }
 }
