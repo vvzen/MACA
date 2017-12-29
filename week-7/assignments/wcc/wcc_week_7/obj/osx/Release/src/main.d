@@ -552,7 +552,28 @@ obj/osx/Release/src/main.o: \
   /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/libs/openFrameworks/video/ofAVFoundationVideoPlayer.h \
   /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/libs/openFrameworks/3d/ofCamera.h \
   /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/libs/openFrameworks/3d/ofEasyCam.h \
-  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/apps/MACA/wcc_week_7/src/ofApp.h
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/apps/MACA/wcc_week_7/src/ofApp.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/ofxDatGui.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiGroups.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiLabel.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiComponent.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiIntObject.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/themes/ofxDatGuiThemes.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/themes/ofxDatGuiTheme.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/libs/ofxSmartFont/ofxSmartFont.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiEvents.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiConstants.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiButton.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiSlider.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTextInputField.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTextInput.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiFRM.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGui2dPad.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiColorPicker.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiMatrix.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTimeGraph.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiScrollView.h \
+  /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiControls.h
 
 /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/libs/openFrameworks/ofMain.h:
 
@@ -1659,3 +1680,45 @@ obj/osx/Release/src/main.o: \
 /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/libs/openFrameworks/3d/ofEasyCam.h:
 
 /Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/apps/MACA/wcc_week_7/src/ofApp.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/ofxDatGui.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiGroups.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiLabel.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiComponent.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiIntObject.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/themes/ofxDatGuiThemes.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/themes/ofxDatGuiTheme.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/libs/ofxSmartFont/ofxSmartFont.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiEvents.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/core/ofxDatGuiConstants.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiButton.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiSlider.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTextInputField.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTextInput.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiFRM.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGui2dPad.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiColorPicker.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiMatrix.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiTimeGraph.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiScrollView.h:
+
+/Users/valerioviperino/Documents/Code/c++/openframeworks/of_v0.9.8_osx_release/addons/ofxDatGui/src/components/ofxDatGuiControls.h:
