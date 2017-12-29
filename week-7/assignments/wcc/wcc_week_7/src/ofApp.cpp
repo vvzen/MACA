@@ -1,29 +1,42 @@
+//--------------------------------------------------------------
+// @brief:      Reverse Engineering
+// @shortcuts:  
+//      i for showing/hiding the gui
+// @author:     vvzen
+// @date:       29/12/2017
+//--------------------------------------------------------------
+
 #include "ofApp.h"
-#include <typeinfo>
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 
     word_1 = "MINDFUL";
     word_2 = "ENERGIC";
-    current_text = word_1;
     timer = 0.0f;
 
     // font
-    font.load("fonts/AvenirNext-Medium-06.ttf", 110, false, false, true);
+    font.load("fonts/AvenirNext-Medium-06.ttf", 120, false, false, true);
+
+    // animation
+    start_delay = 5;
+    duration = 20;
 
     // GUI
+    show_gui = true;
     gui = new ofxDatGui();
     // gui->addLabel("TEST");
     // parameters
     GUI_noise_speed.set("Noise Speed", 0.38, 0.001, 1);
     GUI_noise_amount.set("Noise Amount", 18.3, 10, 500);
     GUI_line_width.set("Line Width", 1.7, 1, 4);
+    GUI_samples_num.set("Samples Num", 120, 50, 200);
     GUI_morph.set("Morph", 0.0, 0.0, 1.0);
     // sliders
     gui->addSlider(GUI_noise_speed);
     gui->addSlider(GUI_noise_amount);
     gui->addSlider(GUI_line_width);
+    gui->addSlider(GUI_samples_num);
     gui->addSlider(GUI_morph);
     // events
     gui->onSliderEvent(this, &ofApp::onSliderEvent);
@@ -53,13 +66,14 @@ void ofApp::draw(){
     cout << timer << endl;
     cout << GUI_morph << endl;
 
-    if (timer > 5 && !morphed){
+    // animation
+    if (timer > start_delay && !morphed){
         GUI_morph.set(ofMap(sin(timer), -1, 1, 0, 1));
         if (GUI_morph > 0.98){
             morphed = true;
         }
     }
-    if (timer > 20){
+    if (timer > duration){
         GUI_morph.set(0);
         timer = 0.0f;
         morphed = false;
@@ -67,8 +81,8 @@ void ofApp::draw(){
     
     // TEXT
     ofSetColor(255);
-    // center the text
-    ofRectangle font_bb = font.getStringBoundingBox(current_text, 0, 0);
+    // center
+    ofRectangle font_bb = font.getStringBoundingBox(word_1, 0, 0);
     ofTranslate(-font_bb.width/2, font_bb.height/2);
 
     // offset
@@ -80,24 +94,26 @@ void ofApp::draw(){
     // twist
     ofRotateY(-10);
     
-    // draw polylines of font
-    // outer loop is for chars
-    vector <vector <vector <ofPoint> > > font_points_start = getStringAsPoints3DMatrix(font, word_1, 120);
-    vector <vector <vector <ofPoint> > > font_points_target = getStringAsPoints3DMatrix(font, word_2, 120);
+    // find points for each char
+    // the number of points return is equal to the sampled ones
+    vector <vector <vector <ofPoint> > > font_points_start = getStringAsPoints3DMatrix(font, word_1, GUI_samples_num);
+    vector <vector <vector <ofPoint> > > font_points_target = getStringAsPoints3DMatrix(font, word_2, GUI_samples_num);
 
+    // start by looping inside every char of the word
     for (int c = 0; c < font_points_start.size(); c++){
 
         vector <vector <ofPoint> > start_lines = font_points_start[c];
-        // we're computing the centroid just once even if we've got multiple lines inside the char
+        // we're computing the centroid just for the first line
+        // even if we've got multiple lines inside the char
         int centroid_computed = 0;
         ofVec2f start_centroid;
         ofVec2f target_centroid;
 
+        // loop inside lines of character
         for (int l = 0; l < start_lines.size(); l++){
             vector <ofPoint> line_points = start_lines[l];
 
-            // FIXME: find a better implementation in terms of useless repetition!
-            
+            // FIXME: find a better implementation in terms of useless repetition of loops!
             if (!centroid_computed){
                 
                 ofPolyline start_line;
@@ -111,10 +127,11 @@ void ofApp::draw(){
                 if (GUI_morph > 0) target_centroid = target_line.getCentroid2D();
                 centroid_computed++;
             }
-
+            // loop inside points
             for (int p = 0; p < line_points.size(); p++){
                 ofPoint current_point = line_points[p];
 
+                // save some computation by not calculating the interpolated position if we're at 0 morphing
                 if (GUI_morph == 0){
                     ofDrawLine(start_centroid.x, start_centroid.y, current_point.x, current_point.y);
                 }
@@ -124,7 +141,7 @@ void ofApp::draw(){
                     ofVec2f interpolated = current_point.getInterpolated(target, GUI_morph);
                     // lerp the centroids
                     ofVec2f interpolated_centroid = start_centroid.getInterpolated(target_centroid, GUI_morph);
-
+                    // draw the lines from the centroid of each letter
                     ofDrawLine(interpolated_centroid.x, interpolated_centroid.y, interpolated.x, interpolated.y);
                 }
             } 
@@ -195,6 +212,8 @@ vector <vector <vector <ofPoint> > > ofApp::getStringAsPoints3DMatrix(ofTrueType
 }
 
 //--------------------------------------------------------------
+// NOT USED ANYMORE
+//--------------------------------------------------------------
 vector <ofPoint> ofApp::getStringAsPoints(ofTrueTypeFont & font, string s, int numOfSamples){
 
     vector <ofPoint> stringPoints;
@@ -231,55 +250,8 @@ void ofApp::onSliderEvent(ofxDatGuiSliderEvent e){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-    cout << "mouse: " << mouseX << ", " << mouseY << endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
+    if (key == 'i'){
+        show_gui = !show_gui;
+        gui->setVisible(show_gui);
+    }
 }
