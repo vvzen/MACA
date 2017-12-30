@@ -6,6 +6,10 @@
 escape
 torno-subito
 *.zip
+
+# python stuff
+*.pyc
+
 # c++ stuff
 *.d
 *.o
