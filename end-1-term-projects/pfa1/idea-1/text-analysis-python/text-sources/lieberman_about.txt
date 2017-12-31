@@ -1,0 +1,9 @@
+Zachary Lieberman is an artist with a simple goal: he wants you surprised.
+His work uses technology in a playful way to break down the fragile boundary between the visible and the invisible.
+
+Augmenting the body’s ability to communicate has always been at the core of Lieberman’s work.
+Working with collaborator Golan Levin, he created installations—”Remark” and “Hidden Worlds”—that presented interpretations of what the voice might look like if we could see our own speech. Similarly, the concert performance “Messa Di Voce” (Italian for “placing the voice”) illustrated the abstract songs and shouts of two vocalists by interactive visualization software. Lieberman’s installation “Drawn,” in which painted forms appear to come to life, recently won awards in the Ars Electronica and CYNETart competitions.
+
+Lieberman has held residencies at Ars Electronica Futurelab, Eyebeam, Dance Theater Workshop, and the Hangar Center for the Arts in Barcelona.
+
+Most recently, he helped create visuals for the facade of the new Ars Electronica Museum, wrote software for an augmented reality magic trick, and helped develop an open source eye tracker to help a paralyzed graffiti artist draw again.  In addition to making artistic projects, Lieberman is co-creator of openFrameworks, an open source C++ toolkit for creative coding. He teaches at Parsons School of Design.

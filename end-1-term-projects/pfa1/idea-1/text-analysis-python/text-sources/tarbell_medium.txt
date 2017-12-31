@@ -1,0 +1,5 @@
+I write computer programs to create graphic images. 
+
+With an algorithmic goal in mind, I manipulate the work by finely crafting the semantics of each program. Specific results are pursued, although occasionally surprising discoveries are made.
+
+I believe all code is dead unless executing within the computer. For this reason I distribute the source code of my programs in modifiable form. Modifications and extensions of these algorithms are encouraged.
