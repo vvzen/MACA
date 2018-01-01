@@ -28,17 +28,24 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+
+		// typography
+		vector<Word> generateTypography(ofxJSONElement jsonSource, ofTrueTypeFont & font, float verticalSize);
+		vector <Word> created_words;
+		void renderTypography(ofFbo fbo, vector<Word> words);
+
+		ofFbo typography_fbo;
 		
 		// input json parser
 		ofxJSONElement JSON_words_count_score;
 		// hashmap for storing parsed key values
 		std::map<std::string, int> words_count_score;
 
-		vector <Word> created_words;
 
 		// font
 		ofTrueTypeFont font;
 		ofTrueTypeFont font_demi_bold;
+		float vertical_size;
 
 		int highest_count;
 		string highest_count_word;

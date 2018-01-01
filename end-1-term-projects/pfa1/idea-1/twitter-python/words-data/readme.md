@@ -1,1 +1,0 @@
-This folder contains data useful for natural language processing, taken from the awesome [corpora](https://github.com/dariusk/corpora) repository by [Dariusk](https://github.com/dariusk).

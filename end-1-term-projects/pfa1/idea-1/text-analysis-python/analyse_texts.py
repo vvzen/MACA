@@ -12,7 +12,8 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # hash table with the frequency score for each word
 words_frequency_score = {}
-words_frequency_score_sorted = {}
+# sorted list of dictionaries
+words_frequency_score_sorted = []
 
 # paths
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -62,10 +63,14 @@ print "\n{} words collected!".format(len(words_frequency_score.keys()))
 sorted_words = sorted(words_frequency_score, key=words_frequency_score.get, reverse=True)
 most_frequent_word = sorted_words[0]
 print "most frequent word: {}".format(most_frequent_word)
-print "here's the TOP 20:"
-for w in sorted_words[:20]:
-      print "\t{} : {}".format(w, words_frequency_score[w])
-      words_frequency_score_sorted[w] = words_frequency_score[w]
+for w in sorted_words:
+    #   print "\t{} : {}".format(w, words_frequency_score[w])
+    words_frequency_score_sorted.append({
+        "word" : w,
+        "score" : words_frequency_score[w]
+    })
+print "TOP 20:"
+print "{}".format("\n".join(sorted_words[:20]))
 
 # save hash table
 with open(os.path.join(destination_dir, "words_frequency_score.json"), mode="w") as wf:

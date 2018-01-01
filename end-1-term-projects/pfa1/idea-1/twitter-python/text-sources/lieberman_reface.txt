@@ -1,5 +1,0 @@
-Reface [Portrait Sequencer] is a surreal video mash-up that composes endless combinations of its visitors’ faces. Based on the Victorian “Exquisite Corpse” parlor game, the Reface installation records and dynamically remixes brief video slices of its viewers’ mouths, eyes and brows.
-
-Reface uses face-tracking techniques to allow automatic alignment and segmentation of its participants’ faces. As a result, visitors to the project can move around freely in front of the display without worrying about lining up their face for the system’s camera. The video clips recorded by the project are “edited” by the participants’ own eye blinks. Blinking also triggers the display to advance to the next set of face combinations.
-
-Through interactions with an image wholly constructed from its own history of being viewed, Reface makes possible a new form of inventive play with one’s own appearance and identity. The resulting kinetic portraiture blends the personalities and genetic traits of its visitors to create a “generative group portrait” of the people in the project’s locale.
