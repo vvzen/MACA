@@ -1,0 +1,17 @@
+<settings>
+    <max_force>7.658769608</max_force>
+    <max_speed>8.895863533</max_speed>
+    <max_steer>1.540431380</max_steer>
+    <flock_align>1.649811983</flock_align>
+    <field_attraction>4.181663513</field_attraction>
+    <separation_amount>5.864089489</separation_amount>
+    <separation_threshold>84.100158691</separation_threshold>
+    <noise_speed>
+        <X>0.041656226</X>
+        <Y>0.024293622</Y>
+    </noise_speed>
+    <cell_size>
+        <X>162.845184326</X>
+        <Y>162.845184326</Y>
+    </cell_size>
+</settings>
