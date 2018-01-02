@@ -1,3 +1,4 @@
+*.DS_STORE
 *.swp
 *.mov
 *.mp4
@@ -6,6 +7,7 @@
 escape
 torno-subito
 *.zip
+*.afdesign
 
 # python stuff
 *.pyc
