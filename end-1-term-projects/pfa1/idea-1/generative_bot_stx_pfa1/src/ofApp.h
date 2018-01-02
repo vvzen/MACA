@@ -36,29 +36,35 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
+        void update_GUI_with_JSON_args(ofxJSONElement jsonFile);
         void saveFBOImage(string path);
+
+        // command line arguments
+        vector<string> arguments;
+        string argumentsAsString;
+        
+        // GRAPHICS
+        bool bw_mode; // black & white mode
+        bool dark_mode;
+        float bg_color;
+        float starting_hue;
 
         // TYPE
 		vector <Word> created_words;
 		ofFbo typography_fbo;
         ofPixels type_fbo_pixels;
+        string current_font;
 		
 		// input json parser
 		ofxJSONElement JSON_words_count_score;
 		// hashmap for storing parsed key values
-		std::map<std::string, int> words_count_score;
+		map<string, int> words_count_score;
 
 		// font
 		ofTrueTypeFont font;
 		ofTrueTypeFont font_demi_bold;
 		float vertical_size;
 
-        // BOIDS
-        // command line arguments
-        void updateGUIWithJSONArgs(ofxJSONElement jsonFile);
-        vector<string> arguments;
-        string argumentsAsString;
-    
         // GUI
         bool show_gui;
         ofxPanel gui;
@@ -73,33 +79,22 @@ class ofApp : public ofBaseApp{
         ofParameter<bool> shouldRenderFearAreasGUI;
         ofParameter<bool> shouldClearCanvasGUI;
         ofParameter<bool> shouldShowFearTextGUI;
-        ofParameter<int> startingHueGUI;
-    
-        // Colors
-        float BG_COLOR;
-        float startingHue;
     
         // Listeners
         void changedFieldParams(float & value);
         void changedBoolParam(bool & value);
-    
+        
         // Flow field
         FlowField flowField;
     
         // Boids
         vector<Boid *> boids;
         int BOIDS_NUM;
-        ofFbo boidsFbo;
+        ofFbo boids_fbo;
     
         // Boids areas of fear
         vector <FearArea *> fearAreas;
         int FEAR_AREAS_NUM;
-    
-        // B&W text fbo
-        ofTrueTypeFont openSansFont;
-        ofRectangle fearTextSize;
-        string fearText;
-        ofFbo fearTextFbo;
     
         // XML
         // Used for drawing settings

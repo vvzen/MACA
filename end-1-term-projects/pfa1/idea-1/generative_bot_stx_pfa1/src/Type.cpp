@@ -11,12 +11,11 @@ vector<Word> generateTypography(ofxJSONElement jsonSource, ofTrueTypeFont & font
     int x_offset = font.getStringBoundingBox(first_word, 0, 0).getWidth();
 
     for (int y = 0; y < ofGetHeight(); y+=verticalSize){
-
         for (int x = 0; x < ofGetWidth(); x+=x_offset){
 
             int frequency = jsonSource[index]["score"].asInt();
 
-            if (frequency > 4){
+            if (frequency > 2){
 
                 Word current_word;
                 // current_word.text = ofRandom(0, 2) == 1 ? "asd" : "asdfg";
@@ -33,7 +32,7 @@ vector<Word> generateTypography(ofxJSONElement jsonSource, ofTrueTypeFont & font
                 
                 x_offset = word_bb.getWidth();
 
-                cout << "word: " << current_word.text << ", offset: " << x_offset << endl;
+                // cout << "word: " << current_word.text << ", offset: " << x_offset << endl;
                 // verticalSize = word_bb.getHeight() * ofMap(frequency, 2, 315, 0.2, 1);
                 
                 // TODO: compute vertical offset

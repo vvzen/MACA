@@ -6,40 +6,49 @@ void ofApp::setup(){
     
     ofSetVerticalSync(true);
 
-    BG_COLOR = 10;
+    // Generate a random runtime
+    APP_RUNTIME_MS = int(ofRandom(15, 2)) * 60 * 1000; // ms * 1000 = seconds
+
+    // GENERAL GRAPHICS VARIABLES INIT
+    dark_mode = true;
+    bg_color = (dark_mode == true) ? 10 : 255;
+    starting_hue = (bw_mode == true) ? 0 : ofRandom(255);
+    // starting_hue = (bw_mode == true) ? 0 : 170.593;
+    
+    cout << "Starting hue: " << starting_hue << endl;
 
     // TYPOGRAPHY
-    // init fbo
+    // init fbo for drawing words
     typography_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    // vertical sizing of the letters 
+    vertical_size = ofGetHeight() / 24;
 
-    vertical_size = 46;
-
-    // fonts
-    font.load("fonts/AvenirNext-Medium-06.ttf", vertical_size, true, true, true);
-    font_demi_bold.load("fonts/Futura-Medium-01.ttf", vertical_size, true, true, true);
-    // font.load("fonts/Futura-Medium-01.ttf", 32);
-
-    std::string file_path = "words_frequency_score.json";
-
-    // parse the json
-    bool parsing_successful = JSON_words_count_score.open(file_path);
-
-    if (!parsing_successful){
-        ofLogNotice() << "Failed to parse input Json File!" << endl;
+    // main font used for the typography fbo
+    current_font = "AvenirNext-Medium-06";
+    font.load("fonts/" + ofToString(current_font) + ".ttf", vertical_size, true, true, true);
+    
+    // parse the json with the words array
+    string words_json_path = "words_frequency_score.json";
+    
+    if (!JSON_words_count_score.open(words_json_path)){
+        ofLogNotice() << "Failed to parse input Json File, exiting app." << endl;
+        ofExit();
     }
 
-    cout << "is JSON file array? ";
-    JSON_words_count_score.isArray() == true ? cout << "yes" << endl : cout << "no" << endl;
+    if (DEBUG_JSON){
+        cout << "is JSON file array? ";
+        JSON_words_count_score.isArray() == true ? ofLogNotice() << "yes" : ofLogNotice() << "no";
+    }
 
     created_words = generateTypography(JSON_words_count_score, font, vertical_size);
     
-    // Add listeners to gui parameters
+    // add listeners to gui parameters
     noiseXSpeedGUI.addListener(this, &ofApp::changedFieldParams);
     noiseYSpeedGUI.addListener(this, &ofApp::changedFieldParams);
     cellSizeGUI.addListener(this, &ofApp::changedFieldParams);
     //shouldRenderGridGUI.addListener(this, &ofApp::changedBoolParam);
     
-    // Setup gui
+    // setup gui
     show_gui = true;
     gui.setup();
     gui.add(cellSizeGUI.set("Cell Size", 64.0f, 2.0f, 256.0f));
@@ -54,55 +63,38 @@ void ofApp::setup(){
     gui.add(maxSpeedGUI.set("MAX SPEED", 1.0f, 0.01f, 5.0f));
     gui.add(shouldRenderGridGUI.set("Show Grid", false));
     gui.add(shouldClearCanvasGUI.set("Clear Canvas", true));
-    gui.add(shouldRenderFearAreasGUI.set("Show Fear Areas", false));
+    // gui.add(shouldRenderFearAreasGUI.set("Show Fear Areas", false));
     gui.add(shouldShowFearTextGUI.set("Show Fear Text", false));
-    gui.add(startingHueGUI.set("Starting Hue", 0, 0, 255));
     
-    // Setup flowfield
+    // setup flowfield
     flowField.initGrid(0.008f, 0.014f, ofVec2f(32.0f, 32.0f));
     
-    // Generate a random numbers of Boids
-    // BOIDS_NUM = (int) ofRandom(200,300);
-    BOIDS_NUM = 256;
+    // choose numbers of boids
+    BOIDS_NUM = 1024;
     
-    // Setup boids
+    // fill boids vector
     for(int i = 0; i < BOIDS_NUM; i++){
         Boid * newBoid = new Boid();
         ofVec2f newPos = ofVec2f(ofRandom(0, ofGetWidth()), ofRandom(0, ofGetHeight()));
         newBoid->setup(newPos, ofVec2f(1, 1));
         boids.push_back(newBoid);
     }
-    boidsFbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 4);
-    boidsFbo.begin();
-        ofClear(BG_COLOR);
-    boidsFbo.end();
+    // init and clear boids fbo
+    boids_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 4);
+    boids_fbo.begin();
+        ofClear(bg_color);
+    boids_fbo.end();
     
-    // Generate a small random number of areas of fear
-    // if(USE_FEAR_AREAS){
-        
-    //     FEAR_AREAS_NUM = (int) ofRandom(2,4);
-    //     for(int i = 0; i < FEAR_AREAS_NUM; i++){
-    //         // Create an enemy at a random location
-    //         FearArea * newFearArea = new FearArea();
-    //         ofVec2f newPosition(ofVec2f(ofRandom(ofGetWidth()), ofRandom(ofGetHeight())));
-    //         newFearArea->setup(newPosition, ofRandom(16,128));
-    //         fearAreas.push_back(newFearArea);
-    //     }
-    // }
-    
-    // Generate a random runtime
-    APP_RUNTIME_MS = 1 * int(ofRandom(180, 240)) * 1000; // ms * 1000 = seconds
-    
-    // Parse the json with the args
+    // parse the json with the args
     if(jsonArguments.open("args.json")){
         
-        // Read the cmd args from the json file
+        // read the cmd args from the json file
         // Set the gui with those args
-        updateGUIWithJSONArgs(jsonArguments);
+        update_GUI_with_JSON_args(jsonArguments);
         
         if(DEBUG_JSON){
-            ofLog(OF_LOG_NOTICE, "args.json : "+jsonArguments.getRawString());
-            ofLog(OF_LOG_NOTICE, "args size : "+ ofToString(jsonArguments["args"].size()));
+            ofLog(OF_LOG_NOTICE, "args.json : " + jsonArguments.getRawString());
+            ofLog(OF_LOG_NOTICE, "args size : " + ofToString(jsonArguments["args"].size()));
             ofLog(OF_LOG_NOTICE, "args as array elements : ");
             for(int i = 0; i < jsonArguments["args"].size(); i++){
                 ofLog(OF_LOG_NOTICE, ofToString(jsonArguments["args"].operator[](i)));
@@ -111,30 +103,17 @@ void ofApp::setup(){
     }
     else {
         ofLog(OF_LOG_ERROR, "Failed to parse json");
+        ofExit();
     }
     
-    // Parse the fear words from the json file
-    // vector<string> fearWords;
-    // if(jsonFearWords.open("words.json")){
-        
-    //     for(int i = 0; i < jsonFearWords["fear_words"].size(); i++){
-    //         //cout << jsonFearWords["fear_words"].operator[](i).asString() << endl;
-    //         fearWords.push_back(jsonFearWords["fear_words"].operator[](i).asString());
-    //     }
-    // }
-    
-    // Init font and text
-    // openSansFont.load("fonts/OpenSans-Semibold.ttf", 230, true);
-    // fearText = fearWords[ofRandom(0, fearWords.size())];
-    // fearTextFbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 0);
-    
-    // Generate a random starting hue
-    startingHue = ofRandom(255);
-    
-    cout << "Starting hue: " << startingHue << endl;
-    
-    if(!DEBUG_BOIDS) ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofBackground(BG_COLOR);
+    if(dark_mode){
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+    }
+    else {
+        ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+    }
+
+    ofBackground(bg_color);
 
     // TYPE
     renderTypography(typography_fbo, created_words, font);
@@ -147,28 +126,22 @@ void ofApp::setup(){
 void ofApp::update(){
 
     // BOIDS
-    startingHue += 0.001f;
+    starting_hue += 0.001f;
     
-    // Update static constants for boids
-    Boid::MAX_FORCE = maxForceGUI.get();
-    Boid::MAX_STEER = maxSteerGUI.get();
-    Boid::MAX_SPEED = maxSpeedGUI.get();
+    // update static constants for boids
+    Boid::max_force = maxForceGUI.get();
+    Boid::max_steer = maxSteerGUI.get();
+    Boid::max_speed = maxSpeedGUI.get();
     
-    // Pixels from the fear text fbo
-    ofPixels fearTextPixels;
-    // fearTextFbo.getTexture().readToPixels(fearTextPixels);
-    typography_fbo.getTexture().readToPixels(fearTextPixels);
+    // pixels from the fear text fbo
+    ofPixels fear_words_pixels;
+    typography_fbo.getTexture().readToPixels(fear_words_pixels);
     
-    // Update boids
+    // update boids
     for(int i = 0; i < boids.size(); i++){
         
-        // The boids have fear to go in some areas
-        for(int e = 0; e < fearAreas.size(); e++){
-            boids[i]->fear(fearAreas[e]->getPosition(), fearAreas[e]->getSize());
-        }
-        
-        // The boids have fear of the white pixels
-        ofColor currentTextFearColor = fearTextPixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
+        // the boids have fear of the white pixels in the typography fbo (press f to show it)
+        ofColor currentTextFearColor = fear_words_pixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
         
         if(currentTextFearColor.r < 30){
             // boids[i]->fear(boids[i]->getPosition(), 60);
@@ -186,64 +159,59 @@ void ofApp::update(){
         boids[i]->update(true);
     }
     
-    // get bb of fear text
-    // fearTextSize = openSansFont.getStringBoundingBox(fearText, 0, 0);
-    
-    // draw fear text in a separate framebuffer
-    // fearTextFbo.begin();
-    // ofSetColor(255);
-    // ofFill();
-    // ofBackground(0);
-    // openSansFont.drawString(fearText, ofGetWidth()/2 - fearTextSize.width/2, ofGetHeight()/2 + fearTextSize.height/4);
-    // fearTextFbo.end();
-    
-    // FIXME:
-    // If app has been running for the requested time
-    // if(ofGetElapsedTimeMillis() >= APP_RUNTIME_MS){
-    //     cout << "Closing app" << endl;
-    //     saveFBOImage("output.jpg");
-    //     ofExit();
-    // }
-    
+    // close app after it has been running for the requested time
+    if(ofGetElapsedTimeMillis() >= APP_RUNTIME_MS){
+        cout << "closing app" << endl;
+        saveFBOImage("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".jpg");
+        ofExit();
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    starting_hue += 0.005f;
+
     // BOIDS
     for(int i = 0; i < boids.size(); i++){
 
         // set color
-        ofColor targetColor;
+        ofColor target_color;
         float max_distance = ofDist(ofGetWidth()/2, ofGetHeight()/2, ofGetWidth()*2, ofGetHeight()*2);
-        float mapped_color = ofMap(ofDist(boids[i]->getPosition().x,
-                                        boids[i]->getPosition().y,
-                                        ofGetWidth()/2,
-                                        ofGetHeight()/2),
-                                        0, max_distance, 30, 0);
         // float mapped_color = ofMap(ofDist(boids[i]->getPosition().x,
         //                                 boids[i]->getPosition().y,
         //                                 ofGetWidth()/2,
         //                                 ofGetHeight()/2),
-        //                                 0, max_distance, 255, 80);
+        //                                 0, max_distance, 30, 0);
+
+        // float boid_dist_from_center = ofDist(boids[i]->getPosition().x, boids[i]->getPosition().y, ofGetWidth(), ofGetHeight());
+        // float mapped_color = ofMap(boid_dist_from_center, 0, max_distance, 255, 80);
+
+        float saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 255);
         
-        targetColor.setHsb(startingHue, mapped_color, 200, 4);
+        // B & W
+        if (dark_mode){
+            target_color.setHsb(starting_hue, saturation, 200, 5);
+        }
+        else {
+            target_color.setHsb(starting_hue, saturation, 17, 10);
+        }
         
-        ofColor current_color = type_fbo_pixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
-        boids[i]->render(targetColor, &boidsFbo);
+        // ofColor current_color = type_fbo_pixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
+        boids[i]->render(target_color, &boids_fbo);
         
         // if (current_color.r > 250){
-        //     boids[i]->render(ofColor(0), &boidsFbo);
+        //     boids[i]->render(ofColor(0), &boids_fbo);
         // }
         // else {
-        //     boids[i]->render(ofColor(255), &boidsFbo);
+        //     boids[i]->render(ofColor(255), &boids_fbo);
         // }
     }
 
     if(shouldClearCanvasGUI.get()){
-        boidsFbo.begin();
-        ofClear(BG_COLOR, 255);
-        boidsFbo.end();
+        boids_fbo.begin();
+        ofClear(bg_color, 255);
+        boids_fbo.end();
     }
     
     shouldClearCanvasGUI.set(false);
@@ -255,19 +223,18 @@ void ofApp::draw(){
     
     // visualize fear text
     if(shouldShowFearTextGUI){
-        // fearTextFbo.draw(0, 0);
         typography_fbo.draw(0, 0);
     }
     
     // visualize fear areas
-    if(shouldRenderFearAreasGUI){
-        for(int fa = 0; fa < fearAreas.size(); fa++){
-            fearAreas[fa]->render();
-        }
-    }
+    // if(shouldRenderFearAreasGUI){
+    //     for(int fa = 0; fa < fearAreas.size(); fa++){
+    //         fearAreas[fa]->render();
+    //     }
+    // }
 
     // boids
-    boidsFbo.draw(0, 0);
+    boids_fbo.draw(0, 0);
     
     // gui
     if (show_gui){
@@ -275,7 +242,7 @@ void ofApp::draw(){
     }
     
     // DEBUG
-    // ofDrawBitmapString("Starting hue: " + ofToString(startingHue), ofGetWidth()-200, 20);
+    // ofDrawBitmapString("Starting hue: " + ofToString(starting_hue), ofGetWidth()-200, 20);
 }
 
 //--------------------------------------------------------------
@@ -290,7 +257,7 @@ void ofApp::changedBoolParam(bool &value){
 }
 
 //--------------------------------------------------------------
-void ofApp::updateGUIWithJSONArgs(ofxJSONElement jsonFile){
+void ofApp::update_GUI_with_JSON_args(ofxJSONElement jsonFile){
     
     if (DEBUG_JSON) ofLog(OF_LOG_NOTICE, "Reading GUI parameters from args.json");
     
@@ -330,10 +297,7 @@ void ofApp::updateGUIWithJSONArgs(ofxJSONElement jsonFile){
                 break;
             case 9:
                 cellSizeGUI.set(currentValue);
-                break;
-            case 10:
-                startingHueGUI.set(currentValue);
-                break;
+                break;\
                 
             default:
                 break;
@@ -420,13 +384,13 @@ void ofApp::keyPressed(int key){
         }
         // save image
         case 'w':{
-            saveFBOImage("output.jpg");
+            saveFBOImage("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".jpg");
             break;
         }
         // save fear text as image
         case 't':{
             ofPixels pixels;
-            fearTextFbo.getTexture().readToPixels(pixels);
+            typography_fbo.getTexture().readToPixels(pixels);
             ofSaveImage(pixels, "fear_text.png");
             break;
         }
@@ -434,15 +398,16 @@ void ofApp::keyPressed(int key){
 }
 
 //--------------------------------------------------------------
+// get fbo boids pixels and save image to given path
+//--------------------------------------------------------------
 void ofApp::saveFBOImage(string path){
-    string imageName = ofToString(path);
-    //cout << "Saving image " << imageName<< endl;
-    // Get fbo texture pixels and save to image
+
+    string image_name = ofToString(path);
     ofPixels pixels;
-    ofImage outImage;
-    boidsFbo.getTexture().readToPixels(pixels);
-    outImage.setFromPixels(pixels);
-    outImage.save(imageName);
+    ofImage out_image;
+    boids_fbo.getTexture().readToPixels(pixels);
+    out_image.setFromPixels(pixels);
+    out_image.save(image_name);
 }
 
 //--------------------------------------------------------------

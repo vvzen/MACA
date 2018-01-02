@@ -11,9 +11,9 @@
 // Constructor
 Boid::Boid(){}
 
-float Boid::MAX_FORCE = 10.0f;
-float Boid::MAX_STEER = 2.0f;
-float Boid::MAX_SPEED = 5.0f;
+float Boid::max_force = 10.0f;
+float Boid::max_steer = 2.0f;
+float Boid::max_speed = 5.0f;
 
 // Getters
 ofVec2f Boid::getPosition(){
@@ -50,7 +50,7 @@ void Boid::update(bool checkEdges){
     }
     
     previousPosition = position;
-    velocity.limit(MAX_SPEED);
+    velocity.limit(max_speed);
     velocity += acceleration;
     position += velocity;
     acceleration *= 0;
@@ -58,23 +58,19 @@ void Boid::update(bool checkEdges){
 // Render to screen
 void Boid::render(ofColor color, ofFbo * fbo){
 
-    // ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
-    
     ofPushStyle();
     fbo->begin();
         //ofBackground(12);
         ofSetColor(color);
         ofFill();
-        //ofDrawEllipse(position.x, position.y, size.x, size.y);
+        // ofDrawEllipse(position.x, position.y, 1, 1);
         ofDrawLine(position.x, position.y, previousPosition.x, previousPosition.y);
     fbo->end();
     ofPopStyle();
-
-    // ofDisableBlendMode();
 }
 
 void Boid::addForce(ofVec2f force){
-    force.limit(MAX_FORCE);
+    force.limit(max_force);
     acceleration += force;
 }
 // Compute attraction to a target
@@ -84,11 +80,11 @@ void Boid::seek(ofVec2f target){
     ofVec2f desiredDirection = target - position;
     // Normalize and scale it
     desiredDirection.normalize();
-    desiredDirection *= MAX_FORCE;
+    desiredDirection *= max_force;
     // Apply steering formula
     // steering = desired - velocity
     ofVec2f steering = desiredDirection - velocity;
-    steering.limit(MAX_STEER);
+    steering.limit(max_steer);
     addForce(steering);
 }
 
@@ -110,12 +106,12 @@ void Boid::follow(ofVec2f target){
         desiredDirection *= desireMultiplier;
     }
     else {
-        desiredDirection *= MAX_FORCE;
+        desiredDirection *= max_force;
     }
     // Apply steering formula
     // steering = desired - velocity
     ofVec2f steering = desiredDirection - velocity;
-    steering.limit(MAX_STEER);
+    steering.limit(max_steer);
     addForce(steering);
 }
 
@@ -139,7 +135,7 @@ void Boid::fear(ofVec2f target, float fearDistance){
         desiredDirection *= desireMultiplier;
         
         ofVec2f steering = desiredDirection - velocity;
-        steering.limit(MAX_STEER);
+        steering.limit(max_steer);
         addForce(steering);
     }
 }
@@ -159,7 +155,7 @@ ofVec2f Boid::computeAlignment(vector<Boid *> boids){
     totalAlignment /= boids.size();
     // Return the averaged alignment
     ofVec2f steering = totalAlignment - velocity;
-    steering.limit(MAX_STEER);
+    steering.limit(max_steer);
     return steering;
 }
 
@@ -197,7 +193,7 @@ ofVec2f Boid::computeSeparation(vector<Boid *> boids, float distanceThreshold){
         // Calculate average
         totalRepulsion /= boidsCount;
         ofVec2f steering = totalRepulsion - velocity;
-        steering.limit(MAX_STEER);
+        steering.limit(max_steer);
         return steering;
     }
     else {
