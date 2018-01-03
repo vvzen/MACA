@@ -1,5 +1,6 @@
 #include "MovementISource.h"
 
+//--------------------------------------------------------------
 void MovementISource::setup(){
 	// Give our source a decent name
     name = "Movement 1 Source";
@@ -18,10 +19,21 @@ void MovementISource::setup(){
 
     show_start_time = ofGetElapsedTimef();
 
-    // used to keep timing in the
+    // used to keep timing in the intro
     intro_time_multiplier = 1;
+
+    // start positions of the circles used in the checkpoint 3
+    ellipse_1_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
+    ellipse_2_pos = ofVec2f(fbo->getWidth() * 7/8, fbo->getHeight()/2);
+    // ellipse_2_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
+    // speeds of the ellipses
+    ellipse_velocity = ofVec2f(0, 0);
+    ellipse_acceleration= ofVec2f(0, 0.09);
+    circles_size_multiplier = 1;
+    bounce_count = 0;
 }
 
+//--------------------------------------------------------------
 void MovementISource::setName(string _name){
     name = _name;
 }
@@ -53,12 +65,12 @@ void MovementISource::draw(){
     if (!CHECKPOINT_1){
         drawFlashingIntro(intro_time_multiplier);
     }
-    if (CHECKPOINT_1 && !CHECKPOINT_2){
+    else if (CHECKPOINT_1 && !CHECKPOINT_2){
         drawMovingLines(current_show_time);
     }
-
-    // ofVec2f tris_pos(fbo->getWidth()/2, fbo->getHeight()/2);
-    // ofDrawTriangle(tris_pos.x, tris_pos.y, tris_pos.x + 55, tris_pos.y - 50, tris_pos.x - 55, tris_pos.y - 50);
+    else if (CHECKPOINT_2 && !CHECKPOINT_3){
+        drawMovingCircles(current_show_time);
+    }
 
     // ofEnableAlphaBlending();
     // reference_image.draw(0, 0);
@@ -72,6 +84,8 @@ void MovementISource::draw(){
     if (show_calibration_grid){
         drawCalibrationGrid(32);
     }
+
+    cout << "current show time: " << current_show_time << endl;
 
     ofPopStyle();
 }
@@ -183,12 +197,13 @@ void MovementISource::drawMovingLines(float currentShowTime){
 
     float checkpoints[4] = {0, 0.1, 0.2, 0.3}; // seconds
     float lines_checkpoints[3] = {1, 2.5, 11};
-    float rect_checkpoints[3] = {20, 2, 25};
+    float rect_checkpoints[3] = {13, 14};
+    float final_checkpoint = 24;
 
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - lines_start_time;
     // cout << "current show time:  " << currentShowTime << endl;
-    cout << "current local time: " << current_time << endl;
+    // cout << "current local time: " << current_time << endl;
 
     // two flashes
     if ((current_time > checkpoints[0] && current_time < checkpoints[1]) ||
@@ -246,51 +261,189 @@ void MovementISource::drawMovingLines(float currentShowTime){
             if (!rects_started){
                 rects_start_time = current_time;
                 rects_started = true;
-                cout << "rect start time: " << rects_start_time << endl;
-                cout << "checkpoint 7:" << checkpoints[7] << endl;
+                // cout << "rect start time: " << rects_start_time << endl;
+                // cout << "checkpoint 7:" << checkpoints[7] << endl;
             }
         }
     }
     // rects growing
-    else if (current_time > lines_checkpoints[0] && current_time < rect_checkpoints[0] && rects_started){
+    else if (current_time > lines_checkpoints[0] && current_time < rect_checkpoints[1] && rects_started){
 
         ofSetColor(255);
         ofFill();
 
-        // draw lines as background
-        // vertical
-        for (int i = 0; i < fbo->getWidth(); i+=line_spacing){
-            ofVec2f start_pos(i, fbo->getHeight());
-            ofVec2f end_pos(i, 0);
-            ofDrawLine(start_pos, end_pos);
+        // flash lines in the background
+        if (current_time < rect_checkpoints[0]){
+            // vertical
+            if (ofGetFrameNum() % 10 == 0){
+                for (int i = 0; i < fbo->getWidth(); i+=line_spacing){
+                    ofVec2f start_pos(i, fbo->getHeight());
+                    ofVec2f end_pos(i, 0);
+                    ofDrawLine(start_pos, end_pos);
+                }
+            }
+            // horizontal
+            if (ofGetFrameNum() % 20 == 0){
+                for (int i = 0; i < fbo->getHeight(); i+=line_spacing){
+                    ofVec2f start_pos(0, i);
+                    ofVec2f end_pos(fbo->getWidth(), i);
+                    ofDrawLine(start_pos, end_pos);
+                }
+            }
         }
-        // horizontal
-        for (int i = 0; i < fbo->getHeight(); i+=line_spacing){
-            ofVec2f start_pos(0, i);
-            ofVec2f end_pos(fbo->getWidth(), i);
-            ofDrawLine(start_pos, end_pos);
+
+        int target_horizontal_rects_num = fbo->getWidth() / 20;
+        int target_vertical_rects_num = fbo->getHeight() / 20;
+        int current_horizontal_rects_num = ofMap(current_time, rects_start_time, rects_start_time+2, 0, target_horizontal_rects_num);
+        float rect_size = fbo->getWidth() / target_horizontal_rects_num;
+        
+        // forward animation
+        for (int y = 0; y < target_vertical_rects_num*2; y+=2){
+            for (int i = 0; i < current_horizontal_rects_num - y; i++){
+                ofVec2f pos(i * rect_size, y * rect_size);
+                ofDrawRectangle(pos.x, pos.y, rect_size, rect_size);
+            }
         }
-
-        int target_rects_num = fbo->getWidth() / 20;
-        int current_rects_num = ofMap(current_time, rects_start_time, rects_start_time+2, 0, target_rects_num);
-
-        cout << "current_rects_num: " << current_rects_num << endl;
-
-        float rect_size = fbo->getWidth() / target_rects_num;
-
-        // ofDrawRectangle(0 * rect_size, 0 * rect_size, rect_size, rect_size);
-        // ofDrawRectangle(1 * rect_size, 0 * rect_size, rect_size, rect_size);
-        // ofDrawRectangle(2 * rect_size, 0 * rect_size, rect_size, rect_size);
-
-        for (int i = 0; i < current_rects_num; i++){
-            ofDrawRectangle(i * rect_size, 0 * rect_size, rect_size, rect_size);
-        }
-        for (int i = 0; i < current_rects_num-1; i++){
-            ofDrawRectangle(i * rect_size, 1 * rect_size, rect_size, rect_size);
+        // backward animation
+        for (int y = 1; y < target_vertical_rects_num*2; y+=2){
+            for (int i = 0; i < current_horizontal_rects_num - y; i++){
+                ofVec2f pos((target_horizontal_rects_num - i) * rect_size, y * rect_size);
+                ofDrawRectangle(pos.x, pos.y, rect_size, rect_size);
+            }
         }
     }
 
+    else if (current_time >= rect_checkpoints[1]){
+
+        int colors[4] = {255, 255, 255, 255};
+
+        colors[0] = (current_time > rect_checkpoints[1] + 1) == true ? 0 : 255;
+        colors[1] = (current_time > rect_checkpoints[1] + 1.5) == true ? 0 : 255;
+        colors[2] = (current_time > rect_checkpoints[1] + 2.0) == true ? 0 : 255;
+        colors[3] = (current_time > rect_checkpoints[1] + 2.5) == true ? 0 : 255;
+
+        ofVec2f size(fbo->getWidth(), fbo->getHeight());
+
+        ofPushMatrix();
+        
+        ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
+
+        float scale_factor = ofMap(current_time, rect_checkpoints[1] + 1, rect_checkpoints[1] + 2, 1, 0.01, true);
+        ofScale(1, scale_factor, 1);
+
+        ofDrawRectangle(-size.x/2, -size.y/2, size.x, size.y);
+
+        cout << "scale factor: " << scale_factor << endl;
+
+        if (scale_factor <= 0.02){
+            CHECKPOINT_2 = true;
+        }
+        
+        ofPopMatrix();
+    }
     
+    ofPopStyle();
+}
+
+//--------------------------------------------------------------
+// 3
+//--------------------------------------------------------------
+void MovementISource::drawMovingCircles(float currentShowTime){
+    
+    // save the start time
+    if (!bars_started){
+        bars_start_time = currentShowTime;
+        bars_started = true;
+    }
+
+    // compute "local" time since the first time this function was called
+    float current_time = currentShowTime - bars_start_time;
+    float checkpoints[5] = {0, 1, 3, 25, 30};
+    
+    ofPushStyle();
+
+    // do different things based on current time
+    // scale and rotate the square 
+    if (current_time > checkpoints[0] && current_time < checkpoints[1]){
+        ofPushMatrix();
+        ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
+        
+        ofRotateZ(ofMap(current_time, checkpoints[0], checkpoints[1], 0, 90, true));
+        ofScale(1, 0.02, 1);
+        
+        ofVec2f size(fbo->getWidth(), fbo->getHeight());
+
+        ofDrawRectangle(-size.x/2, -size.y/2, size.x, size.y);
+        ofPopMatrix();
+    }
+    // bounce the balls
+    else if (current_time > checkpoints[1] && current_time < checkpoints[3]){
+
+        ofPushMatrix();
+        ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
+        ofSetCircleResolution(50);
+        
+        // replicate the center rectangle that we left in the previous checkpoint
+        ofRotateZ(90);
+        // animate the scale
+        float scale_factor = ofMap(current_time, checkpoints[1], checkpoints[2], 0.01, 0.85, true);
+        ofScale(1, scale_factor, 1);
+        
+        ofVec2f size(fbo->getWidth(), fbo->getHeight());
+
+        ofDrawRectangle(-size.x/2, -size.y/2, size.x, size.y);
+        ofPopMatrix();
+
+        // animate the size the of the circles
+        float circles_size = ofMap(scale_factor, 0.01, 0.85, 1, 40);
+        circles_size *= circles_size_multiplier;
+
+        // after they've appeared, make the two circles bounce!
+        // at each bounce, their radius gets smaller
+        // at each bounce, we reveal the other circle
+        if (current_time > checkpoints[2]){
+
+            // these variables have class scope! see setup()
+            ellipse_velocity += ellipse_acceleration;
+            ellipse_velocity.limit(9);
+            ellipse_1_pos += ellipse_velocity;
+            ellipse_2_pos += ellipse_velocity;
+
+            if (ellipse_1_pos.y > fbo->getHeight() - circles_size) {
+                ellipse_velocity.y *= -0.95;
+                show_left_ellipse = !show_left_ellipse;
+                circles_size_multiplier -= 0.1;
+                bounce_count++;
+            }
+            // else if (ellipse_1_pos.y < circles_size / 2){
+            //     ellipse_velocity.y *= -0.95;
+            //     show_left_ellipse = !show_left_ellipse;
+            // }
+        }
+        // show only one ball at a time
+        int color_1;
+        int color_2;
+        if (bounce_count < 10){
+            ofPushMatrix();
+                ofTranslate(ellipse_1_pos.x, ellipse_1_pos.y, 0);
+                color_1 = (show_left_ellipse == true) ? 255 : 0;
+                ofSetColor(color_1);
+                ofDrawCircle(0, 0, circles_size, circles_size);
+            ofPopMatrix();
+            ofPushMatrix();
+                color_2 = (show_left_ellipse == true) ? 0 : 255;
+                ofSetColor(color_2);
+                ofTranslate(ellipse_2_pos.x, ellipse_2_pos.y, 0);
+                ofDrawCircle(0, 0, circles_size, circles_size);
+            ofPopMatrix();
+        }
+    }
+    else if (current_time > checkpoints[3] && current_time < checkpoints[4]){
+        // replicate the center rectangle that we left in the previous checkpoint
+        ofPushMatrix();
+        ofDrawRectangle(fbo->getWidth()/4, 0, fbo->getWidth()/2, fbo->getHeight());
+        ofPopMatrix();
+    }
     ofPopStyle();
 }
 
