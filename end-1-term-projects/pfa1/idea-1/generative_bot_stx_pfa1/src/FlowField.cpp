@@ -92,7 +92,7 @@ ofVec2f FlowField::computeAttraction(Boid * boid){
                     attraction.set(cos(angle), sin(angle));
                     attraction *= 0.5f;
                     ofVec2f steering = attraction - boid->getVelocity();
-                    steering.limit(boid->MAX_STEER);
+                    steering.limit(boid->max_steer);
                     return steering;
                 }
             }

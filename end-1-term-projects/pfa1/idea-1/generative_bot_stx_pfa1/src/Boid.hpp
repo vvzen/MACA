@@ -37,9 +37,9 @@ class Boid {
         ofVec2f computeCohesion(vector<Boid *> boids);
         void flock(vector<Boid *> boids, float alignMultiplier, float sepMultiplier, float sepDistance);
     
-        static float MAX_FORCE;
-        static float MAX_STEER;
-        static float MAX_SPEED;
+        static float max_force;
+        static float max_steer;
+        static float max_speed;
     
     private:
     
