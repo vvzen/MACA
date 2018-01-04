@@ -29,10 +29,10 @@ class MovementISource : public ofx::piMapper::FboSource {
         // timing
         float show_start_time;
         float current_show_time;
-        bool CHECKPOINT_1 = true;
+        bool CHECKPOINT_1 = false;
         // determines the timing of the intro rectangles
         int intro_time_multiplier;
-        bool CHECKPOINT_2 = true;
+        bool CHECKPOINT_2 = false;
         float lines_start_time;
         bool lines_started = false;
         float rects_start_time;

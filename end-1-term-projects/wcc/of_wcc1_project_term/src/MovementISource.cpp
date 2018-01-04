@@ -371,7 +371,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - bars_start_time;
     float checkpoints[4] = {0, 1, 3, 22};
-    float lines_checkpoints[5] = {22, 24, 26, 28, 40};
+    float lines_checkpoints[7] = {22, 24, 26, 28, 36, 40, 50};
     
     ofPushStyle();
 
@@ -454,33 +454,39 @@ void MovementISource::drawMovingCircles(float currentShowTime){
             ball_disappeared = true;
         }
     }
-    else if (ball_disappeared && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[4]){
+    else if (ball_disappeared && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
 
-        ofSetLineWidth(10);
+        ofSetLineWidth(8);
         ofDrawLine(0, fbo->getHeight(), 0, 0);
         // animate lines coming up from the bottom
-        float animated_y = ofMap(current_time, lines_checkpoints[0], lines_checkpoints[1], fbo->getHeight(), 0, true);
-        
-        ofVec2f line_1_pos(1 * fbo->getWidth()/4, animated_y);
-        ofVec2f line_2_pos(2 * fbo->getWidth()/4, animated_y);
-        ofVec2f line_3_pos(3 * fbo->getWidth()/4, animated_y);
-        ofVec2f line_4_pos(4 * fbo->getWidth()/4, animated_y);
+        float animated_y_head = ofMap(current_time, lines_checkpoints[0], lines_checkpoints[1], fbo->getHeight(), 0, true);
+        float animated_y_tail = fbo->getHeight();
+        float animated_x = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, fbo->getWidth(), true);
+
         // slide the lines at the opposite sides
         // if (current_time >= lines_checkpoints[1] && current_time < lines_checkpoints[2]){
         //     line_1_pos.x = ofMap(current_time, lines_checkpoints[1], lines_checkpoints[2], 1 * fbo->getWidth()/4, 0, true);
         //     line_3_pos.x = ofMap(current_time, lines_checkpoints[1], lines_checkpoints[2], 3 * fbo->getWidth()/4, fbo->getWidth(), true);
         // }
-        // break the 2d barriers!
+        // break the 2D barriers!
         if (current_time >= lines_checkpoints[2]){
-            float rotate_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, 80, true);
+            float rotate_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, 86, true);
             float move_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, fbo->getHeight()/2, true);
             ofTranslate(0, move_amount, 0);
             ofRotateX(rotate_amount);
+            // animate lines growing on the fake z axis
+            if (current_time >= lines_checkpoints[3]){
+                float time_offset = 1;
+                animated_y_head = ofMap(current_time, lines_checkpoints[3] + time_offset, lines_checkpoints[4] + time_offset, 0, -fbo->getHeight()*1000, true);
+                animated_y_tail = ofMap(current_time, lines_checkpoints[3] + time_offset, lines_checkpoints[4] + time_offset, fbo->getHeight(), -fbo->getHeight()*100, true);
+            }
         }
-        ofDrawLine(line_1_pos.x, fbo->getHeight(), 1 * fbo->getWidth()/4, line_1_pos.y);
-        ofDrawLine(line_2_pos.x, fbo->getHeight(), 2 * fbo->getWidth()/4, line_2_pos.y);
-        ofDrawLine(line_3_pos.x, fbo->getHeight(), 3 * fbo->getWidth()/4, line_3_pos.y);
-        ofDrawLine(line_4_pos.x, fbo->getHeight(), 4 * fbo->getWidth()/4, line_4_pos.y);
+        // draw the lines
+        int num_of_lines = 16;
+        float line_spacing_x = fbo->getWidth() / num_of_lines;
+        for (int i = 0; i < num_of_lines; i++){
+            ofDrawLine(i * line_spacing_x, animated_y_tail, i * line_spacing_x, animated_y_head);
+        }
     }
     ofPopStyle();
 }
