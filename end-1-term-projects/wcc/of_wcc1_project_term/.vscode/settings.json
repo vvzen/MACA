@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "algorithm": "cpp",
+        "__split_buffer": "cpp",
+        "initializer_list": "cpp",
+        "iterator": "cpp",
+        "string": "cpp",
+        "utility": "cpp",
+        "vector": "cpp",
+        "memory": "cpp"
+    }
+}
