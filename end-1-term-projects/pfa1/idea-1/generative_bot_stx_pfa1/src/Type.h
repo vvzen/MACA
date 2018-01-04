@@ -10,7 +10,7 @@
 #include "ofMain.h"
 
 // we don't need a full class, so we're
-// just using a struct to properties of each word
+// just using a struct to host properties of each word
 struct Word {
     ofVec2f pos;
     ofVec2f size;
