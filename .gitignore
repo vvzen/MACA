@@ -6,6 +6,7 @@
 escape
 torno-subito
 *.zip
+*.DS_Store
 
 # python stuff
 *.pyc
