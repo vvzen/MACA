@@ -31,6 +31,7 @@ void MovementISource::setup(){
     ellipse_acceleration= ofVec2f(0, 0.09);
     circles_size_multiplier = 1;
     bounce_count = 0;
+    center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
 }
 
 //--------------------------------------------------------------
@@ -47,6 +48,17 @@ void MovementISource::reset(){
     // initialise time at the start of source
     show_start_time = ofGetElapsedTimeMillis();
     ofClear(0); // uncomment if you want canvas to be reset on the buffer when fbo source is called again
+
+    // reset all timing variables
+    current_show_time = (ofGetElapsedTimef() - show_start_time);;
+    CHECKPOINT_1 = true;
+    CHECKPOINT_2 = true;
+    lines_started = false;
+    rects_started = false;
+    CHECKPOINT_3 = false;
+    bars_started = false;
+    show_left_ellipse = false;
+    ball_disappeared = false;
 }
 
 // No need to take care of fbo.begin() and fbo.end() here.
@@ -358,7 +370,8 @@ void MovementISource::drawMovingCircles(float currentShowTime){
 
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - bars_start_time;
-    float checkpoints[5] = {0, 1, 3, 25, 30};
+    float checkpoints[4] = {0, 1, 3, 22};
+    float lines_checkpoints[5] = {22, 24, 26, 28, 40};
     
     ofPushStyle();
 
@@ -377,7 +390,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         ofPopMatrix();
     }
     // bounce the balls
-    else if (current_time > checkpoints[1] && current_time < checkpoints[3]){
+    else if (current_time > checkpoints[1] && current_time < checkpoints[3] && !ball_disappeared){
 
         ofPushMatrix();
         ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
@@ -388,14 +401,13 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         // animate the scale
         float scale_factor = ofMap(current_time, checkpoints[1], checkpoints[2], 0.01, 0.85, true);
         ofScale(1, scale_factor, 1);
-        
-        ofVec2f size(fbo->getWidth(), fbo->getHeight());
 
-        ofDrawRectangle(-size.x/2, -size.y/2, size.x, size.y);
+        ofDrawRectangle(-center_rect_size.x/2, -center_rect_size.y/2, center_rect_size.x, center_rect_size.y);
         ofPopMatrix();
 
         // animate the size the of the circles
         float circles_size = ofMap(scale_factor, 0.01, 0.85, 1, 40);
+        float circles_size_squash_deformer = ofMap(ellipse_1_pos.y, fbo->getHeight(), fbo->getHeight()/2, 0.2, 1.5);
         circles_size *= circles_size_multiplier;
 
         // after they've appeared, make the two circles bounce!
@@ -413,6 +425,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
                 ellipse_velocity.y *= -0.95;
                 show_left_ellipse = !show_left_ellipse;
                 circles_size_multiplier -= 0.1;
+                center_rect_size.y /= 1.5;
                 bounce_count++;
             }
             // else if (ellipse_1_pos.y < circles_size / 2){
@@ -428,21 +441,46 @@ void MovementISource::drawMovingCircles(float currentShowTime){
                 ofTranslate(ellipse_1_pos.x, ellipse_1_pos.y, 0);
                 color_1 = (show_left_ellipse == true) ? 255 : 0;
                 ofSetColor(color_1);
-                ofDrawCircle(0, 0, circles_size, circles_size);
+                ofDrawCircle(0, 0, circles_size, circles_size * circles_size_squash_deformer);
             ofPopMatrix();
             ofPushMatrix();
                 color_2 = (show_left_ellipse == true) ? 0 : 255;
                 ofSetColor(color_2);
                 ofTranslate(ellipse_2_pos.x, ellipse_2_pos.y, 0);
-                ofDrawCircle(0, 0, circles_size, circles_size);
+                ofDrawCircle(0, 0, circles_size, circles_size * circles_size_squash_deformer);
             ofPopMatrix();
         }
+        else {
+            ball_disappeared = true;
+        }
     }
-    else if (current_time > checkpoints[3] && current_time < checkpoints[4]){
-        // replicate the center rectangle that we left in the previous checkpoint
-        ofPushMatrix();
-        ofDrawRectangle(fbo->getWidth()/4, 0, fbo->getWidth()/2, fbo->getHeight());
-        ofPopMatrix();
+    else if (ball_disappeared && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[4]){
+
+        ofSetLineWidth(10);
+        ofDrawLine(0, fbo->getHeight(), 0, 0);
+        // animate lines coming up from the bottom
+        float animated_y = ofMap(current_time, lines_checkpoints[0], lines_checkpoints[1], fbo->getHeight(), 0, true);
+        
+        ofVec2f line_1_pos(1 * fbo->getWidth()/4, animated_y);
+        ofVec2f line_2_pos(2 * fbo->getWidth()/4, animated_y);
+        ofVec2f line_3_pos(3 * fbo->getWidth()/4, animated_y);
+        ofVec2f line_4_pos(4 * fbo->getWidth()/4, animated_y);
+        // slide the lines at the opposite sides
+        // if (current_time >= lines_checkpoints[1] && current_time < lines_checkpoints[2]){
+        //     line_1_pos.x = ofMap(current_time, lines_checkpoints[1], lines_checkpoints[2], 1 * fbo->getWidth()/4, 0, true);
+        //     line_3_pos.x = ofMap(current_time, lines_checkpoints[1], lines_checkpoints[2], 3 * fbo->getWidth()/4, fbo->getWidth(), true);
+        // }
+        // break the 2d barriers!
+        if (current_time >= lines_checkpoints[2]){
+            float rotate_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, 80, true);
+            float move_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, fbo->getHeight()/2, true);
+            ofTranslate(0, move_amount, 0);
+            ofRotateX(rotate_amount);
+        }
+        ofDrawLine(line_1_pos.x, fbo->getHeight(), 1 * fbo->getWidth()/4, line_1_pos.y);
+        ofDrawLine(line_2_pos.x, fbo->getHeight(), 2 * fbo->getWidth()/4, line_2_pos.y);
+        ofDrawLine(line_3_pos.x, fbo->getHeight(), 3 * fbo->getWidth()/4, line_3_pos.y);
+        ofDrawLine(line_4_pos.x, fbo->getHeight(), 4 * fbo->getWidth()/4, line_4_pos.y);
     }
     ofPopStyle();
 }

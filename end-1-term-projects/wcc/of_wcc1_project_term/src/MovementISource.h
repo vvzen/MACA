@@ -10,8 +10,6 @@ class MovementISource : public ofx::piMapper::FboSource {
 		void draw();
 
         void setName(string);
-        void setupBalls();
-        void updateBalls();
         void reset();
 
         bool show_calibration_grid;
@@ -43,8 +41,10 @@ class MovementISource : public ofx::piMapper::FboSource {
         float bars_start_time;
         bool bars_started = false;
         bool show_left_ellipse = false;
+        bool ball_disappeared = false;
 
         // checkpoint 3
+        ofVec2f center_rect_size;
         ofVec2f ellipse_1_pos;
         ofVec2f ellipse_2_pos;
         ofVec2f ellipse_velocity;
