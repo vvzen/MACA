@@ -606,16 +606,18 @@ void MovementISource::drawColouredLines(float currentShowTime){
     ofPopMatrix();
     ofDisableBlendMode();
 
+    ofEnableAlphaBlending();
+
     // slowly fade in a rect from the background
     if (num_rects_h_4 > 10 && !bg_started_fade){
         white_bg_fade_in_time = current_time;
         bg_started_fade = true;
     }
     if (bg_started_fade){
-        cout << "and there " << endl;
         float duration = 6;
-        float center_color = ofMap(current_time, white_bg_fade_in_time, white_bg_fade_in_time + duration, 0, 255, true);
-        float sides_color = ofMap(current_time, white_bg_fade_in_time, white_bg_fade_in_time + duration, 255, 0, true);
+        float animated_alpha = ofMap(current_time, white_bg_fade_in_time, white_bg_fade_in_time + duration, 0, 255, true);
+        ofColor center_color(255, 255, 255, animated_alpha);
+        ofColor sides_color(0, 0, 0, animated_alpha);
         ofSetColor(center_color);
         ofDrawRectangle(fbo->getWidth()/4, 0, fbo->getWidth()/2, fbo->getHeight());
         
@@ -623,6 +625,8 @@ void MovementISource::drawColouredLines(float currentShowTime){
         ofDrawRectangle(0, 0, fbo->getWidth()/4, fbo->getHeight());
         ofDrawRectangle(fbo->getWidth()*3/4, 0, fbo->getWidth()/4, fbo->getHeight());
     }
+
+    ofDisableAlphaBlending();
 
     ofPopMatrix();
     ofPopStyle();
