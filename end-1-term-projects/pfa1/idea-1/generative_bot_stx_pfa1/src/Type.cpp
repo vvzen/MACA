@@ -62,6 +62,7 @@ void render_typography(ofFbo & fbo, vector<Word> words, ofTrueTypeFont & font, b
 
     ofPushStyle();
     ofClear(0);
+    ofSetColor(255);
     // if requested, put the artwork in portrait mode
     if (vertical){
         ofTranslate(fbo.getWidth()/2, fbo.getHeight()/2);

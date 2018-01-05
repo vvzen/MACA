@@ -15,8 +15,9 @@ void ofApp::setup(){
     APP_RUNTIME_MS = int(ofRandom(6, 10)) * 60 * 1000; // ms * 1000 = seconds
 
     // GENERAL GRAPHICS VARIABLES INIT
+    save_animation = false;
     dark_mode = true;
-    bw_mode = false;
+    bw_mode = true;
     bg_color = (dark_mode == true) ? 5 : 255;
     // starting_hue = (bw_mode == true) ? 0 : ofRandom(255);
     // starting_hue = (bw_mode == true) ? 0 : 170.593;
@@ -168,7 +169,7 @@ void ofApp::update(){
     // close app after it has been running for the requested time
     if(ofGetElapsedTimeMillis() >= APP_RUNTIME_MS){
         cout << "closing app" << endl;
-        save_fbo_image("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".jpg");
+        save_fbo_image("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".tif");
         ofExit();
     }
 }
@@ -236,6 +237,12 @@ void ofApp::draw(){
     // gui
     if (show_gui){
         gui.draw();
+    }
+
+    // animation
+    if (save_animation){
+        string filename = "output/animation/screen_anim_" + ofToString(ofGetFrameNum()) + ".jpg";
+        ofSaveScreen(filename);
     }
     
     // DEBUG

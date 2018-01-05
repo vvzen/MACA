@@ -41,6 +41,7 @@ class ofApp : public ofBaseApp{
         bool dark_mode;
         float bg_color;
         float starting_hue;
+        bool save_animation;
 
         // TYPE
 		vector <Word> created_words;
