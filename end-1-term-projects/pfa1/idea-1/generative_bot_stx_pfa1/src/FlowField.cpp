@@ -2,7 +2,7 @@
 //  FlowField.cpp
 //  generative_bot_soh
 //
-//  Created by Valerio Viperino on 02/09/16.
+//  Created by Valerio Viperino
 //
 //
 

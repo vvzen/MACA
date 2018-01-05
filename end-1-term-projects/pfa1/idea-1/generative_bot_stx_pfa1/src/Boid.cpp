@@ -2,7 +2,7 @@
 //  Boid.cpp
 //  generative_bot_ftx
 //
-//  Created by Valerio Viperino on 03/09/16.
+//  Created by Valerio Viperino
 //
 //
 

@@ -7,13 +7,7 @@
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 #include "ofxJSON.h"
-
-struct Word {
-    ofVec2f pos;
-    ofVec2f size;
-	int frequency;
-    string text;
-};
+#include "Type.h"
 
 class ofApp : public ofBaseApp{
 
@@ -37,17 +31,17 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
         void update_GUI_with_JSON_args(ofxJSONElement jsonFile);
-        void saveFBOImage(string path);
+        void save_fbo_image(string path);
 
         // command line arguments
         vector<string> arguments;
-        string argumentsAsString;
         
         // GRAPHICS
         bool bw_mode; // black & white mode
         bool dark_mode;
         float bg_color;
         float starting_hue;
+        bool save_animation;
 
         // TYPE
 		vector <Word> created_words;
@@ -68,28 +62,27 @@ class ofApp : public ofBaseApp{
         // GUI
         bool show_gui;
         ofxPanel gui;
-        ofParameter<float> noiseXSpeedGUI;
-        ofParameter<float> noiseYSpeedGUI;
-        ofParameter<float> cellSizeGUI;
-        ofParameter<float> alignmentAmountGUI, separationAmountGUI;
-        ofParameter<float> separationThresholdDistanceGUI;
-        ofParameter<float> maxForceGUI, maxSteerGUI, maxSpeedGUI;
-        ofParameter<float> fieldAttractionGUI;
-        ofParameter<bool> shouldRenderGridGUI;
-        ofParameter<bool> shouldRenderFearAreasGUI;
-        ofParameter<bool> shouldClearCanvasGUI;
-        ofParameter<bool> shouldShowFearTextGUI;
+        ofParameter<float> noise_x_speed_GUI;
+        ofParameter<float> noise_y_speed_GUI;
+        ofParameter<float> cell_size_GUI;
+        ofParameter<float> alignment_amount_GUI, separation_amount_GUI;
+        ofParameter<float> separation_threshold_distance_GUI;
+        ofParameter<float> max_force_GUI, max_steer_GUI, max_speed_GUI;
+        ofParameter<float> field_attraction_GUI;
+        ofParameter<bool> render_grid_GUI;
+        ofParameter<bool> clear_canvas_GUI;
+        ofParameter<bool> show_fear_text_GUI;
     
         // Listeners
-        void changedFieldParams(float & value);
-        void changedBoolParam(bool & value);
-        
+        void changed_field_param(float & value);
+        void changed_bool_param(bool & value);
+
         // Flow field
-        FlowField flowField;
+        FlowField flow_field;
     
         // Boids
-        vector<Boid *> boids;
         int BOIDS_NUM;
+        vector<Boid *> boids;
         ofFbo boids_fbo;
     
         // Boids areas of fear
@@ -98,25 +91,14 @@ class ofApp : public ofBaseApp{
     
         // XML
         // Used for drawing settings
-        ofxXmlSettings xmlSettings;
-        // Used to store cmd line args
-        ofxXmlSettings argsXml;
+        ofxXmlSettings xml_settings;
     
         // JSON
-        ofxJSONElement jsonArguments;
-        ofxJSONElement jsonFearWords;
+        ofxJSONElement json_arguments;
     
         // Time
-        float startTime;
-        float elapsedTime;
         float APP_RUNTIME_MS;
     
         // Debug
         const bool DEBUG_JSON = false;
-        const bool DEBUG_BOIDS = false;
-        const bool SHOW_FEAR_AREAS = false;
-        const bool USE_FEAR_AREAS = false;
-        float timeLived = 0.0f;
-    
-        bool mouseIsPressed = false;
 };
