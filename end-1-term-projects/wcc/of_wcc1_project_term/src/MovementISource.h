@@ -23,6 +23,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         void drawMovingLines(float currentShowTime);
         // 3
         void drawMovingCircles(float currentShowTime);
+        int findBiggestSquareToEvenlyFitRect(int w, int h);
         // 4
         void drawColouredLines(float currentShowTime);
         // events
@@ -34,7 +35,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         // timing
         float show_start_time;
         float current_show_time;
-        bool CHECKPOINT_1 = false;
+        bool CHECKPOINT_1 = true;
         // determines the timing of the intro rectangles
         int intro_time_multiplier;
         bool CHECKPOINT_2 = false;
@@ -47,6 +48,8 @@ class MovementISource : public ofx::piMapper::FboSource {
         bool bars_started = false;
         bool show_left_ellipse = false;
         bool ball_disappeared = false;
+        bool quads_started = false;
+        float quads_start_time;
         bool CHECKPOINT_4 = false;
         float coloured_lines_start_time;
         bool coloured_lines_started = false;
@@ -61,6 +64,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         ofVec2f ellipse_acceleration;
         float circles_size_multiplier;
         unsigned int bounce_count;
+        float quad_size; 
 
         // checkpoint 4
         int num_rects_h_1;

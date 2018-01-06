@@ -23,6 +23,10 @@ void MovementISource::init_vars(){
     bounce_count = 0;
     center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
 
+    // checkpoint 3
+    quads_started = false;
+    quad_size = findBiggestSquareToEvenlyFitRect(int(fbo->getWidth() / 4), int(fbo->getHeight()));
+
     // checkpoint 4
     num_rects_h_1 = 0;
     num_rects_h_2 = 0;
@@ -245,15 +249,19 @@ void MovementISource::drawMovingLines(float currentShowTime){
     // lines animation
     else if (current_time > lines_checkpoints[0] && current_time < lines_checkpoints[2]){
 
-        ofSetLineWidth(2);
         ofSetColor(255);
 
         // growing lines + growing rectangles
         // vertical
         float time_multiplier = 0.15;
 
+        float lines_width;
+
         for (int i = 0; i < fbo->getWidth(); i+=line_spacing){
             float time_offset = (i / line_spacing) * time_multiplier;
+            // set width
+            lines_width = ofMap(i, 0, fbo->getWidth(), 1, 7, true);
+            ofSetLineWidth(lines_width);
             ofVec2f start_pos(i, fbo->getHeight());
             ofVec2f end_pos(i, ofMap(current_time, lines_checkpoints[0] + time_offset, lines_checkpoints[1] + time_offset, fbo->getHeight(), 0, true));
             ofDrawLine(start_pos, end_pos);
@@ -263,6 +271,9 @@ void MovementISource::drawMovingLines(float currentShowTime){
         time_multiplier = 0.25;
         for (int i = 0; i < fbo->getHeight(); i+=line_spacing){
             float time_offset = (i / line_spacing) * time_multiplier;
+            // set width
+            lines_width = ofMap(i, 0, fbo->getHeight(), 7, 1, true);
+            ofSetLineWidth(lines_width);
             ofVec2f start_pos(0, i);
             ofVec2f end_pos(ofMap(current_time, lines_checkpoints[0] + time_offset, lines_checkpoints[1] + time_offset, 0, fbo->getWidth(), true), i);
             ofDrawLine(start_pos, end_pos);
@@ -278,6 +289,7 @@ void MovementISource::drawMovingLines(float currentShowTime){
             if (!rects_started){
                 rects_start_time = current_time;
                 rects_started = true;
+                ofSetLineWidth(2);
             }
         }
     }
@@ -408,6 +420,44 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         ofDrawRectangle(-center_rect_size.x/2, -center_rect_size.y/2, center_rect_size.x, center_rect_size.y);
         ofPopMatrix();
 
+        // when the center animation is finished, start the quads one
+        if (scale_factor >= 0.85 && !quads_started){
+            quads_started = true;
+            quads_start_time = current_time;
+        }
+
+        
+
+        // TODO: left and right panels: animate quads appearing from bottom and fading
+        // TODO: center panels: dissolve quads
+
+        if (quads_started){
+
+            cout << "minimum quad size to fill " << fbo->getWidth()/4 << "x" << fbo->getHeight() << " is " << quad_size << endl;
+
+            int num_quads_x = fbo->getWidth() / quad_size;
+            int num_quads_y = fbo->getHeight() / quad_size;
+            
+            ofPushMatrix();
+            // quads fade in duration
+            int duration = 0.5;
+            float quads_color;
+
+            ofTranslate(0, fbo->getHeight() - quad_size);
+
+            for (int i = 0; i < num_quads_y; i++){
+                quads_color = ofMap(current_time, quads_start_time, quads_start_time + duration + i, 0, 255, true);
+                float scale = ofMap(current_time, quads_start_time, quads_start_time + duration + i, 0.1, 1, true);
+                ofSetColor(quads_color);
+                ofTranslate(0, -quad_size, 0);
+                ofDrawRectangle(0, 0, quad_size * scale, quad_size * scale);
+            }
+
+            ofPopMatrix();
+        }
+
+
+        /*
         // animate the size the of the circles
         float circles_size = ofMap(scale_factor, 0.01, 0.85, 1, 40);
         float circles_size_squash_deformer = ofMap(ellipse_1_pos.y, fbo->getHeight(), fbo->getHeight()/2, 0.2, 1.5);
@@ -456,6 +506,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         else {
             ball_disappeared = true;
         }
+        */
     }
     else if (ball_disappeared && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
 
@@ -465,7 +516,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         float animated_y_head = ofMap(current_time, lines_checkpoints[0], lines_checkpoints[1], fbo->getHeight(), 0, true);
         float animated_y_tail = fbo->getHeight();
 
-        // break the 2D barriers!
+        // break the 2D barriers! rotate around X axis
         if (current_time >= lines_checkpoints[2]){
             float rotate_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, 86, true);
             float move_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, fbo->getHeight()/2, true);
@@ -516,7 +567,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
     float max_y_rect_size = 12;
     float size_x;
     float size_y;
-    int lines_x_step = (fbo->getWidth() / 4) / max_x_rect_size;
+    // int lines_x_step = (fbo->getWidth() / 4) / max_x_rect_size;
     int lines_y_step = fbo->getHeight() / max_y_rect_size;
 
     // colors
@@ -632,6 +683,56 @@ void MovementISource::drawColouredLines(float currentShowTime){
     ofPopStyle();
 }
 
+//--------------------------------------------------------------
+// MATHS
+//--------------------------------------------------------------
+// this algorithm takes a width and a height and returns
+// the length of the side of the biggest square that can be repeated
+// in order to fill up the width x height rectangle evenly
+// 
+//  __ __ __
+// |__|__|__|
+// |__|__|LL| <-- this 1x1 square is the biggest one able to fill this 3x2 rectangle evenly
+ 
+int MovementISource::findBiggestSquareToEvenlyFitRect(int w, int h){
+
+    // DIVIDE AND CONQUER
+    // 1. we do this only at the start: get the smallest side of our 2 sides.
+    // 2. we create a new side equal to the modulo of the biggest side by the smallest side.
+    //    is this new side a multiple of the biggest one?
+    //       yes -> this one is the side of the square we're looking for!
+    //       no  -> we start again: the biggest side will be the current smallest side
+    //              and the smallest side will be our new side
+
+    cout << "starting... " << w << "x" << h << endl;
+
+    int target_side;
+    int smallest_side = (w > h) ? h : w;
+    int previous_smallest_side = (w > h) ? w : h;
+
+    // recursion is nice for the programmer but evil for the memory (can lead to stack overflow)
+    // we'll use a while loop
+    while (true){
+        
+
+        target_side = previous_smallest_side % smallest_side; // 1: 1680 % 640 = 400; 2: 640 % 400 = 160;
+
+        cout << "smallest side:          " << smallest_side << endl;
+        cout << "previous smallest side: " << previous_smallest_side << endl;
+        cout << "target side:            " << target_side << endl;
+
+        if (previous_smallest_side % target_side == 0){ // 1: 1680 % 400 == 0 ? NO; 640 % 160 == 0? YES;
+            cout << "found target side: " << target_side << "!" << endl;
+            return target_side;
+        }
+        previous_smallest_side = smallest_side; // 1: 640;
+        smallest_side = target_side; // 1: 400;
+
+        if (target_side == 0){
+            return -1;
+        }
+    }
+}
 
 //--------------------------------------------------------------
 // EVENTS

@@ -16,9 +16,9 @@ void ofApp::setup(){
     // bouncingBallsSource->setup();
     // piMapper.registerFboSource(bouncingBallsSource);
 
-    movingRectSource = new MovingRectSource();
-    movingRectSource->setup();
-    piMapper.registerFboSource(movingRectSource);
+    // movingRectSource = new MovingRectSource();
+    // movingRectSource->setup();
+    // piMapper.registerFboSource(movingRectSource);
 
     // register the source for the first movement
     movementISource = new MovementISource();
