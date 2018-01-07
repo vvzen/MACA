@@ -1,12 +1,12 @@
 //
-//  FlowField.cpp
+//  flowField.cpp
 //  generative_bot_soh
 //
 //  Created by Valerio Viperino
 //
 //
 
-#include "FlowField.hpp"
+#include "flowField.hpp"
 #include "ofApp.h"
 
 // constructor

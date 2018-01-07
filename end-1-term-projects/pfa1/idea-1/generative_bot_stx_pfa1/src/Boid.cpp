@@ -1,5 +1,5 @@
 //
-//  Boid.cpp
+//  boid.cpp
 //  generative_bot_ftx
 //
 //  Created by Valerio Viperino

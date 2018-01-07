@@ -2,6 +2,9 @@
 #include "Type.h"
 
 //--------------------------------------------------------------
+// This function generates the positions for each word
+// from the given json array
+//--------------------------------------------------------------
 vector<Word> generate_typography(ofxJSONElement jsonSource, ofTrueTypeFont & font, float verticalSize, bool vertical){
 
     vector <Word> words;
@@ -55,6 +58,8 @@ vector<Word> generate_typography(ofxJSONElement jsonSource, ofTrueTypeFont & fon
     return words;
 }
 
+//--------------------------------------------------------------
+// Renders the given words to the given fbo
 //--------------------------------------------------------------
 void render_typography(ofFbo & fbo, vector<Word> words, ofTrueTypeFont & font, bool vertical){
 

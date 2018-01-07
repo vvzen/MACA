@@ -1,5 +1,5 @@
 //
-//  FlowField.hpp
+//  flowField.hpp
 //  generative_bot_soh
 //
 //  Created by Valerio Viperino on 02/09/16.
