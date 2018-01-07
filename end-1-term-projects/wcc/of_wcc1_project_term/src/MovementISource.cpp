@@ -536,14 +536,15 @@ void MovementISource::drawFadingQuads(float currentShowTime){
             // cout << "elapsed time: " << current_time - white_quads_start_time << endl;
 
             ofSetColor(255);
+            duration = 0.4f;
             // ofDrawRectangle(0, 0, fbo->getWidth(), fbo->getHeight());
 
             // fade out to black using the same technique
             // but now from top to bottom
-            for (int x = 0; x < fbo->getWidth(); x+=quad_size){
-                for (int y = 0, i = 0; y < fbo->getHeight(); y+=quad_size, i++){
+            for (int x = 0, i = 0; x < fbo->getWidth(); x+=quad_size, i++){
+                for (int y = 0; y < fbo->getHeight(); y+=quad_size){
                     
-                    time_offset = (x * 0.001) + (y * y_time_offset_multiplier);
+                    time_offset = (x * x_time_offset_multiplier) + (y * y_time_offset_multiplier * 0.1);
                     // if (i % 2 == 0){
                     //     time_offset += 0.25;        
                     // }
@@ -555,12 +556,8 @@ void MovementISource::drawFadingQuads(float currentShowTime){
 
                     ofPushMatrix();
                         ofTranslate(x, y, 0);
-                        // ofPushMatrix();
-                            // ofTranslate(quad_size/2, quad_size/2, 0);
+                        
                         ofRotateX(rotation_animated);
-                        // ofPopMatrix();
-                        // ofRotateY(rotation_animated);
-                        // ofRotateZ(rotation_animated);
 
                         ofSetColor(quads_color);
                         ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
