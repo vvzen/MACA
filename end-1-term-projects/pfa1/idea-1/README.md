@@ -37,17 +37,18 @@ Running the project
 ---------
 
 In order to run the project on your machine, you must do the openframeworks magic.. 
-    1. create a new project using the of project generator
+
+1. create a new project using the of project generator
     ![generate_project](generate_project.png)
-    2. add *ofxGUI*, *ofxJSON*, *ofxXMLSettings* as addons
-    3. in the src folder of your generated project, add all the source files contained in the src folder of this repository. 
-    
-    	![src_files.png](src_files.png)
-    4. add all the files from the *bin/data* folder into your new project *bin/data* folder.
-    ![bin_data](bin_data.png)
-    5. compile!
-To build the project using the **make** system, just go into the folder of your new project and type:
-    ```make && make RunRelease```
+2. add *ofxGUI*, *ofxJSON*, *ofxXMLSettings* as addons
+3. in the src folder of your generated project, add all the source files contained in the src folder of this repository. 
+
+![src_files.png](src_files.png)
+4. add all the files from the *bin/data* folder into your new project *bin/data* folder.
+
+![bin_data](bin_data.png)
+5. compile!
+    To build the project using the **make** system, just go into the folder of your new project and type: ```make && make RunRelease```
 
 ## Other infos
 The current project was built using **of_v0.9.8_osx_release** and **make**.
