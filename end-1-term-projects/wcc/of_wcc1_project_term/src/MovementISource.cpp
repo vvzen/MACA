@@ -446,6 +446,8 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         float quads_color;
         float time_offset = 0.0f;
         float duration = 0.8f;
+        int num_x_quads = fbo->getWidth()/4 / quad_size;
+        int num_y_quads = fbo->getHeight() / quad_size;
 
         ofPushMatrix();
         
@@ -458,11 +460,16 @@ void MovementISource::drawMovingCircles(float currentShowTime){
             for (int x = 0; x < fbo->getWidth()/4; x+=quad_size){
                 for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
                     
-                    time_offset = (x * 0.004) + (y * 0.008);
+                    float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
+                    time_offset = (x * 0.004) + (y_time_shift * 0.008);
                     // animate color, scale, rotation
-                    quads_color = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
-                    float scale_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 0.001, 1, true);
-                    float rotation_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 90, 0, true);
+                    float start_time = quads_start_time + time_offset;
+                    float end_time = quads_start_time + time_offset + duration;
+                    float end_time_color = quads_start_time + time_offset + (duration * 1.3);
+
+                    quads_color = ofMap(current_time, start_time, end_time_color, 0, 255, true);
+                    float scale_animated = ofMap(current_time, start_time, end_time, 0.001, 1, true);
+                    float rotation_animated = ofMap(current_time, start_time, end_time, 90, 0, true);
 
                     ofPushMatrix();
                     ofTranslate(x, y, 0);
@@ -470,14 +477,13 @@ void MovementISource::drawMovingCircles(float currentShowTime){
 
                     ofSetColor(quads_color);
                     ofDrawRectangle(-quad_size, 0, quad_size * scale_animated, quad_size * scale_animated);
-                    // ofDrawRectangle(0, 0, quad_size, quad_size);
-                    // time_offset += 0.004f;
 
-                    // when we're done
-                    // if (i == 1 && y <= quad_size && x >= fbo->getWidth()/4 - quad_size){
-                    //     quads_ended = true;
-                    // }
-
+                    // check when we're done
+                    if (x >= fbo->getWidth()/4 - quad_size && y <= quad_size){
+                        if (quads_color == 255 && scale_animated == 1 && rotation_animated == 0){
+                            quads_ended = true;
+                        }
+                    }
                     ofPopMatrix();
                 }
             }
@@ -490,9 +496,10 @@ void MovementISource::drawMovingCircles(float currentShowTime){
             for (int x = fbo->getWidth()/4; x >= 0; x-=quad_size){
                 for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
                     
-                    // make quads appear slowly from right
-                    float x_time_shift = ofMap(x, fbo->getWidth()/4, 0, 0, fbo->getWidth()/4); 
-                    time_offset = (x_time_shift * 0.004) + (y * 0.008);
+                    // make quads appear slowly from bottom right
+                    float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
+                    float x_time_shift = ofMap(x, fbo->getWidth()/4, 0, 0, fbo->getWidth()/4);
+                    time_offset = (x_time_shift * 0.004) + (y_time_shift * 0.008);
                     // animate color, scale, rotation
                     quads_color = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
                     float scale_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 0.001, 1, true);
@@ -729,7 +736,7 @@ int MovementISource::find_max_square_to_evenly_fit_rect(int w, int h){
         // cout << "target side:            " << target_side << endl;
 
         if (previous_smallest_side % target_side == 0){
-            // cout << "found target side: " << target_side << "!" << endl;
+            cout << "found target side: " << target_side << "!" << endl;
             return target_side;
         }
         previous_smallest_side = smallest_side;
