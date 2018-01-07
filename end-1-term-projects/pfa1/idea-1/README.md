@@ -5,7 +5,7 @@ This folder contains all of the necessary code for the **Programming for Artists
 An online version of this repository is available on [github](https://github.com/VVZen/MACA/tree/master/end-1-term-projects/pfa1/idea-1).
 
 1. The **text-analysis-python** directory contains the python script used to generate a list of the most recurring words used by generative artists to describe their artworks/bio.
-The script loads up all the .txt files contained inside the *text-analysis-python/text-sources* directory, filters from stopwords (prepositions, conjuctions, etc..) and then saves all of the words to a sorted json array of hash tables called *words_frequency_score.json* located inside *../generative_bot_stx_pfa1/bin/data/*.
+The script loads up all the .txt files contained inside the *text-analysis-python/text-sources* directory, filters the stopwords (prepositions, conjuctions, etc..) and then saves all of the words to a sorted json array of hash tables called *words_frequency_score.json* located inside *../generative_bot_stx_pfa1/bin/data/*.
 It's data structure is like that: `[{"word" : "art", "score" : 315}, ..]`
 The array is sorted by word appereances in the texts (ie: **art** is the first word and appears 315 times.).
 
@@ -27,11 +27,14 @@ In order to run the project on your machine, you must do the openframeworks magi
     2. add *ofxGUI*, *ofxJSON*, *ofxXMLSettings* as addons
     3. in the src folder of your generated project, add all the source files contained in the src folder of this repository.
     4. add all the files from the *bin/data* folder into your new project *bin/data* folder.
+    ![bin_data](bin_data.png)
     5. compile!
 To build the project using the **make** system, just go into the folder of your new project and type:
     ```make && make RunRelease```
 
 ## Other infos
+The current project was built using **of_v0.9.8_osx_release** and **make**.
+
 Right now the of app is set so that it will run for a random amount of time and then before exiting it will create a large 6000x3375 tif image in the *output* folder. The required time is currently set from 30 to 40 minutes.
 This amount of time is required by the boids in order to cover a big surface.. it's part of the painting process.
 A 1920x1080 image will take a lot less time (5 to 10 minutes).
@@ -39,7 +42,7 @@ In order to change the resolution, edit the **globals.cpp** file.
 
 ![globals.cpp](globals.png).
 
-Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image (my workflow was like that: let the app run for a while, save some screenshots and then see which edits are required).
+Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image (my workflow was like that: first do some tests at 2k resolution. Then when testing the 300dpi version, let the app run for a while, save some screenshots and then see which edits are required).
 To create a screenshot of the image while the app is still running, press 'w'. 
 
 The app also parses a *args.json* file (inside *bin/data*), which contains a list of parameters used to edit the behaviour of the boids simulation. Editing those numbers will result in many different visual outcomes!

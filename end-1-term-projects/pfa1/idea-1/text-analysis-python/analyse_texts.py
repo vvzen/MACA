@@ -19,6 +19,7 @@ words_frequency_score_sorted = []
 current_dir = os.path.dirname(os.path.realpath(__file__))
 text_sources_dir = os.path.join(current_dir, "text-sources")
 destination_dir = os.path.join(current_dir, "..", "generative_bot_stx_pfa1", "bin", "data")
+# destination_dir = "your/path/here"
 
 # list of english prepositions, used to filter words
 with open(os.path.join(current_dir, "words-data", "prepositions.json"), mode="r") as fp:
@@ -30,6 +31,7 @@ with open(os.path.join(current_dir, "words-data", "en_stopwords.json"), mode="r"
     stop_words = json.load(fp)
     stop_words = [p.encode("utf-8") for p in stop_words["stopWords"]]
 
+print "-"*60
 # loop through all text sources
 for text in os.listdir(text_sources_dir):
     # skip everything not formatted in a precise way
@@ -56,8 +58,8 @@ for text in os.listdir(text_sources_dir):
                     words_frequency_score[word] = 1
                 else:
                     words_frequency_score[word] += 1
-
-print "\n{} words collected!".format(len(words_frequency_score.keys()))
+print "-"*60
+print "{} words collected!".format(len(words_frequency_score.keys()))
 
 # sort words by score
 sorted_words = sorted(words_frequency_score, key=words_frequency_score.get, reverse=True)
@@ -70,8 +72,17 @@ for w in sorted_words:
         "score" : words_frequency_score[w]
     })
 print "TOP 20:"
-print "{}".format("\n".join(sorted_words[:20]))
+print "\t{}".format("\n\t".join(sorted_words[:20]))
 
 # save hash table
+print "-"*60
+print "saving data to {}".format(os.path.join(destination_dir, "words_frequency_score.json"))
+
+# create destination path if doesn't exist
+if not os.path.exists(destination_dir):
+    os.makedirs(destination_dir, 0755)
+
 with open(os.path.join(destination_dir, "words_frequency_score.json"), mode="w") as wf:
     json.dump(words_frequency_score_sorted, wf, encoding='utf-8')
+
+print "-"*60
