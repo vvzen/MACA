@@ -31,12 +31,14 @@ To build the project using the **make** system, just go into the folder of your 
     ```make && make RunRelease```
 
 ## Other infos
-Right now the of app is set so that it will run for a random amount of time and then before exiting it will create a large 6000x3375 tif image in the *output* folder. The required time is from 15 to 20 minutes (smaller images will take less time).
+Right now the of app is set so that it will run for a random amount of time and then before exiting it will create a large 6000x3375 tif image in the *output* folder. The required time is currently set from 30 to 40 minutes.
+It is not "rendering" time, it's just time required by the boids in order to cover a big surface.. it's part of the painting process.
+A 1920x1080 image will take a lot less time (5 to 10 minutes).
 In order to change the resolution, edit the **globals.cpp** file.
 
 ![globals.cpp](globals.png).
 
-Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, well, you'll only see a portion of the final image.
+Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image (like me, so it's useful to let the app run for a while, save some screenshots and then see which edits are required).
 To create a screenshot of the image while the app is still running, press 'w'. 
 
 The app also parses a *args.json* file (inside *bin/data*), which contains a list of parameters used to edit the behaviour of the boids simulation. Editing those numbers will result in many different visual outcomes!
