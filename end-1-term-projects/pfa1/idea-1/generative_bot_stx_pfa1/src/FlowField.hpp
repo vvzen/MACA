@@ -18,22 +18,21 @@ class FlowField {
         // Constructor
         FlowField();
     
-        void setup(float colsNum, float rowsNum);
-        void initGrid(float xSpeed, float ySpeed, ofVec2f cellSize);
-        void drawGrid();
-        ofVec2f computeAttraction(Boid * boid);
+        void setup(float cols_num, float rows_num);
+        void init_grid(float xSpeed, float ySpeed, ofVec2f cell_size);
+        void draw_grid();
+        ofVec2f compute_attraction(Boid * boid);
     
         // Getters
-        ofVec2f getCellSize();
+        ofVec2f get_cell_size();
     
         // A 2d vector array
         vector <vector<float>> grid;
     
     private:
     
-        float colsNum, rowsNum;
-        float cellNum;
-        ofVec2f cellSize;
+        float cols_num, rows_num;
+        ofVec2f cell_size;
     
         // For debugging
         static const bool DEBUG_GRID = false;

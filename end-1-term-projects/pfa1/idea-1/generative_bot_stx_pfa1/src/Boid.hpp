@@ -20,19 +20,19 @@ class Boid {
         void update(bool checkEdges);
         void render(ofColor color, ofFbo * fbo);
     
-        ofVec2f getPosition();
-        ofVec2f getVelocity();
-        ofVec2f getAcceleration();
+        ofVec2f get_position();
+        ofVec2f get_velocity();
+        ofVec2f get_acceleration();
     
-        void addForce(ofVec2f force);
+        void add_force(ofVec2f force);
         void seek(ofVec2f target);
         void follow(ofVec2f target);
         void fear(ofVec2f target, float fearDistance);
     
         // Group behaviours
-        ofVec2f computeAlignment(vector<Boid *> boids);
-        ofVec2f computeSeparation(vector<Boid *> boids, float distanceThreshold);
-        ofVec2f computeCohesion(vector<Boid *> boids);
+        ofVec2f compute_alignment(vector<Boid *> boids);
+        ofVec2f compute_separation(vector<Boid *> boids, float distanceThreshold);
+        ofVec2f compute_cohesion(vector<Boid *> boids);
         void flock(vector<Boid *> boids, float alignMultiplier, float sepMultiplier, float sepDistance);
     
         static float max_force;
@@ -41,7 +41,7 @@ class Boid {
     
     private:
     
-        ofVec2f previousPosition;
+        ofVec2f previous_position;
         ofVec2f position, velocity, acceleration;
         ofVec2f size;
 };

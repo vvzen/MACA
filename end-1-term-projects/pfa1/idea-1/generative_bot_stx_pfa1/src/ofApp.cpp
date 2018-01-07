@@ -2,10 +2,10 @@
 
 //--------------------------------------------------------------
 // Naming convention is like that:
-// camelCase for openframeworks variables, functions and methods
+// camelCase for openframeworks variables, functions and methods and functions arguments
 // UpperCamelCase for classes
 // UPPERCASE for variables that are defined just once and never modified
-// lowercase_like_that for my variables, functions and methods
+// lowercase_like_that for my own variables, functions and methods
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -25,7 +25,6 @@ void ofApp::setup(){
 
     // TYPOGRAPHY
     // init fbo for drawing words
-    // typography_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
     typography_fbo.allocate(OUTPUT_WIDTH, OUTPUT_HEIGHT, GL_RGBA, 8);
 
     // vertical sizing of the letters 
@@ -35,7 +34,7 @@ void ofApp::setup(){
     current_font = "AvenirNext-Medium-06";
     font.load("fonts/" + ofToString(current_font) + ".ttf", vertical_size, true, true, true);
     
-    // parse the json with the words array
+    // open and parse the json with the words array
     string words_json_path = "words_frequency_score.json";
     
     if (!JSON_words_count_score.open(words_json_path)){
@@ -54,7 +53,6 @@ void ofApp::setup(){
     noise_x_speed_GUI.addListener(this, &ofApp::changed_field_param);
     noise_y_speed_GUI.addListener(this, &ofApp::changed_field_param);
     cell_size_GUI.addListener(this, &ofApp::changed_field_param);
-    //render_grid_GUI.addListener(this, &ofApp::changed_bool_param);
     
     // setup gui
     show_gui = false;
@@ -73,32 +71,32 @@ void ofApp::setup(){
     gui.add(clear_canvas_GUI.set("Clear Canvas", true));
     gui.add(show_fear_text_GUI.set("Show Fear Text", false));
     
+    // FLOW FIELD
     // setup flowfield
-    flow_field.initGrid(0.008f, 0.014f, ofVec2f(32.0f, 32.0f));
+    flow_field.init_grid(0.008f, 0.014f, ofVec2f(32.0f, 32.0f));
     
+    // BOIDS
     // choose numbers of boids
     BOIDS_NUM = 6144;
     
-    // fill boids vector
+    // fill the boids vector
     for(int i = 0; i < BOIDS_NUM; i++){
         Boid * newBoid = new Boid();
-        // ofVec2f newPos = ofVec2f(ofRandom(0, ofGetWidth()), ofRandom(0, ofGetHeight()));
         ofVec2f newPos = ofVec2f(ofRandom(0, OUTPUT_WIDTH), ofRandom(0, OUTPUT_HEIGHT));
         newBoid->setup(newPos, ofVec2f(1, 1));
         boids.push_back(newBoid);
     }
     // init and clear boids fbo
-    // boids_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 4);
     boids_fbo.allocate(OUTPUT_WIDTH, OUTPUT_HEIGHT, GL_RGB, 4);
     boids_fbo.begin();
         ofClear(bg_color);
     boids_fbo.end();
     
-    // parse the json with the args
+    // parse the json with the command line args, used to edit the simulation
     if(json_arguments.open("args.json")){
         
         // read the cmd args from the json file
-        // Set the gui with those args
+        // and set the gui with those args
         update_GUI_with_JSON_args(json_arguments);
         
         if(DEBUG_JSON){
@@ -115,6 +113,7 @@ void ofApp::setup(){
         ofExit();
     }
     
+    // change blending mode based on current mode
     if(dark_mode){
         ofEnableBlendMode(OF_BLENDMODE_ADD);
     }
@@ -150,21 +149,23 @@ void ofApp::update(){
     for(int i = 0; i < boids.size(); i++){
         
         // the boids have fear of the white pixels in the typography fbo (press f to show it)
-        ofColor currentTextFearColor = fear_words_pixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
-        
+        ofColor currentTextFearColor = fear_words_pixels.getColor(boids[i]->get_position().x, boids[i]->get_position().y);
+        // check for pixel color
         if(currentTextFearColor.r < 30){
-            // boids[i]->fear(boids[i]->getPosition(), 60);
-            boids[i]->fear(boids[i]->getPosition(), 30);
+            boids[i]->fear(boids[i]->get_position(), 30);
         }
         
-        //boids[i]->fear(ofVec2f(ofGetMouseX(), ofGetMouseY()));
+        // if you want, make the boids slightly follow your mouse
         // boids[i]->follow(ofVec2f(ofGetMouseX(), ofGetMouseY()));
+
+        // flock behaviour
         boids[i]->flock(boids, alignment_amount_GUI.get(), separation_amount_GUI.get(), separation_threshold_distance_GUI.get());
-        ofVec2f fieldAttraction = flow_field.computeAttraction(boids[i]);
-        fieldAttraction.scale(field_attraction_GUI.get());
-        //cout << "Field attraction: " << ofToString(fieldAttraction) << endl;
-        //cout << "Boid acceleration: " << boids[i]->getAcceleration() << ", velocity:" << boids[i]->getVelocity() << endl;
-        boids[i]->addForce(fieldAttraction);
+        
+        // compute flow field attraction
+        ofVec2f field_attraction = flow_field.compute_attraction(boids[i]);
+        field_attraction.scale(field_attraction_GUI.get());
+        boids[i]->add_force(field_attraction);
+        
         boids[i]->update(true);
     }
     
@@ -188,24 +189,17 @@ void ofApp::draw(){
 
         // set color
         ofColor target_color;
-        // float max_distance = ofDist(ofGetWidth()/2, ofGetHeight()/2, ofGetWidth()*2, ofGetHeight()*2);
-        // float mapped_color = ofMap(ofDist(boids[i]->getPosition().x,
-        //                                 boids[i]->getPosition().y,
-        //                                 ofGetWidth()/2,
-        //                                 ofGetHeight()/2),
-        //                                 0, max_distance, 30, 0);
-
-        // float boid_dist_from_center = ofDist(boids[i]->getPosition().x, boids[i]->getPosition().y, ofGetWidth(), ofGetHeight());
-        // float mapped_color = ofMap(boid_dist_from_center, 0, max_distance, 255, 80);
 
         float saturation;
+        // saturation is based on noise
         if (bw_mode){
-            saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 5);
+            saturation = ofMap(ofNoise(boids[i]->get_position().x, boids[i]->get_position().y), 0, 1, 0, 5);
         }
         else {
-            saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 255);
+            saturation = ofMap(ofNoise(boids[i]->get_position().x, boids[i]->get_position().y), 0, 1, 0, 255);
         }
         
+        // change black level according to mode 
         if (dark_mode){
             target_color.setHsb(starting_hue, saturation, 100, 8);
         }
@@ -213,21 +207,21 @@ void ofApp::draw(){
             target_color.setHsb(starting_hue, saturation, 17, 5);
         }
         
-        // ofColor current_color = type_fbo_pixels.getColor(boids[i]->getPosition().x, boids[i]->getPosition().y);
+        // use this color to paint the boid
         boids[i]->render(target_color, &boids_fbo);
     }
 
+    // clear canvas is requested by the user
     if(clear_canvas_GUI.get()){
         boids_fbo.begin();
         ofClear(bg_color, 255);
         boids_fbo.end();
     }
-    
     clear_canvas_GUI.set(false);
     
     // render grid
     if(render_grid_GUI.get()){
-        flow_field.drawGrid();
+        flow_field.draw_grid();
     }
     
     // visualize fear text
@@ -238,25 +232,16 @@ void ofApp::draw(){
     // boids
     boids_fbo.draw(0, 0);
     
-    // gui
+    // gui (click 'i' to show)
     if (show_gui){
         gui.draw();
     }
-
-    // animation
-    if (save_animation){
-        string filename = "output/animation/screen_anim_" + ofToString(ofGetFrameNum()) + ".jpg";
-        ofSaveScreen(filename);
-    }
-    
-    // DEBUG
-    // ofDrawBitmapString("Starting hue: " + ofToString(starting_hue), ofGetWidth()-200, 20);
 }
 
 //--------------------------------------------------------------
 void ofApp::changed_field_param(float & value){
     // Update grid
-    if(cell_size_GUI.get() != 0) flow_field.initGrid(noise_x_speed_GUI.get(), noise_y_speed_GUI.get(), ofVec2f(cell_size_GUI.get(), cell_size_GUI.get()));
+    if(cell_size_GUI.get() != 0) flow_field.init_grid(noise_x_speed_GUI.get(), noise_y_speed_GUI.get(), ofVec2f(cell_size_GUI.get(), cell_size_GUI.get()));
 }
 //--------------------------------------------------------------
 void ofApp::changed_bool_param(bool &value){
@@ -272,8 +257,8 @@ void ofApp::update_GUI_with_JSON_args(ofxJSONElement jsonFile){
     float currentValue = 0.0f;
     for(int i = 0; i < json_arguments["args"].size(); i++){
         currentValue = json_arguments["args"].operator[](i).asFloat();
-        //if(DEBUG_JSON) ofLog(OF_LOG_NOTICE, ofToString(currentValue) +"\n");
-        // Set GUI parameters based on index of appearance
+        
+        // set GUI parameters based on index of appearance
         string logString;
         switch (i) {
             case 0:
@@ -424,54 +409,4 @@ void ofApp::exit(){
     noise_x_speed_GUI.removeListener(this, &ofApp::changed_field_param);
     noise_y_speed_GUI.removeListener(this, &ofApp::changed_field_param);
     cell_size_GUI.removeListener(this, &ofApp::changed_field_param);
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
 }

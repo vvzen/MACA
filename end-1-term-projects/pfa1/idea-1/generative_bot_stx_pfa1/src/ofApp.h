@@ -4,7 +4,6 @@
 #include "ofMain.h"
 #include "boid.hpp"
 #include "flowField.hpp"
-#include "fearArea.hpp"
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 #include "ofxJSON.h"
@@ -20,16 +19,6 @@ class ofApp : public ofBaseApp{
         void exit();
 
 		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
 
         void update_GUI_with_JSON_args(ofxJSONElement jsonFile);
         void save_fbo_image(string path);
@@ -85,10 +74,6 @@ class ofApp : public ofBaseApp{
         int BOIDS_NUM;
         vector<Boid *> boids;
         ofFbo boids_fbo;
-    
-        // Boids areas of fear
-        vector <FearArea *> fearAreas;
-        int FEAR_AREAS_NUM;
     
         // XML
         // Used for drawing settings

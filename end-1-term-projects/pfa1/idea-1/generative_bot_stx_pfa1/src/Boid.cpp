@@ -16,13 +16,13 @@ float Boid::max_steer = 2.0f;
 float Boid::max_speed = 5.0f;
 
 // Getters
-ofVec2f Boid::getPosition(){
+ofVec2f Boid::get_position(){
     return position;
 }
-ofVec2f Boid::getVelocity(){
+ofVec2f Boid::get_velocity(){
     return velocity;
 }
-ofVec2f Boid::getAcceleration(){
+ofVec2f Boid::get_acceleration(){
     return acceleration;
 }
 
@@ -51,7 +51,7 @@ void Boid::update(bool checkEdges){
         }
     }
     
-    previousPosition = position;
+    previous_position = position;
     velocity.limit(max_speed);
     velocity += acceleration;
     position += velocity;
@@ -66,12 +66,12 @@ void Boid::render(ofColor color, ofFbo * fbo){
         ofSetColor(color);
         ofFill();
         // ofDrawEllipse(position.x, position.y, 1, 1);
-        ofDrawLine(position.x, position.y, previousPosition.x, previousPosition.y);
+        ofDrawLine(position.x, position.y, previous_position.x, previous_position.y);
     fbo->end();
     ofPopStyle();
 }
 
-void Boid::addForce(ofVec2f force){
+void Boid::add_force(ofVec2f force){
     force.limit(max_force);
     acceleration += force;
 }
@@ -87,7 +87,7 @@ void Boid::seek(ofVec2f target){
     // steering = desired - velocity
     ofVec2f steering = desiredDirection - velocity;
     steering.limit(max_steer);
-    addForce(steering);
+    add_force(steering);
 }
 
 // Compute attraction to a target
@@ -114,7 +114,7 @@ void Boid::follow(ofVec2f target){
     // steering = desired - velocity
     ofVec2f steering = desiredDirection - velocity;
     steering.limit(max_steer);
-    addForce(steering);
+    add_force(steering);
 }
 
 // Fear
@@ -138,7 +138,7 @@ void Boid::fear(ofVec2f target, float fearDistance){
         
         ofVec2f steering = desiredDirection - velocity;
         steering.limit(max_steer);
-        addForce(steering);
+        add_force(steering);
     }
 }
 
@@ -146,7 +146,7 @@ void Boid::fear(ofVec2f target, float fearDistance){
 
 // Align
 // Each boid has a desire to have the same orientation as the other boids
-ofVec2f Boid::computeAlignment(vector<Boid *> boids){
+ofVec2f Boid::compute_alignment(vector<Boid *> boids){
     
     ofVec2f totalAlignment(0,0);
     // Sum all alignments
@@ -163,7 +163,7 @@ ofVec2f Boid::computeAlignment(vector<Boid *> boids){
 
 // Separate:
 // Each boid has a desire to separate from each other boid
-ofVec2f Boid::computeSeparation(vector<Boid *> boids, float distanceThreshold){
+ofVec2f Boid::compute_separation(vector<Boid *> boids, float distanceThreshold){
     
     ofVec2f totalRepulsion(0,0);
     float repulsionMag = 0;
@@ -207,10 +207,10 @@ ofVec2f Boid::computeSeparation(vector<Boid *> boids, float distanceThreshold){
 // Uses alignment and separation
 // The boids have a desire to act as a single organism
 void Boid::flock(vector<Boid *> boids, float alignMultiplier, float sepMultiplier, float sepDistance){
-    ofVec2f separation = computeSeparation(boids, sepDistance);
-    ofVec2f alignment = computeAlignment(boids);
+    ofVec2f separation = compute_separation(boids, sepDistance);
+    ofVec2f alignment = compute_alignment(boids);
     separation *= sepMultiplier;
     alignment *= alignMultiplier;
-    addForce(separation);
-    addForce(alignment);
+    add_force(separation);
+    add_force(alignment);
 }
