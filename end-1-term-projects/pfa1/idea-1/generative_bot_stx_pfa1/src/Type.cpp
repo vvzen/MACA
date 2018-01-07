@@ -14,12 +14,14 @@ vector<Word> generate_typography(ofxJSONElement jsonSource, ofTrueTypeFont & fon
     int outer_limit;
     int inner_limit;
     if (vertical){
-        outer_limit = ofGetWidth();
-        inner_limit = ofGetHeight();
+        outer_limit = OUTPUT_WIDTH;
+        inner_limit = OUTPUT_HEIGHT;
     }
     else {
-        outer_limit = ofGetHeight();
-        inner_limit = ofGetWidth();
+        // outer_limit = ofGetHeight();
+        outer_limit = OUTPUT_HEIGHT;
+        // inner_limit = ofGetWidth();
+        inner_limit = OUTPUT_WIDTH;
     }
     // add all the words to the returned vector
     for (int y = 0; y < outer_limit; y+=verticalSize){

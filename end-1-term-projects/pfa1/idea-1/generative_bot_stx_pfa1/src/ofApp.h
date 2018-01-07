@@ -1,13 +1,14 @@
-#pragma once
+#pragma once // include this file only once
 
+#include "globals.h"
 #include "ofMain.h"
-#include "FlowField.hpp"
-#include "Boid.hpp"
-#include "FearArea.hpp"
+#include "boid.hpp"
+#include "flowField.hpp"
+#include "fearArea.hpp"
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 #include "ofxJSON.h"
-#include "Type.h"
+#include "type.h"
 
 class ofApp : public ofBaseApp{
 

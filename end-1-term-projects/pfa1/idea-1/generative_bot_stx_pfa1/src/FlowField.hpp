@@ -5,13 +5,11 @@
 //  Created by Valerio Viperino on 02/09/16.
 //
 //
+#pragma once // include this file only once
 
-#ifndef FlowField_hpp
-#define FlowField_hpp
-
-#include <stdio.h>
+#include "globals.h"
 #include "ofMain.h" // reference to the of library
-#include "Boid.hpp"
+#include "boid.hpp"
 
 class FlowField {
     
@@ -41,5 +39,3 @@ class FlowField {
         static const bool DEBUG_GRID = false;
         static const bool SHOW_GRID = false;
 };
-
-#endif /* FlowField_hpp */

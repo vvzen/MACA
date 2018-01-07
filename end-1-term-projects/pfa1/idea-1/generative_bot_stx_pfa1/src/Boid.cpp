@@ -6,7 +6,7 @@
 //
 //
 
-#include "Boid.hpp"
+#include "boid.hpp"
 
 // Constructor
 Boid::Boid(){}
@@ -36,15 +36,17 @@ void Boid::update(bool checkEdges){
     
     if(checkEdges){
         if(position.x < 0){
-            position.x = ofGetWidth();
+            position.x = OUTPUT_WIDTH;
+            // position.x = ofGetWidth();
         }
-        else if(position.x > ofGetWidth()){
+        else if(position.x > OUTPUT_WIDTH){
             position.x = 0;
         }
         if(position.y < 0){
-            position.y = ofGetHeight();
+            position.y = OUTPUT_HEIGHT;
+            // position.y = ofGetHeight();
         }
-        else if(position.y > ofGetHeight()){
+        else if(position.y > OUTPUT_HEIGHT){
             position.y = 0;
         }
     }
@@ -199,15 +201,6 @@ ofVec2f Boid::computeSeparation(vector<Boid *> boids, float distanceThreshold){
     else {
         return ofVec2f(0,0);
     }
-}
-
-// Cohesion
-// The boids have the desire to stick together
-ofVec2f Boid::computeCohesion(vector<Boid *> boids){
-    
-    float minDistance = 50.0f;
-    // Calculate the average location (center) of all nearby boids
-    // Calculate steering vector towards that position
 }
 
 // Flock

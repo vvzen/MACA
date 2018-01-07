@@ -7,6 +7,7 @@
 //
 #pragma once // include this file only once
 
+#include "globals.h"
 #include "ofMain.h"
 
 // we don't need a full class, so we're

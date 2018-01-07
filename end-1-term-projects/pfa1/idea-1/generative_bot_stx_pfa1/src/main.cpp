@@ -17,8 +17,7 @@
 
 //========================================================================
 int main(int argc, char * argv[]){
-	// ofSetupOpenGL(2560,1440,OF_FULLSCREEN);			// <-------- setup the GL context
-	ofSetupOpenGL(2304,1296,OF_WINDOW);			// <-------- setup the GL context
+	ofSetupOpenGL(1024,768,OF_WINDOW);			// <-------- setup the GL context
 
     ofApp * myApp = new ofApp();
     

@@ -5,10 +5,9 @@
 //  Created by Valerio Viperino on 08/09/16.
 //
 //
+#pragma once // include this file only once
 
-#ifndef FearArea_hpp
-#define FearArea_hpp
-
+#include "globals.h"
 #include <stdio.h>
 #include "ofMain.h" // reference to the of library
 
@@ -29,5 +28,3 @@ class FearArea {
         float size;
     
 };
-
-#endif /* FearArea_hpp */

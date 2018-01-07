@@ -11,25 +11,25 @@ void ofApp::setup(){
     
     ofSetVerticalSync(true);
 
-    // Generate a random runtime
-    APP_RUNTIME_MS = int(ofRandom(6, 10)) * 60 * 1000; // ms * 1000 = seconds
+    // generate a random runtime
+    APP_RUNTIME_MS = int(ofRandom(30, 40)) * 60 * 1000; // ms * 1000 = seconds
 
     // GENERAL GRAPHICS VARIABLES INIT
     save_animation = false;
     dark_mode = true;
     bw_mode = true;
     bg_color = (dark_mode == true) ? 5 : 255;
-    // starting_hue = (bw_mode == true) ? 0 : ofRandom(255);
-    // starting_hue = (bw_mode == true) ? 0 : 170.593;
     starting_hue = (bw_mode == true) ? 0 : 140;
     
     cout << "Starting hue: " << starting_hue << endl;
 
     // TYPOGRAPHY
     // init fbo for drawing words
-    typography_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    // typography_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    typography_fbo.allocate(OUTPUT_WIDTH, OUTPUT_HEIGHT, GL_RGBA, 8);
+
     // vertical sizing of the letters 
-    vertical_size = ofGetHeight() / 24;
+    vertical_size = OUTPUT_HEIGHT / 20;
 
     // main font used for the typography fbo
     current_font = "AvenirNext-Medium-06";
@@ -77,17 +77,19 @@ void ofApp::setup(){
     flow_field.initGrid(0.008f, 0.014f, ofVec2f(32.0f, 32.0f));
     
     // choose numbers of boids
-    BOIDS_NUM = 1024;
+    BOIDS_NUM = 6144;
     
     // fill boids vector
     for(int i = 0; i < BOIDS_NUM; i++){
         Boid * newBoid = new Boid();
-        ofVec2f newPos = ofVec2f(ofRandom(0, ofGetWidth()), ofRandom(0, ofGetHeight()));
+        // ofVec2f newPos = ofVec2f(ofRandom(0, ofGetWidth()), ofRandom(0, ofGetHeight()));
+        ofVec2f newPos = ofVec2f(ofRandom(0, OUTPUT_WIDTH), ofRandom(0, OUTPUT_HEIGHT));
         newBoid->setup(newPos, ofVec2f(1, 1));
         boids.push_back(newBoid);
     }
     // init and clear boids fbo
-    boids_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 4);
+    // boids_fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 4);
+    boids_fbo.allocate(OUTPUT_WIDTH, OUTPUT_HEIGHT, GL_RGB, 4);
     boids_fbo.begin();
         ofClear(bg_color);
     boids_fbo.end();
@@ -169,7 +171,9 @@ void ofApp::update(){
     // close app after it has been running for the requested time
     if(ofGetElapsedTimeMillis() >= APP_RUNTIME_MS){
         cout << "closing app" << endl;
-        save_fbo_image("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".tif");
+        // save_fbo_image("output/screen_" + ofToString(ofGetFrameNum()) + current_font + ".tif");
+        save_fbo_image("output/the_final_one.tif");
+        save_fbo_image("output/the_final_one.png");
         ofExit();
     }
 }
@@ -196,14 +200,14 @@ void ofApp::draw(){
 
         float saturation;
         if (bw_mode){
-            saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 15);
+            saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 5);
         }
         else {
             saturation = ofMap(ofNoise(boids[i]->getPosition().x, boids[i]->getPosition().y), 0, 1, 0, 255);
         }
         
         if (dark_mode){
-            target_color.setHsb(starting_hue, saturation, 100, 3);
+            target_color.setHsb(starting_hue, saturation, 100, 8);
         }
         else {
             target_color.setHsb(starting_hue, saturation, 17, 5);

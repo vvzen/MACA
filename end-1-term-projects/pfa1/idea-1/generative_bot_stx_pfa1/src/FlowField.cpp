@@ -17,7 +17,8 @@ FlowField::FlowField(){}
 void FlowField::setup(float cols, float rows){
     colsNum = cols;
     rowsNum = rows;
-    cellSize.set(ofGetWidth()/cols, ofGetHeight()/rows);
+    // cellSize.set(ofGetWidth()/cols, ofGetHeight()/rows);
+    cellSize.set(OUTPUT_WIDTH/cols, OUTPUT_HEIGHT/rows);
     
     if (DEBUG_GRID) cout << "N of Cols: " << colsNum << "\tNum of Rows:" << rowsNum << endl;
 }
@@ -33,8 +34,10 @@ void FlowField::initGrid(float noiseXSpeed, float noiseYSpeed, ofVec2f sizeOfCel
     // Setup
     cellSize.set(sizeOfCell.x, sizeOfCell.y);
     if(DEBUG_GRID) cout << "Cell Size: " << ofToString(cellSize) << endl;
-    colsNum = ofGetWidth() / cellSize.x;
-    rowsNum = ofGetHeight() / cellSize.y;
+    // colsNum = ofGetWidth() / cellSize.x;
+    colsNum = OUTPUT_WIDTH / cellSize.x;
+    // rowsNum = ofGetHeight() / cellSize.y;
+    rowsNum = OUTPUT_HEIGHT / cellSize.y;
     if(DEBUG_GRID) cout << "N of Cols: " << colsNum << "\tNum of Rows:" << rowsNum << endl;
     
     // Clear grid

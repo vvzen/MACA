@@ -18,7 +18,7 @@ words_frequency_score_sorted = []
 # paths
 current_dir = os.path.dirname(os.path.realpath(__file__))
 text_sources_dir = os.path.join(current_dir, "text-sources")
-destination_dir = os.path.join(current_dir, "..", "of_pfa1_project_term", "bin", "data")
+destination_dir = os.path.join(current_dir, "..", "generative_bot_stx_pfa1", "bin", "data")
 
 # list of english prepositions, used to filter words
 with open(os.path.join(current_dir, "words-data", "prepositions.json"), mode="r") as fp:

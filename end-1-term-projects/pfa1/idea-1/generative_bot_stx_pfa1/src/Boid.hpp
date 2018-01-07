@@ -1,15 +1,13 @@
 //
-//  Boid.hpp
+//  boid.hpp
 //  generative_bot_soh
 //
-//  Created by Valerio Viperino on 03/09/16.
+//  Created by Valerio Viperino.
 //
 //
+#pragma once
 
-#ifndef Boid_hpp
-#define Boid_hpp
-
-#include <stdio.h>
+#include "globals.h"
 #include "ofMain.h" // reference to the of library
 
 class Boid {
@@ -47,5 +45,3 @@ class Boid {
         ofVec2f position, velocity, acceleration;
         ofVec2f size;
 };
-
-#endif /* Boid_hpp */
