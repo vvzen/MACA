@@ -30,7 +30,13 @@ The script loads up all the .txt files contained inside the *text-analysis-pytho
 	The app loads up the **words_frequency_score.json** file and feeds the contained words into a boids simulation. 
 Basically it just creates a B/W image (fbo) made of all the words (in white) against a (black) bg, then creates another fbo where the boids simulation happens. The boids will have **"fear"** of the black pixels in the B/W fbo, and this will lead to the boids passing much more time inside the white letters. 
 
-	In order to run the project on your machine, you must do the openframeworks magic.. 
+    Here's a little screenshot showing the typography fbo (the one the boids see, which contains the letters) on top of the boids fbo.
+![typography_fbo](typography_fbo.png)
+
+
+## Running the project
+
+In order to run the project on your machine, you must do the openframeworks magic.. 
     1. create a new project using the of project generator
     ![generate_project](generate_project.png)
     2. add *ofxGUI*, *ofxJSON*, *ofxXMLSettings* as addons
