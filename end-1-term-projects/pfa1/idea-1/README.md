@@ -11,6 +11,8 @@ To run the script, simply type:
     ```cd text-analysis-python```
     ```python analyse_texts.py``` 
 
+    ![python-script](python_script.png)
+
 2. The **generative_bot_stx_pfa1** is the actual openframeworks project used to generate the final image.
 Why openframeworks? Because it gives us much more control. 
 The app loads up the **words_frequency_score.json** file and feeds the contained words into a boids simulation. 
@@ -28,6 +30,10 @@ To build the project using the **make** system, just go into the folder of your 
 ## Other infos
 Right now the of app is set so that it will run for a random amount of time and then before exiting it will create a large 6000x3375 tif image in the *output* folder. The required time is from 15 to 20 minutes (smaller images will take less time).
 In order to change the resolution, edit the **globals.cpp** file.
+
 ![globals.cpp](globals.png).
+
 Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, well, you'll only see a portion of the final image.
 To create a screenshot of the image while the app is still running, press 'w'. 
+
+The app also parses a *args.json* file (inside *bin/data*), which contains a list of parameters used to edit the behaviour of the boids simulation. Editing those numbers will result in many different visual outcomes!
