@@ -33,7 +33,8 @@ Basically it just creates a B/W image (fbo) made of all the words (in white) aga
     Here's a little screenshot showing the typography fbo (the one the boids see, which contains the letters) on top of the boids fbo.
 ![typography_fbo](typography_fbo.png)
 
-## Running the project
+# Running the project
+
 In order to run the project on your machine, you must do the openframeworks magic.. 
     1. create a new project using the of project generator
     ![generate_project](generate_project.png)
