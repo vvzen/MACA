@@ -35,6 +35,7 @@ Basically it just creates a B/W image (fbo) made of all the words (in white) aga
 
 Running the project
 ---------
+
 In order to run the project on your machine, you must do the openframeworks magic.. 
     1. create a new project using the of project generator
     ![generate_project](generate_project.png)
