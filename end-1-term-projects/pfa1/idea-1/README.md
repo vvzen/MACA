@@ -28,7 +28,7 @@ The script loads up all the .txt files contained inside the *text-analysis-pytho
 	Why openframeworks? Because it gives me much more control. 
 
 	The app loads up the **words_frequency_score.json** file and feeds the contained words into a boids simulation. 
-Basically it just creates a B/W image (fbo) made of all the words (in white) against a (black) bg, then creates another fbo where the boids simulation happens. The boids will have **"fear"** of the white pixels in the B/W fbo, and this will lead to the boids bouncing inside the letters and then finally exiting from them. 
+Basically it just creates a B/W image (fbo) made of all the words (in white) against a (black) bg, then creates another fbo where the boids simulation happens. The boids will have **"fear"** of the black pixels in the B/W fbo, and this will lead to the boids passing much more time inside the white letters. 
 
 	In order to run the project on your machine, you must do the openframeworks magic.. 
     1. create a new project using the of project generator
@@ -53,7 +53,9 @@ In order to change the resolution, edit the **globals.cpp** file.
 
 ![globals.cpp](globals.png).
 
-Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image. My workflow was like that: first do some tests at 2k resolution. Then when testing the 300dpi version, let the app run for a while, save some screenshots and then see which edits are required.
+Every variable in the app is tailored to the current resolution of the image, so changing the resolution will also affects aesthetics.
+
+Also, please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image. My workflow was like that: first do some tests at 2k resolution. Then when testing the 300dpi version, let the app run for a while, save some screenshots and then see which edits are required.
 To create a screenshot of the image while the app is still running, press 'w'. 
 
 The app also parses a *args.json* file (inside *bin/data*), which contains a list of parameters used to edit the behaviour of the boids simulation. Editing those numbers will result in many different visual outcomes!

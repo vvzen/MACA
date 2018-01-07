@@ -149,11 +149,13 @@ void ofApp::update(){
     // update boids
     for(int i = 0; i < boids.size(); i++){
         
-        // the boids have fear of the white pixels in the typography fbo (press f to show it)
+        // the boids have fear of the black pixels in the typography fbo (press f to show it)
         ofColor currentTextFearColor = fear_words_pixels.getColor(boids[i]->get_position().x, boids[i]->get_position().y);
         // check for pixel color
-        if(currentTextFearColor.r < 30){
-            boids[i]->fear(boids[i]->get_position(), 30);
+        int black_threshold = 30;
+        if(currentTextFearColor.r < black_threshold){
+            float fear_threshold = OUTPUT_WIDTH/200;
+            boids[i]->fear(boids[i]->get_position(), fear_threshold);
         }
         
         // if you want, make the boids slightly follow your mouse
