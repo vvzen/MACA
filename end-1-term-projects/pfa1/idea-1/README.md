@@ -8,7 +8,9 @@ An online version of this repository is available on [github](https://github.com
 The script loads up all the .txt files contained inside the *text-analysis-python/text-sources* directory, filters from stopwords (prepositions, conjuctions, etc..) and then saves all of the words to a sorted json array of hash tables called *words_frequency_score.json* located inside *../generative_bot_stx_pfa1/bin/data/*.
 The array is sorted by word appereances in the texts (ie: **art** is the first word and appears 315 times.)
 To run the script, simply type:
+    
     ```cd text-analysis-python```
+
     ```python analyse_texts.py``` 
 
     ![python-script](python_script.png)
