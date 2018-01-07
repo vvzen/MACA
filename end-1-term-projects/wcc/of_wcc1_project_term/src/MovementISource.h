@@ -22,7 +22,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         // 2
         void drawMovingLines(float currentShowTime);
         // 3
-        void drawMovingCircles(float currentShowTime);
+        void drawFadingQuads(float currentShowTime);
         int find_max_square_to_evenly_fit_rect(int w, int h);
         // 4
         void drawColouredLines(float currentShowTime);
@@ -35,22 +35,30 @@ class MovementISource : public ofx::piMapper::FboSource {
         // timing
         float show_start_time;
         float current_show_time;
+        
+        // checkpoints related vars
         bool CHECKPOINT_1;
         // determines the timing of the intro rectangles
         int intro_time_multiplier;
+
         bool CHECKPOINT_2;
         float lines_start_time;
         bool lines_started;
         float rects_start_time;
         bool rects_started;
+
         bool CHECKPOINT_3;
         float bars_start_time;
         bool bars_started;
         bool show_left_ellipse;
         bool ball_disappeared;
-        bool quads_started;
-        bool quads_ended;
-        float quads_start_time;
+        bool white_quads_started;
+        bool white_quads_ended;
+        float white_quads_start_time;
+        float black_quads_start_time;
+        float black_quads_ended;
+        float v_lines_start_time;
+
         bool CHECKPOINT_4;
         float coloured_lines_start_time;
         bool coloured_lines_started;

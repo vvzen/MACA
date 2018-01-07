@@ -16,7 +16,7 @@ void MovementISource::init_vars(){
     ellipse_1_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
     ellipse_2_pos = ofVec2f(fbo->getWidth() * 7/8, fbo->getHeight()/2);
     
-    CHECKPOINT_1 = true;    
+    CHECKPOINT_1 = true;
 
     // checkpoint 2
     CHECKPOINT_2 = true;
@@ -33,10 +33,11 @@ void MovementISource::init_vars(){
     CHECKPOINT_3 = false;
     bars_started = false;
     show_left_ellipse = false;
-    ball_disappeared = false;
-    quads_started = false;
-    quads_ended = false;
-    quads_started = false;
+    // ball_disappeared = false;
+    white_quads_started = false;
+    white_quads_ended = false;
+    white_quads_started = false;
+    black_quads_ended = false;
     // find the biggest quad that if tiled covers the a 1/4 of the fbo
     quad_size = find_max_square_to_evenly_fit_rect(int(fbo->getWidth() / 4), int(fbo->getHeight()));
 
@@ -104,7 +105,7 @@ void MovementISource::draw(){
     }
     // bouncing circle and change of 2D plane
     else if (CHECKPOINT_2 && !CHECKPOINT_3){
-        drawMovingCircles(current_show_time);
+        drawFadingQuads(current_show_time);
     }
     // colors!
     else if (CHECKPOINT_3 && !CHECKPOINT_4){
@@ -389,8 +390,10 @@ void MovementISource::drawMovingLines(float currentShowTime){
 
 //--------------------------------------------------------------
 // 3
+// draw the quads fadeing in while rotating
+// and the lines animated from bottom to top
 //--------------------------------------------------------------
-void MovementISource::drawMovingCircles(float currentShowTime){
+void MovementISource::drawFadingQuads(float currentShowTime){
     
     // save the start time
     if (!bars_started){
@@ -405,8 +408,8 @@ void MovementISource::drawMovingCircles(float currentShowTime){
     
     ofPushStyle();
 
-    // do different things based on current time
-    // scale and rotate the square 
+    // this if cascade makes different things happen based on certain bools
+    // 1. scale and rotate the square into the 2 center panels
     if (current_time > checkpoints[0] && current_time < checkpoints[1]){
         ofPushMatrix();
         ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
@@ -419,129 +422,196 @@ void MovementISource::drawMovingCircles(float currentShowTime){
         ofDrawRectangle(-size.x/2, -size.y/2, size.x, size.y);
         ofPopMatrix();
     }
-    // bounce the balls
-    else if (current_time > checkpoints[1] && current_time < checkpoints[3] && !ball_disappeared){
-
-        ofPushMatrix();
-        ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
-        ofSetCircleResolution(50);
+    // 2. quads fade in animation
+    // first black to white, then white to black
+    else if (current_time > checkpoints[1] && !black_quads_ended){
         
         // replicate the center rectangle that we left in the previous checkpoint
-        ofRotateZ(90);
-        // animate the scale
-        float scale_factor = ofMap(current_time, checkpoints[1], checkpoints[2], 0.01, 0.85, true);
-        ofScale(1, scale_factor, 1);
+        if (!white_quads_ended){
+            ofPushMatrix();
+                ofTranslate(fbo->getWidth()/2, fbo->getHeight()/2);
+                ofSetCircleResolution(50);
+                
+                ofRotateZ(90);
+                // animate the scale
+                float scale_factor = ofMap(current_time, checkpoints[1], checkpoints[2], 0.01, 0.85, true);
+                ofScale(1, scale_factor, 1);
 
-        ofDrawRectangle(-center_rect_size.x/2, -center_rect_size.y/2, center_rect_size.x, center_rect_size.y);
-        ofPopMatrix();
-
-        // when the center animation is finished, start the quads one
-        if (scale_factor >= 0.85 && !quads_started){
-            quads_started = true;
-            quads_start_time = current_time;
+                ofDrawRectangle(-center_rect_size.x/2, -center_rect_size.y/2, center_rect_size.x, center_rect_size.y);
+            ofPopMatrix();
+            
+            // when the center animation is finished, start the quads one
+            if (scale_factor >= 0.85 && !white_quads_started){
+                white_quads_started = true;
+                white_quads_start_time = current_time;
+            }
         }
 
-        // TODO: center panels: dissolve quads
+        ofPushMatrix();
 
+        // vars required for the next stage
         float quads_color;
         float time_offset = 0.0f;
         float duration = 0.8f;
-        int num_x_quads = fbo->getWidth()/4 / quad_size;
-        int num_y_quads = fbo->getHeight() / quad_size;
-
-        ofPushMatrix();
+        float x_time_offset_multiplier = 0.012; // used to delay quads on different cols
+        float y_time_offset_multiplier = 0.016; // used to delay quads on different rows
         
         // slowly fade in + rotation of the quads
         // draw them on first panel from the left and first from the right
         // repeat until animation is done
-        if (quads_started && !quads_ended){
+        if (white_quads_started && !white_quads_ended){
                 
-            // LEFT PANEL
+            // animate the LEFT PANEL (black --> white)
             for (int x = 0; x < fbo->getWidth()/4; x+=quad_size){
                 for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
                     
+                    // how much delay there is from a column to another
                     float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
-                    time_offset = (x * 0.004) + (y_time_shift * 0.008);
+                    
+                    time_offset = (x * x_time_offset_multiplier) + (y_time_shift * y_time_offset_multiplier);
+
                     // animate color, scale, rotation
-                    float start_time = quads_start_time + time_offset;
-                    float end_time = quads_start_time + time_offset + duration;
-                    float end_time_color = quads_start_time + time_offset + (duration * 1.3);
+                    float start_time = white_quads_start_time + time_offset;
+                    float end_time = white_quads_start_time + time_offset + duration;
+                    float end_time_color = white_quads_start_time + time_offset + (duration * 1.3);
 
                     quads_color = ofMap(current_time, start_time, end_time_color, 0, 255, true);
                     float scale_animated = ofMap(current_time, start_time, end_time, 0.001, 1, true);
                     float rotation_animated = ofMap(current_time, start_time, end_time, 90, 0, true);
 
                     ofPushMatrix();
-                    ofTranslate(x, y, 0);
-                    ofRotateX(rotation_animated);
 
-                    ofSetColor(quads_color);
-                    ofDrawRectangle(-quad_size, 0, quad_size * scale_animated, quad_size * scale_animated);
+                        ofTranslate(x, y, 0);
+                        ofRotateX(rotation_animated);
 
-                    // check when we're done
-                    if (x >= fbo->getWidth()/4 - quad_size && y <= quad_size){
-                        if (quads_color == 255 && scale_animated == 1 && rotation_animated == 0){
-                            quads_ended = true;
+                        ofSetColor(quads_color);
+                        ofDrawRectangle(-quad_size, 0, quad_size * scale_animated, quad_size * scale_animated);
+
+                        // check when we're done
+                        if (x >= fbo->getWidth()/4 - quad_size && y <= quad_size){
+                            if (quads_color == 255 && scale_animated == 1 && rotation_animated == 0){
+                                white_quads_ended = true;
+                                black_quads_start_time = current_time;
+                            }
                         }
-                    }
                     ofPopMatrix();
                 }
             }
             
-            time_offset = 0;
-
             // move to the other panel
             ofTranslate(fbo->getWidth() * 3/4, 0, 0);
-            // RIGHT PANEL
+            // animate the RIGHT PANEL (black --> white)
             for (int x = fbo->getWidth()/4; x >= 0; x-=quad_size){
                 for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
                     
                     // make quads appear slowly from bottom right
                     float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
                     float x_time_shift = ofMap(x, fbo->getWidth()/4, 0, 0, fbo->getWidth()/4);
-                    time_offset = (x_time_shift * 0.004) + (y_time_shift * 0.008);
+                    time_offset = (x_time_shift * x_time_offset_multiplier) + (y_time_shift * y_time_offset_multiplier);
                     // animate color, scale, rotation
-                    quads_color = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
-                    float scale_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 0.001, 1, true);
-                    float rotation_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 90, 0, true);
+                    quads_color = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
+                    float scale_animated = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + duration, 0.001, 1, true);
+                    float rotation_animated = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + duration, 90, 0, true);
 
                     ofPushMatrix();
-                    ofTranslate(x, y, 0);
-                    ofRotateX(rotation_animated);
 
-                    ofSetColor(quads_color);
-                    ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
+                        ofTranslate(x, y, 0);
+                        ofRotateX(rotation_animated);
+
+                        ofSetColor(quads_color);
+                        ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
 
                     ofPopMatrix();
                 }
             }
+            // ofPopMatrix();
         }
+        ofPopMatrix();
 
-        if (quads_ended){
-            cout << "elapsed time: " << current_time - quads_start_time << endl;
+        ofPushMatrix();
+        
+        // when the white quads animation is ended
+        if (white_quads_ended){
+
+            // cout << "elapsed time: " << current_time - white_quads_start_time << endl;
+
+            ofSetColor(255);
+            // ofDrawRectangle(0, 0, fbo->getWidth(), fbo->getHeight());
+
+            // fade out to black using the same technique
+            // but now from top to bottom
+            for (int x = 0; x < fbo->getWidth(); x+=quad_size){
+                for (int y = 0, i = 0; y < fbo->getHeight(); y+=quad_size, i++){
+                    
+                    time_offset = (x * 0.001) + (y * y_time_offset_multiplier);
+                    // if (i % 2 == 0){
+                    //     time_offset += 0.25;        
+                    // }
+                    // time_offset = (y * y_time_offset_multiplier);
+                    // animate color, scale, rotation
+                    quads_color = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + (duration * 1.3), 255, 0, true);
+                    float scale_animated = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + duration, 1, 0.001, true);
+                    float rotation_animated = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + duration, 0, 90, true);
+
+                    ofPushMatrix();
+                        ofTranslate(x, y, 0);
+                        // ofPushMatrix();
+                            // ofTranslate(quad_size/2, quad_size/2, 0);
+                        ofRotateX(rotation_animated);
+                        // ofPopMatrix();
+                        // ofRotateY(rotation_animated);
+                        // ofRotateZ(rotation_animated);
+
+                        ofSetColor(quads_color);
+                        ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
+
+                    ofPopMatrix();
+
+                    // check when we're done
+                    if (x >= fbo->getWidth() - quad_size && y >= fbo->getHeight() - quad_size){
+                        if (quads_color == 0 && scale_animated == 0.001 && rotation_animated == 90){
+                            black_quads_ended = true;
+                            v_lines_start_time = current_time;
+                        }
+                    }
+                }
+            }
         }
+        ofPopMatrix();
 
         ofPopMatrix();
     }
-    else if (quads_ended && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
+    // 3. animated lines from bottom to up
+    // start only when the fade to black quads animation is ended
+    else if (black_quads_ended){
+    // else if (current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
 
         ofSetLineWidth(8);
         ofDrawLine(0, fbo->getHeight(), 0, 0);
         // animate lines coming up from the bottom
-        float animated_y_head = ofMap(current_time, lines_checkpoints[0], lines_checkpoints[1], fbo->getHeight(), 0, true);
+        float v_lines_duration = 2; 
+        float animated_y_head = ofMap(current_time, v_lines_start_time, v_lines_start_time + v_lines_duration, fbo->getHeight(), 0, true);
         float animated_y_tail = fbo->getHeight();
 
         // break the 2D barriers! rotate around X axis
-        if (current_time >= lines_checkpoints[2]){
-            float rotate_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, 86, true);
-            float move_amount = ofMap(current_time, lines_checkpoints[2], lines_checkpoints[3], 0, fbo->getHeight()/2, true);
+        if (current_time >= v_lines_start_time + v_lines_duration){
+
+            float movement_start_time = v_lines_start_time + v_lines_duration + 1;
+            float movement_end_time = movement_start_time + 2;
+
+            float rotate_amount = ofMap(current_time, movement_start_time, movement_end_time, 0, 86, true);
+            float move_amount = ofMap(current_time, movement_start_time, movement_end_time, 0, fbo->getHeight()/2, true);
             ofTranslate(0, move_amount, 0);
             ofRotateX(rotate_amount);
+            
             // animate lines growing on the fake z axis
-            if (current_time >= lines_checkpoints[3]){
+            if (current_time >= movement_end_time){
                 float time_offset = 1;
-                animated_y_head = ofMap(current_time, lines_checkpoints[3] + time_offset, lines_checkpoints[4] + time_offset, 0, -fbo->getHeight()*1000, true);
-                animated_y_tail = ofMap(current_time, lines_checkpoints[3] + time_offset, lines_checkpoints[4] + time_offset, fbo->getHeight(), -fbo->getHeight()*100, true);
+                float z_movement_start_time = movement_end_time + time_offset;
+                float z_movement_end_time = z_movement_start_time + 8;
+
+                animated_y_head = ofMap(current_time, z_movement_start_time, z_movement_end_time, 0, -fbo->getHeight()*1000, true);
+                animated_y_tail = ofMap(current_time, z_movement_start_time, z_movement_end_time, fbo->getHeight(), -fbo->getHeight()*100, true);
             }
         }
         // draw the lines
@@ -551,6 +621,7 @@ void MovementISource::drawMovingCircles(float currentShowTime){
             ofDrawLine(i * line_spacing_x, animated_y_tail, i * line_spacing_x, animated_y_head);
         }
 
+        // go to the next function!
         if(animated_y_tail < -10000){
             CHECKPOINT_3 = true;
         }
@@ -568,21 +639,19 @@ void MovementISource::drawColouredLines(float currentShowTime){
         coloured_lines_start_time = currentShowTime;
         coloured_lines_started = true;
     }
-    // useful for keeping time, like keyframes
-    // float checkpoints[2] = {0, 32};
 
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - coloured_lines_start_time;
 
     ofPushStyle();
 
-    // max vertical size of the rectangles
-    
+    // max sizes of the rectangles
     float max_x_rect_size = 6;
     float max_y_rect_size = 12;
+    // actual sizes
     float size_x;
     float size_y;
-    // int lines_x_step = (fbo->getWidth() / 4) / max_x_rect_size;
+    
     int lines_y_step = fbo->getHeight() / max_y_rect_size;
 
     // colors
