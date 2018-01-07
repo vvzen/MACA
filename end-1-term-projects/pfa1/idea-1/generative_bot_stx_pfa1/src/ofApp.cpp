@@ -77,7 +77,8 @@ void ofApp::setup(){
     
     // BOIDS
     // choose numbers of boids
-    BOIDS_NUM = 6144;
+    BOIDS_NUM = OUTPUT_WIDTH;
+    // BOIDS_NUM = 6144; // or pick the number you want!
     
     // fill the boids vector
     for(int i = 0; i < BOIDS_NUM; i++){
