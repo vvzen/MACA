@@ -6,6 +6,7 @@ An online version of this repository is available on [github](https://github.com
 
 1. The **text-analysis-python** directory contains the python script used to generate a list of the most recurring words used by generative artists to describe their artworks/bio.
 The script loads up all the .txt files contained inside the *text-analysis-python/text-sources* directory, filters from stopwords (prepositions, conjuctions, etc..) and then saves all of the words to a sorted json array of hash tables called *words_frequency_score.json* located inside *../generative_bot_stx_pfa1/bin/data/*.
+It's data structure is like that: `[{"word" : "art", "score" : 315}, ..]`
 The array is sorted by word appereances in the texts (ie: **art** is the first word and appears 315 times.).
 
     To run the script, simply type:
@@ -17,7 +18,7 @@ The array is sorted by word appereances in the texts (ie: **art** is the first w
     ![python-script](python_script.png)
 
 2. The **generative_bot_stx_pfa1** is the actual openframeworks project used to generate the final image.
-Why openframeworks? Because it gives us much more control. 
+Why openframeworks? Because it gives me much more control. 
 The app loads up the **words_frequency_score.json** file and feeds the contained words into a boids simulation. 
 Basically it just creates a B/W image (fbo) made of all the words (in white) against a (black) bg, then creates another fbo where the boids simulation happens. The boids will have **"fear"** of the white pixels in the B/W fbo, and this will lead to the boids bouncing inside the letters and then finally exiting from them. 
 In order to run the project on your machine, you must do the openframeworks magic.. 
@@ -32,13 +33,15 @@ To build the project using the **make** system, just go into the folder of your 
 
 ## Other infos
 Right now the of app is set so that it will run for a random amount of time and then before exiting it will create a large 6000x3375 tif image in the *output* folder. The required time is currently set from 30 to 40 minutes.
-It is not "rendering" time, it's just time required by the boids in order to cover a big surface.. it's part of the painting process.
+This amount of time is required by the boids in order to cover a big surface.. it's part of the painting process.
 A 1920x1080 image will take a lot less time (5 to 10 minutes).
 In order to change the resolution, edit the **globals.cpp** file.
 
 ![globals.cpp](globals.png).
 
-Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image (like me, so it's useful to let the app run for a while, save some screenshots and then see which edits are required).
+Please note that the resolution of the generated file is independent of the current size of the ofApp window, since the boids run in a separate fbo. If you don't have a 6k monitor, you'll only see a portion of the final image (my workflow was like that: let the app run for a while, save some screenshots and then see which edits are required).
 To create a screenshot of the image while the app is still running, press 'w'. 
 
 The app also parses a *args.json* file (inside *bin/data*), which contains a list of parameters used to edit the behaviour of the boids simulation. Editing those numbers will result in many different visual outcomes!
+
+You can also press 'i' to show the gui, which will expose the same parameters.
