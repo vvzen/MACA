@@ -16,23 +16,38 @@ void MovementISource::init_vars(){
     ellipse_1_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
     ellipse_2_pos = ofVec2f(fbo->getWidth() * 7/8, fbo->getHeight()/2);
     
-    // speeds of the ellipses
-    ellipse_velocity = ofVec2f(0, 0);
-    ellipse_acceleration= ofVec2f(0, 0.09);
-    circles_size_multiplier = 1;
-    bounce_count = 0;
-    center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
+    CHECKPOINT_1 = true;    
+
+    // checkpoint 2
+    CHECKPOINT_2 = true;
+    lines_started = false;
+    rects_started = false;
 
     // checkpoint 3
+    // speeds of the ellipses
+    // ellipse_velocity = ofVec2f(0, 0);
+    // ellipse_acceleration= ofVec2f(0, 0.09);
+    // circles_size_multiplier = 1;
+    // bounce_count = 0;
+    center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
+    CHECKPOINT_3 = false;
+    bars_started = false;
+    show_left_ellipse = false;
+    ball_disappeared = false;
     quads_started = false;
-    quad_size = findBiggestSquareToEvenlyFitRect(int(fbo->getWidth() / 4), int(fbo->getHeight()));
+    quads_ended = false;
+    quads_started = false;
+    // find the biggest quad that if tiled covers the a 1/4 of the fbo
+    quad_size = find_max_square_to_evenly_fit_rect(int(fbo->getWidth() / 4), int(fbo->getHeight()));
 
     // checkpoint 4
+    CHECKPOINT_4 = false;
     num_rects_h_1 = 0;
     num_rects_h_2 = 0;
     num_rects_h_3 = 0;
     num_rects_h_4 = 0;
     bg_started_fade = false;
+    coloured_lines_started = false;
 }
 
 //--------------------------------------------------------------
@@ -426,89 +441,82 @@ void MovementISource::drawMovingCircles(float currentShowTime){
             quads_start_time = current_time;
         }
 
-        
-
-        // TODO: left and right panels: animate quads appearing from bottom and fading
         // TODO: center panels: dissolve quads
 
-        if (quads_started){
+        float quads_color;
+        float time_offset = 0.0f;
+        float duration = 0.8f;
 
-            cout << "minimum quad size to fill " << fbo->getWidth()/4 << "x" << fbo->getHeight() << " is " << quad_size << endl;
+        ofPushMatrix();
+        
+        // slowly fade in + rotation of the quads
+        // draw them on first panel from the left and first from the right
+        // repeat until animation is done
+        if (quads_started && !quads_ended){
+                
+            // LEFT PANEL
+            for (int x = 0; x < fbo->getWidth()/4; x+=quad_size){
+                for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
+                    
+                    time_offset = (x * 0.004) + (y * 0.008);
+                    // animate color, scale, rotation
+                    quads_color = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
+                    float scale_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 0.001, 1, true);
+                    float rotation_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 90, 0, true);
 
-            int num_quads_x = fbo->getWidth() / quad_size;
-            int num_quads_y = fbo->getHeight() / quad_size;
+                    ofPushMatrix();
+                    ofTranslate(x, y, 0);
+                    ofRotateX(rotation_animated);
+
+                    ofSetColor(quads_color);
+                    ofDrawRectangle(-quad_size, 0, quad_size * scale_animated, quad_size * scale_animated);
+                    // ofDrawRectangle(0, 0, quad_size, quad_size);
+                    // time_offset += 0.004f;
+
+                    // when we're done
+                    // if (i == 1 && y <= quad_size && x >= fbo->getWidth()/4 - quad_size){
+                    //     quads_ended = true;
+                    // }
+
+                    ofPopMatrix();
+                }
+            }
             
-            ofPushMatrix();
-            // quads fade in duration
-            int duration = 0.5;
-            float quads_color;
+            time_offset = 0;
 
-            ofTranslate(0, fbo->getHeight() - quad_size);
+            // move to the other panel
+            ofTranslate(fbo->getWidth() * 3/4, 0, 0);
+            // RIGHT PANEL
+            for (int x = fbo->getWidth()/4; x >= 0; x-=quad_size){
+                for (int y = fbo->getHeight(); y >= 0; y-=quad_size){
+                    
+                    // make quads appear slowly from right
+                    float x_time_shift = ofMap(x, fbo->getWidth()/4, 0, 0, fbo->getWidth()/4); 
+                    time_offset = (x_time_shift * 0.004) + (y * 0.008);
+                    // animate color, scale, rotation
+                    quads_color = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
+                    float scale_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 0.001, 1, true);
+                    float rotation_animated = ofMap(current_time, quads_start_time + time_offset, quads_start_time + time_offset + duration, 90, 0, true);
 
-            for (int i = 0; i < num_quads_y; i++){
-                quads_color = ofMap(current_time, quads_start_time, quads_start_time + duration + i, 0, 255, true);
-                float scale = ofMap(current_time, quads_start_time, quads_start_time + duration + i, 0.1, 1, true);
-                ofSetColor(quads_color);
-                ofTranslate(0, -quad_size, 0);
-                ofDrawRectangle(0, 0, quad_size * scale, quad_size * scale);
+                    ofPushMatrix();
+                    ofTranslate(x, y, 0);
+                    ofRotateX(rotation_animated);
+
+                    ofSetColor(quads_color);
+                    ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
+
+                    ofPopMatrix();
+                }
             }
-
-            ofPopMatrix();
         }
 
-
-        /*
-        // animate the size the of the circles
-        float circles_size = ofMap(scale_factor, 0.01, 0.85, 1, 40);
-        float circles_size_squash_deformer = ofMap(ellipse_1_pos.y, fbo->getHeight(), fbo->getHeight()/2, 0.2, 1.5);
-        circles_size *= circles_size_multiplier;
-
-        // after they've appeared, make the two circles bounce!
-        // at each bounce, their radius gets smaller
-        // at each bounce, we reveal the other circle
-        if (current_time > checkpoints[2]){
-
-            // these variables have class scope! see setup()
-            ellipse_velocity += ellipse_acceleration;
-            ellipse_velocity.limit(9);
-            ellipse_1_pos += ellipse_velocity;
-            ellipse_2_pos += ellipse_velocity;
-
-            if (ellipse_1_pos.y > fbo->getHeight() - circles_size) {
-                ellipse_velocity.y *= -0.95;
-                show_left_ellipse = !show_left_ellipse;
-                circles_size_multiplier -= 0.1;
-                center_rect_size.y /= 1.5;
-                bounce_count++;
-            }
-            // else if (ellipse_1_pos.y < circles_size / 2){
-            //     ellipse_velocity.y *= -0.95;
-            //     show_left_ellipse = !show_left_ellipse;
-            // }
+        if (quads_ended){
+            cout << "elapsed time: " << current_time - quads_start_time << endl;
         }
-        // show only one ball at a time
-        int color_1;
-        int color_2;
-        if (bounce_count < 10){
-            ofPushMatrix();
-                ofTranslate(ellipse_1_pos.x, ellipse_1_pos.y, 0);
-                color_1 = (show_left_ellipse == true) ? 255 : 0;
-                ofSetColor(color_1);
-                ofDrawCircle(0, 0, circles_size, circles_size * circles_size_squash_deformer);
-            ofPopMatrix();
-            ofPushMatrix();
-                color_2 = (show_left_ellipse == true) ? 0 : 255;
-                ofSetColor(color_2);
-                ofTranslate(ellipse_2_pos.x, ellipse_2_pos.y, 0);
-                ofDrawCircle(0, 0, circles_size, circles_size * circles_size_squash_deformer);
-            ofPopMatrix();
-        }
-        else {
-            ball_disappeared = true;
-        }
-        */
+
+        ofPopMatrix();
     }
-    else if (ball_disappeared && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
+    else if (quads_ended && current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
 
         ofSetLineWidth(8);
         ofDrawLine(0, fbo->getHeight(), 0, 0);
@@ -694,7 +702,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
 // |__|__|__|
 // |__|__|LL| <-- this 1x1 square is the biggest one able to fill this 3x2 rectangle evenly
  
-int MovementISource::findBiggestSquareToEvenlyFitRect(int w, int h){
+int MovementISource::find_max_square_to_evenly_fit_rect(int w, int h){
 
     // DIVIDE AND CONQUER
     // 1. we do this only at the start: get the smallest side of our 2 sides.
@@ -714,19 +722,18 @@ int MovementISource::findBiggestSquareToEvenlyFitRect(int w, int h){
     // we'll use a while loop
     while (true){
         
+        target_side = previous_smallest_side % smallest_side;
 
-        target_side = previous_smallest_side % smallest_side; // 1: 1680 % 640 = 400; 2: 640 % 400 = 160;
+        // cout << "smallest side:          " << smallest_side << endl;
+        // cout << "previous smallest side: " << previous_smallest_side << endl;
+        // cout << "target side:            " << target_side << endl;
 
-        cout << "smallest side:          " << smallest_side << endl;
-        cout << "previous smallest side: " << previous_smallest_side << endl;
-        cout << "target side:            " << target_side << endl;
-
-        if (previous_smallest_side % target_side == 0){ // 1: 1680 % 400 == 0 ? NO; 640 % 160 == 0? YES;
-            cout << "found target side: " << target_side << "!" << endl;
+        if (previous_smallest_side % target_side == 0){
+            // cout << "found target side: " << target_side << "!" << endl;
             return target_side;
         }
-        previous_smallest_side = smallest_side; // 1: 640;
-        smallest_side = target_side; // 1: 400;
+        previous_smallest_side = smallest_side;
+        smallest_side = target_side;
 
         if (target_side == 0){
             return -1;

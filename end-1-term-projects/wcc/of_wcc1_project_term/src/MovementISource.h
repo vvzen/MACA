@@ -23,7 +23,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         void drawMovingLines(float currentShowTime);
         // 3
         void drawMovingCircles(float currentShowTime);
-        int findBiggestSquareToEvenlyFitRect(int w, int h);
+        int find_max_square_to_evenly_fit_rect(int w, int h);
         // 4
         void drawColouredLines(float currentShowTime);
         // events
@@ -35,26 +35,27 @@ class MovementISource : public ofx::piMapper::FboSource {
         // timing
         float show_start_time;
         float current_show_time;
-        bool CHECKPOINT_1 = true;
+        bool CHECKPOINT_1;
         // determines the timing of the intro rectangles
         int intro_time_multiplier;
-        bool CHECKPOINT_2 = false;
+        bool CHECKPOINT_2;
         float lines_start_time;
-        bool lines_started = false;
+        bool lines_started;
         float rects_start_time;
-        bool rects_started = false;
-        bool CHECKPOINT_3 = false;
+        bool rects_started;
+        bool CHECKPOINT_3;
         float bars_start_time;
-        bool bars_started = false;
-        bool show_left_ellipse = false;
-        bool ball_disappeared = false;
-        bool quads_started = false;
+        bool bars_started;
+        bool show_left_ellipse;
+        bool ball_disappeared;
+        bool quads_started;
+        bool quads_ended;
         float quads_start_time;
-        bool CHECKPOINT_4 = false;
+        bool CHECKPOINT_4;
         float coloured_lines_start_time;
-        bool coloured_lines_started = false;
+        bool coloured_lines_started;
         float white_bg_fade_in_time;
-        bool bg_started_fade = false;
+        bool bg_started_fade;
 
         // checkpoint 3
         ofVec2f center_rect_size;
