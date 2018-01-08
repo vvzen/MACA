@@ -136,7 +136,7 @@ void MovementISource::draw(){
         drawCalibrationGrid(32);
     }
 
-    cout << "current show time: " << current_show_time << endl;
+    // cout << "current show time: " << current_show_time << endl;
 
     ofPopStyle();
 }
@@ -591,9 +591,6 @@ void MovementISource::drawFadingQuads(float currentShowTime){
     // 3. animated lines from bottom to up
     // start only when the fade to black quads animation is ended
     else if (black_quads_ended){
-    // else if (current_time > lines_checkpoints[0] && current_time < lines_checkpoints[6]){
-
-        cout << "TTHERE" << endl;
 
         ofSetLineWidth(8);
         ofDrawLine(0, fbo->getHeight(), 0, 0);
