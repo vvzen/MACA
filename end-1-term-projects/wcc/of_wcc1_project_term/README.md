@@ -1,6 +1,6 @@
 # README
 
-An online version of this repo can be browser on [github](https://github.com/VVZen/MACA/tree/master/end-1-term-projects/wcc/of_wcc1_project_term).
+An online version of this repo can be viewed on [github](https://github.com/VVZen/MACA/tree/master/end-1-term-projects/wcc/of_wcc1_project_term).
 
 Structure
 ---------
