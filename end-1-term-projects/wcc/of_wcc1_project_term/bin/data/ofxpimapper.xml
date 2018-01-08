@@ -38,7 +38,7 @@
         </texCoords>
         <source>
             <source-type>fbo</source-type>
-            <source-name>Movement 1 Source</source-name>
+            <source-name>VV Source</source-name>
         </source>
         <properties>
             <perspectiveWarping>1</perspectiveWarping>
@@ -83,7 +83,7 @@
         </texCoords>
         <source>
             <source-type>fbo</source-type>
-            <source-name>Movement 1 Source</source-name>
+            <source-name>VV Source</source-name>
         </source>
         <properties>
             <perspectiveWarping>1</perspectiveWarping>
@@ -128,7 +128,7 @@
         </texCoords>
         <source>
             <source-type>fbo</source-type>
-            <source-name>Movement 1 Source</source-name>
+            <source-name>VV Source</source-name>
         </source>
         <properties>
             <perspectiveWarping>1</perspectiveWarping>
@@ -173,7 +173,7 @@
         </texCoords>
         <source>
             <source-type>fbo</source-type>
-            <source-name>Movement 1 Source</source-name>
+            <source-name>VV Source</source-name>
         </source>
         <properties>
             <perspectiveWarping>1</perspectiveWarping>

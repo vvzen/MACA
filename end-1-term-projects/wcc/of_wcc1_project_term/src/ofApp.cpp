@@ -38,8 +38,6 @@ void ofApp::setup(){
 
     dummyObjects.load("accordion_reference.png");
 
-    // ofEnableAlphaBlending();
-
     //setup sceneManager to handle scene/present changes automatically
     sceneManager.setup("scenes.json", &piMapper);
 }

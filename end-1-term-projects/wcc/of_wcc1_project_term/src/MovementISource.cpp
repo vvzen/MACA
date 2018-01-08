@@ -1,6 +1,8 @@
 #include "MovementISource.h"
 
 //--------------------------------------------------------------
+// initialise all the vars required by the various checkpoints
+//--------------------------------------------------------------
 void MovementISource::init_vars(){
 
     // initialise time at the start of source
@@ -16,10 +18,10 @@ void MovementISource::init_vars(){
     ellipse_1_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
     ellipse_2_pos = ofVec2f(fbo->getWidth() * 7/8, fbo->getHeight()/2);
     
-    CHECKPOINT_1 = true;
+    CHECKPOINT_1 = false;
 
     // checkpoint 2
-    CHECKPOINT_2 = true;
+    CHECKPOINT_2 = false;
     lines_started = false;
     rects_started = false;
 
@@ -29,7 +31,7 @@ void MovementISource::init_vars(){
     // ellipse_acceleration= ofVec2f(0, 0.09);
     // circles_size_multiplier = 1;
     // bounce_count = 0;
-    CHECKPOINT_3 = true;
+    CHECKPOINT_3 = false;
     center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
     bars_started = false;
     show_left_ellipse = false;
@@ -50,13 +52,28 @@ void MovementISource::init_vars(){
     bg_started_fade = false;
     coloured_quads_started = false;
     coloured_lines_started = false;
+}
+
+//--------------------------------------------------------------
+void MovementISource::setup(){
+	// Give our source a decent name
+    name = "VV Source";
+
+	// Allocate our FBO source
+    allocate(990, 585);
+    // this->allocate(990, 585, GL_RGBA, 8)
+
+    // clear fbo
+    this->beginFbo();
+        ofClear(255,0,0);
+    this->endFbo();
+
+    init_vars();
     
+    // how many quads fit our fbo surface
     int num_x_quads = fbo->getWidth() / quad_size;
     int num_y_quads = fbo->getHeight() / quad_size;
     
-    // for (int i = 0; i < final_quads_colors.size(); i++){
-    //     final_quads_colors.pop_back();
-    // }
     // fill color vector for the final quads with hue arranged colors
     for (int i = 0; i < num_x_quads*num_y_quads; i++){
         ofColor color;
@@ -65,23 +82,6 @@ void MovementISource::init_vars(){
 
         final_quads_colors.push_back(color);
     }
-}
-
-//--------------------------------------------------------------
-void MovementISource::setup(){
-	// Give our source a decent name
-    name = "Movement 1 Source";
-
-	// Allocate our FBO source, decide how big it should be
-    allocate(990, 585);
-    // this->allocate(990, 585, GL_RGBA, 8)
-
-    // if you want to draw something inside setup you need to make calls to this->beginFbo() / this->endFbo as below
-    this->beginFbo();
-        ofClear(255,0,0);
-    this->endFbo();
-
-    init_vars();
 }
 
 //--------------------------------------------------------------
@@ -108,7 +108,6 @@ void MovementISource::draw(){
     // ofBackground(0);
 
     ofSetCircleResolution(20);
-    // ofSetLineWidth(3);
     ofFill();
 
     // draw flashing intro rectangles
@@ -119,7 +118,7 @@ void MovementISource::draw(){
     else if (CHECKPOINT_1 && !CHECKPOINT_2){
         drawMovingLines(current_show_time);
     }
-    // bouncing circle and change of 2D plane
+    // fading quads and change of 2D plane
     else if (CHECKPOINT_2 && !CHECKPOINT_3){
         drawFadingQuads(current_show_time);
     }
@@ -132,11 +131,7 @@ void MovementISource::draw(){
     // reference_image.draw(0, 0);
     // ofDisableAlphaBlending();
 
-    //if a certain amount of time has passed (in millis), do something (change color in this case)
-    // if (ofGetElapsedTimeMillis() - show_start_time < 500) ballColor = ofColor(255,0,0);
-    // else if (ofGetElapsedTimeMillis() - show_start_time < 1000) ballColor = ofColor(0,255,0);
-    // else if (ofGetElapsedTimeMillis() - show_start_time < 1500) ballColor = ofColor(255);
-
+    // if 'd' is pressed
     if (show_calibration_grid){
         drawCalibrationGrid(32);
     }
@@ -633,7 +628,7 @@ void MovementISource::drawFadingQuads(float currentShowTime){
             }
         }
         // draw the lines
-        int num_of_lines = 7;
+        int num_of_lines = 32;
         float line_spacing_x = fbo->getWidth() / num_of_lines;
         for (int i = 0; i < num_of_lines; i++){
             
@@ -717,10 +712,10 @@ void MovementISource::drawColouredLines(float currentShowTime){
         }
         if (num_rects_h_1 > 0){
             // increase saturation
-                saturation *= 2;
-                // increase vertical size of the rectangles
-                max_y_rect_size *= 2;
-                ofTranslate(fbo->getWidth()/4, 0, 0);
+            saturation *= 2;
+            // increase vertical size of the rectangles
+            max_y_rect_size *= 2;
+            ofTranslate(fbo->getWidth()/4, 0, 0);
             for (int i = num_rects_h_2; i > 0; i--){
                 // size
                 size_x = fbo->getWidth()/4;
@@ -781,23 +776,22 @@ void MovementISource::drawColouredLines(float currentShowTime){
     // fill canvas with quads of hue arranged colours
     if (coloured_quads_started){
         
-        float duration = 1.0f; // duration of the animation
+        float duration = 1.0f; // duration of the animation of a single quad
         float alpha_duration = 0.8f; // duration of the alpha fade in
         float x_time_offset_multiplier = 0.020f; // used to delay quads on different cols
-        float y_time_offset_multiplier = 0.0f; // used to delay quads on different rows
+        
         int i = 0; // keeps track of the current index we're in
 
         for (int y = 0; y < fbo->getHeight(); y+=quad_size){
             for (int x = 0; x < fbo->getWidth(); x+=quad_size){
                 
-                y_time_offset_multiplier = (int(x / quad_size) % 2 == 0) ? 0.05f : 0.0f;
-                float time_offset = (x * x_time_offset_multiplier) + y_time_offset_multiplier;
+                float time_offset = (x * x_time_offset_multiplier);
                 
                 // animate color, scale, rotation
                 float scale_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset+ duration, 0.001f, 1.0f, true);
                 float rotation_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + duration, 90, 0, true);
 
-                // pick the color
+                // pick the color that we previously assigned
                 ofColor current_color = final_quads_colors.at(i);
                 // fade in animation using the alpha
                 current_color.a = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + alpha_duration, 0, 255, true);
@@ -818,7 +812,6 @@ void MovementISource::drawColouredLines(float currentShowTime){
                         if (current_color.a == 255 && scale_animated == 1.0f && rotation_animated == 0.0f){
                             bg_started_fade = true;
                             black_bg_fade_in_time = current_time;
-                            cout << "HEEEEEEEE" << endl;
                         }
                     }
                 }

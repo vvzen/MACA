@@ -17,14 +17,14 @@ class MovementISource : public ofx::piMapper::FboSource {
         ofImage reference_image;
 
         void drawCalibrationGrid(int numOfLines);
-        // 1
+        // checkpoint 1
         void drawFlashingIntro(int & time_multiplier);
-        // 2
+        // checkpoint 2
         void drawMovingLines(float currentShowTime);
-        // 3
+        // checkpoint 3
         void drawFadingQuads(float currentShowTime);
         int find_max_square_to_evenly_fit_rect(int w, int h);
-        // 4
+        // checkpoint 4
         void drawColouredLines(float currentShowTime);
         // events
         void onKeyPressed(ofKeyEventArgs & event);
@@ -41,12 +41,14 @@ class MovementISource : public ofx::piMapper::FboSource {
         // determines the timing of the intro rectangles
         int intro_time_multiplier;
 
+        // checkpoint 2
         bool CHECKPOINT_2;
         float lines_start_time;
         bool lines_started;
         float rects_start_time;
         bool rects_started;
 
+        // checkpoint 3
         bool CHECKPOINT_3;
         float bars_start_time;
         bool bars_started;
@@ -59,15 +61,6 @@ class MovementISource : public ofx::piMapper::FboSource {
         bool black_quads_ended;
         float v_lines_start_time;
 
-        bool CHECKPOINT_4;
-        float coloured_lines_start_time;
-        bool coloured_lines_started;
-        float black_bg_fade_in_time;
-        bool bg_started_fade;
-        bool coloured_quads_started;
-        float coloured_quads_start_time;
-
-        // checkpoint 3
         ofVec2f center_rect_size;
         ofVec2f ellipse_1_pos;
         ofVec2f ellipse_2_pos;
@@ -78,6 +71,14 @@ class MovementISource : public ofx::piMapper::FboSource {
         float quad_size; 
 
         // checkpoint 4
+        bool CHECKPOINT_4;
+        float coloured_lines_start_time;
+        bool coloured_lines_started;
+        float black_bg_fade_in_time;
+        bool bg_started_fade;
+        bool coloured_quads_started;
+        float coloured_quads_start_time;
+
         int num_rects_h_1;
         int num_rects_h_2;
         int num_rects_h_3;
