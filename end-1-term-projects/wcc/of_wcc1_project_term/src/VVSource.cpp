@@ -800,9 +800,12 @@ void VVSource::drawColouredLines(float currentShowTime){
         
         float duration = 1.0f; // duration of the animation of a single quad
         float alpha_duration = 0.8f; // duration of the alpha fade in
+        float sat_duration = 12; // duration of the saturation fade out
         float x_time_offset_multiplier = 0.020f; // used to delay quads on different cols
         
         int i = 0; // keeps track of the current index we're in
+
+        float saturation;
 
         for (int y = 0; y < fbo->getHeight(); y+=quad_size){
             for (int x = 0; x < fbo->getWidth(); x+=quad_size){
@@ -812,11 +815,13 @@ void VVSource::drawColouredLines(float currentShowTime){
                 // animate color, scale, rotation
                 float scale_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset+ duration, 0.001f, 1.0f, true);
                 float rotation_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + duration, 90, 0, true);
+                saturation = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + sat_duration, 255, 0, true);
 
                 // pick the color that we previously assigned
                 ofColor current_color = final_quads_colors.at(i);
                 // fade in animation using the alpha
                 current_color.a = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + alpha_duration, 0, 255, true);
+                current_color.setSaturation(saturation);
 
                 ofPushMatrix();
                     ofTranslate(x, y, 0);
@@ -832,8 +837,10 @@ void VVSource::drawColouredLines(float currentShowTime){
                 if (!bg_started_fade){
                     if (y >= fbo->getHeight() - quad_size && x >= fbo->getWidth() - quad_size){
                         if (current_color.a == 255 && scale_animated == 1.0f && rotation_animated == 0.0f){
-                            bg_started_fade = true;
-                            black_bg_fade_in_time = current_time;
+                            if (saturation == 0 ){
+                                bg_started_fade = true;
+                                black_bg_fade_in_time = current_time;
+                            }
                         }
                     }
                 }

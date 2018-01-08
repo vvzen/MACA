@@ -16,6 +16,16 @@
         "stdexcept": "cpp",
         "typeinfo": "cpp",
         "ostream": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "__bit_reference": "cpp",
+        "__functional_base": "cpp",
+        "bitset": "cpp",
+        "functional": "cpp",
+        "limits": "cpp",
+        "locale": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp"
     }
 }
