@@ -16,7 +16,23 @@ The first function called is `VVSource::drawFlashingIntro()`, then `VVSource::dr
 Compiling
 ---------
 The building process of this sketch was tested using the **make** system on OSX El Capitan 10.11.2 (15C50).
-To build and run the app, from this folder type in the terminal:
+
+Cleaner way to build would be:
+
+1. Create a new project using project generator
+
+![new_project](new_project.png)
+
+2. Copy all of the following files to your new project *src* folder
+
+![src_files](wcc_src_files.png)
+
+3. Copy the *accordion_reference_matching.png*, *accordion_reference.png*, *ofxpimapper.xml*, *scenes.json* files inside the *bin/data* folder of your new project
+
+![data_files](data_files.png)
+
+
+4. Go to the project folder and type in the terminal:
 ```make && make RunRelease```
 
 Other infos
