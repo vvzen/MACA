@@ -21,7 +21,7 @@ int find_max_square_to_evenly_fit_rect(int w, int h){
     //       no  -> we start again: the biggest side will be the current smallest side
     //              and the smallest side will be our new side
 
-    std::cout << "starting... " << w << "x" << h << std::endl;
+    std::cout << "starting with " << w << "x" << h << std::endl;
 
     int target_side;
     int smallest_side = (w > h) ? h : w;

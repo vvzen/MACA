@@ -53,9 +53,13 @@ void VVSource::setup(){
 	// Give our source a decent name
     name = "VV Source";
 
-	// Allocate our FBO source
+	// allocate our FBO source
+    // those strange width and height are actually modeled
+    // on the real measurements of each panel, so that the
+    // fbo will resemble their shape and most of its resolution
+    // won't be wasted
     allocate(990, 585);
-    // this->allocate(990, 585, GL_RGBA, 8)
+    // this->allocate(990, 585, GL_RGBA, 8) // tried to upsample it, didn't work
 
     // clear fbo
     this->beginFbo();
@@ -68,7 +72,7 @@ void VVSource::setup(){
     int num_x_quads = fbo->getWidth() / quad_size;
     int num_y_quads = fbo->getHeight() / quad_size;
     
-    // fill color vector for the final quads with hue arranged colors
+    // fill color vector with hue arranged colors (used for the final quads animation)
     for (int i = 0; i < num_x_quads*num_y_quads; i++){
         ofColor color;
         float hue = ofMap(i, 0, num_x_quads*num_y_quads, 0, 255);
@@ -83,8 +87,9 @@ void VVSource::setName(string _name){
     name = _name;
 }
 
-// Don't do any drawing here
+//--------------------------------------------------------------
 void VVSource::update(){
+    // this is the main clock of the app, keep it updated
     current_show_time = (ofGetElapsedTimef() - show_start_time);
     // cout << endl;
     // cout << "ofGetElapsedTimef(): " << ofGetElapsedTimef() << endl;
@@ -92,19 +97,23 @@ void VVSource::update(){
     // cout << "show_start_time    : " << show_start_time << endl;
 }
 
+//--------------------------------------------------------------
 void VVSource::reset(){
     ofClear(0); // uncomment if you want canvas to be reset on the buffer when fbo source is called again
     cout << "vv, called reset" << endl;
     init_vars();
 }
 
-// No need to take care of fbo.begin() and fbo.end() here.
-// All within draw() is being rendered into fbo;
+//--------------------------------------------------------------
+// The CORE of everything!
+// There are 4 functions which create the piece.
+// Each is one called when the relative checkpoint is reached
+// bool variables are used to know stage we currently are
+//--------------------------------------------------------------
 void VVSource::draw(){
 
     ofPushStyle();
     ofClear(0); // remove if you never want to update the background
-    // ofBackground(0);
 
     ofSetCircleResolution(20);
     ofFill();
@@ -121,11 +130,12 @@ void VVSource::draw(){
     else if (CHECKPOINT_2 && !CHECKPOINT_3){
         drawFadingQuads(current_show_time);
     }
-    // colors!
+    // and finally.. colors!
     else if (CHECKPOINT_3 && !CHECKPOINT_4){
         drawColouredLines(current_show_time);
     }
 
+    // for reference
     // ofEnableAlphaBlending();
     // reference_image.draw(0, 0);
     // ofDisableAlphaBlending();
@@ -156,6 +166,8 @@ void VVSource::drawCalibrationGrid(int numOfLines){
 
 //--------------------------------------------------------------
 // 1
+// Screams for attention
+// Draws the flashing intro with rects appearing alternately on the 4 panels
 //--------------------------------------------------------------
 void VVSource::drawFlashingIntro(int & time_multiplier, float currentShowTime){
 
@@ -189,39 +201,33 @@ void VVSource::drawFlashingIntro(int & time_multiplier, float currentShowTime){
     // compute local start time
     float current_time = (currentShowTime - intro_start_time);
 
-    // cout << endl << "intro_start_time: " << intro_start_time << endl;
-    // cout << "current_time: " << current_time << endl;
-
-    // change rect color based on current time
+    // this if cascade sets the rectangle colors based on current time
+    // it also gradually increases the flashing speed
     if ((current_time >= intro_checkpoints[0]) && (current_time < intro_checkpoints[1]) && (rectangle_triggers[0] == false)){
         time_multiplier = 2;
         rectangle_triggers[0] = true;
-        // cout << "increased time:" << time_multiplier << "x" << endl;
     }
     else if ((current_time >= intro_checkpoints[1] && current_time < intro_checkpoints[2]) && (rectangle_triggers[1] == false)){
         time_multiplier = 4;
         rectangle_triggers[1] = true;
-        // cout << "increased time:" << time_multiplier << "x" << endl;
     }
     else if ((current_time >= intro_checkpoints[2] && current_time < intro_checkpoints[3]) && rectangle_triggers[2] == false){
         time_multiplier = 8;
         rectangle_triggers[2] = true;
-        // cout << "increased time:" << time_multiplier << "x" << endl;
     }
     else if ((current_time >= intro_checkpoints[3] && current_time < intro_checkpoints[4]) && (rectangle_triggers[3] == false)){
         time_multiplier = 20;
         rectangle_triggers[3] = true;
-        // cout << "increased time:" << time_multiplier << "x" << endl;
     }
     else if ((current_time >= intro_checkpoints[4] && current_time < intro_checkpoints[5]) && (rectangle_triggers[4] == false)){
         time_multiplier = 100;
         rectangle_triggers[4] = true;
-        // cout << "increased time:" << time_multiplier << "x" << endl;
     }
     else if (current_time >= intro_checkpoints[6] && rectangle_triggers[5] == false){
         show_rects = false;
     }
     
+    // draw the rectangles
     if (show_rects){
 
         ofVec2f size(fbo->getWidth()/4, fbo->getHeight());
@@ -246,6 +252,7 @@ void VVSource::drawFlashingIntro(int & time_multiplier, float currentShowTime){
         ofSetColor(colors[3]);
         ofDrawRectangle(3 * size.x, pos.y, size.x, size.y);
     }
+    // finally, when where done, go to next animation
     else {
         CHECKPOINT_1 = true;
     }
@@ -258,6 +265,7 @@ void VVSource::drawFlashingIntro(int & time_multiplier, float currentShowTime){
 //--------------------------------------------------------------
 void VVSource::drawMovingLines(float currentShowTime){
 
+    // save start time of animation
     if (!lines_started){
         lines_start_time = currentShowTime;
         lines_started = true;
@@ -274,10 +282,8 @@ void VVSource::drawMovingLines(float currentShowTime){
 
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - lines_start_time;
-    // cout << "current show time:  " << currentShowTime << endl;
-    // cout << "current local time: " << current_time << endl;
 
-    // two flashes
+    // draw two flashes of the lines grid
     if ((current_time > checkpoints[0] && current_time < checkpoints[1]) ||
         (current_time > checkpoints[2] && current_time < checkpoints[3])){
         
@@ -296,19 +302,18 @@ void VVSource::drawMovingLines(float currentShowTime){
         }
     }
     // lines animation
+    // growing lines + growing rectangles
     else if (current_time > lines_checkpoints[0] && current_time < lines_checkpoints[2]){
 
         ofSetColor(255);
 
-        // growing lines + growing rectangles
-        // vertical
         float time_multiplier = 0.15;
-
         float lines_width;
 
+        // vertical lines
         for (int i = 0; i < fbo->getWidth(); i+=line_spacing){
             float time_offset = (i / line_spacing) * time_multiplier;
-            // set width
+            // set width based one line index
             lines_width = ofMap(i, 0, fbo->getWidth(), 1, 7, true);
             ofSetLineWidth(lines_width);
             ofVec2f start_pos(i, fbo->getHeight());
@@ -316,7 +321,7 @@ void VVSource::drawMovingLines(float currentShowTime){
             ofDrawLine(start_pos, end_pos);
         }
 
-        // horizontal
+        // horizontal lines
         time_multiplier = 0.25;
         for (int i = 0; i < fbo->getHeight(); i+=line_spacing){
             float time_offset = (i / line_spacing) * time_multiplier;
@@ -334,7 +339,7 @@ void VVSource::drawMovingLines(float currentShowTime){
         }
         if (lines_reached_end){
 
-            // save start time
+            // save start time for the next one: rectangles
             if (!rects_started){
                 rects_start_time = current_time;
                 rects_started = true;
@@ -342,7 +347,7 @@ void VVSource::drawMovingLines(float currentShowTime){
             }
         }
     }
-    // rects growing
+    // rects growing for both sides
     else if (current_time > lines_checkpoints[0] && current_time < rect_checkpoints[1] && rects_started){
 
         ofSetColor(255);
@@ -423,7 +428,7 @@ void VVSource::drawMovingLines(float currentShowTime){
 
 //--------------------------------------------------------------
 // 3
-// draw the quads fadeing in while rotating
+// draw the quads fading in while rotating
 // and the lines animated from bottom to top
 //--------------------------------------------------------------
 void VVSource::drawFadingQuads(float currentShowTime){
@@ -436,7 +441,8 @@ void VVSource::drawFadingQuads(float currentShowTime){
 
     // compute "local" time since the first time this function was called
     float current_time = currentShowTime - bars_start_time;
-    float checkpoints[4] = {0, 1, 3, 22};
+    // checkpoints are used like keyframes
+    float checkpoints[4] = {0, 1, 3, 22}; // seconds
     
     ofPushStyle();
 
@@ -499,14 +505,16 @@ void VVSource::drawFadingQuads(float currentShowTime){
                     
                     // how much delay there is from a column to another
                     float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
-                    
+
+                    // each quad will have an increasing delay based on its x and y position
                     time_offset = (x * x_time_offset_multiplier) + (y_time_shift * y_time_offset_multiplier);
 
-                    // animate color, scale, rotation
+                    // set the start and end times for the animation
                     float start_time = white_quads_start_time + time_offset;
                     float end_time = white_quads_start_time + time_offset + duration;
+                    // color will take a little bit longer
                     float end_time_color = white_quads_start_time + time_offset + (duration * 1.3);
-
+                    // animate color from black to white
                     quads_color = ofMap(current_time, start_time, end_time_color, 0, 255, true);
                     float scale_animated = ofMap(current_time, start_time, end_time, 0.001, 1, true);
                     float rotation_animated = ofMap(current_time, start_time, end_time, 90, 0, true);
@@ -540,11 +548,12 @@ void VVSource::drawFadingQuads(float currentShowTime){
                     float y_time_shift = ofMap(y, fbo->getHeight(), 0, 0, fbo->getHeight());
                     float x_time_shift = ofMap(x, fbo->getWidth()/4, 0, 0, fbo->getWidth()/4);
                     time_offset = (x_time_shift * x_time_offset_multiplier) + (y_time_shift * y_time_offset_multiplier);
-                    // animate color, scale, rotation
+                    // animate color from black to white
                     quads_color = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + (duration * 1.3), 0, 255, true);
                     float scale_animated = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + duration, 0.001, 1, true);
                     float rotation_animated = ofMap(current_time, white_quads_start_time + time_offset, white_quads_start_time + time_offset + duration, 90, 0, true);
 
+                    // draw the actual rectangle
                     ofPushMatrix();
 
                         ofTranslate(x, y, 0);
@@ -556,7 +565,6 @@ void VVSource::drawFadingQuads(float currentShowTime){
                     ofPopMatrix();
                 }
             }
-            // ofPopMatrix();
         }
         ofPopMatrix();
 
@@ -565,11 +573,8 @@ void VVSource::drawFadingQuads(float currentShowTime){
         // when the white quads animation is ended
         if (white_quads_ended){
 
-            // cout << "elapsed time: " << current_time - white_quads_start_time << endl;
-
             ofSetColor(255);
             duration = 0.5f;
-            // ofDrawRectangle(0, 0, fbo->getWidth(), fbo->getHeight());
 
             // fade out to black using the same technique
             // but now from top to bottom
@@ -578,12 +583,12 @@ void VVSource::drawFadingQuads(float currentShowTime){
                     
                     time_offset = (x * x_time_offset_multiplier) * (y * y_time_offset_multiplier) * 0.17;
                     
-                    // time_offset = (y * y_time_offset_multiplier);
                     // animate color, scale, rotation
                     quads_color = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + (duration * 1.3), 255, 0, true);
                     float scale_animated = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + duration, 1, 0.001, true);
                     float rotation_animated = ofMap(current_time, black_quads_start_time + time_offset, black_quads_start_time + time_offset + duration, 0, 90, true);
 
+                    // draw the actual rectangle
                     ofPushMatrix();
                         ofTranslate(x, y, 0);
                         
@@ -670,6 +675,9 @@ void VVSource::drawFadingQuads(float currentShowTime){
 
 //--------------------------------------------------------------
 // 4
+// finally, we're introducing.. color!
+// draw drunken coloured lines thanks to Perlin Noise
+// and then make the final fade to coloured quads.. then gray.. then black
 //--------------------------------------------------------------
 void VVSource::drawColouredLines(float currentShowTime){
 
@@ -685,7 +693,6 @@ void VVSource::drawColouredLines(float currentShowTime){
     ofPushStyle();
 
     // max sizes of the rectangles
-    float max_x_rect_size = 6;
     float max_y_rect_size = 12;
     // actual sizes
     float size_x;
@@ -815,6 +822,7 @@ void VVSource::drawColouredLines(float currentShowTime){
                 // animate color, scale, rotation
                 float scale_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset+ duration, 0.001f, 1.0f, true);
                 float rotation_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + duration, 90, 0, true);
+                // animate the saturation more slowly, should appear in the end
                 saturation = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + sat_duration, 255, 0, true);
 
                 // pick the color that we previously assigned
@@ -823,6 +831,7 @@ void VVSource::drawColouredLines(float currentShowTime){
                 current_color.a = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + alpha_duration, 0, 255, true);
                 current_color.setSaturation(saturation);
 
+                // draw the actual rectangle
                 ofPushMatrix();
                     ofTranslate(x, y, 0);
                     
@@ -834,6 +843,7 @@ void VVSource::drawColouredLines(float currentShowTime){
 
                 ofPopMatrix();
 
+                // check when we're done with this animation
                 if (!bg_started_fade){
                     if (y >= fbo->getHeight() - quad_size && x >= fbo->getWidth() - quad_size){
                         if (current_color.a == 255 && scale_animated == 1.0f && rotation_animated == 0.0f){
@@ -866,6 +876,8 @@ void VVSource::drawColouredLines(float currentShowTime){
 
 //--------------------------------------------------------------
 // EVENTS
+//--------------------------------------------------------------
+// useful for calibrating the projector
 //--------------------------------------------------------------
 void VVSource::onKeyPressed(ofKeyEventArgs & event){
     switch (event.key){

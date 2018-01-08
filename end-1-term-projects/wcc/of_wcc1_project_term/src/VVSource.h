@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "FboSource.h"
 
-#define EXHIBITION_TIME 135 // this value must mutch the one inside the scenes.json
+#define EXHIBITION_TIME 140 // this value must match the one inside the scenes.json
 
 class VVSource : public ofx::piMapper::FboSource {
 	public:
