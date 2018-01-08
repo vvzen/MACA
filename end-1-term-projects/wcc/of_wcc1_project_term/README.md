@@ -1,5 +1,7 @@
 # README
 
+An online version of this repo can be browser on [github](https://github.com/VVZen/MACA/tree/master/end-1-term-projects/wcc/of_wcc1_project_term).
+
 Structure
 ---------
 Every generative animation is contained inside one of the 4 main functions who are called by `draw()`. Each of the functions represents a different **scene**.
