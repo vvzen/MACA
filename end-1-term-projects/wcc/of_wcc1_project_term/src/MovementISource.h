@@ -62,11 +62,10 @@ class MovementISource : public ofx::piMapper::FboSource {
         bool CHECKPOINT_4;
         float coloured_lines_start_time;
         bool coloured_lines_started;
-        float white_bg_fade_in_time;
+        float black_bg_fade_in_time;
         bool bg_started_fade;
         bool coloured_quads_started;
         float coloured_quads_start_time;
-        bool coloured_quads_ended;
 
         // checkpoint 3
         ofVec2f center_rect_size;

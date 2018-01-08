@@ -48,21 +48,22 @@ void MovementISource::init_vars(){
     num_rects_h_3 = 0;
     num_rects_h_4 = 0;
     bg_started_fade = false;
+    coloured_quads_started = false;
     coloured_lines_started = false;
     
     int num_x_quads = fbo->getWidth() / quad_size;
     int num_y_quads = fbo->getHeight() / quad_size;
     
-    // fill color vector for the final quads with random colors
-    if (final_quads_colors.size() == 0){
-        cout << "here" << endl;
-        for (int i = 0; i < num_x_quads*num_y_quads; i++){
-            ofColor color;
-            float hue = ofMap(i, 0, num_x_quads*num_y_quads, 0, 255);
-            color.setHsb(hue, 220, 120);
+    // for (int i = 0; i < final_quads_colors.size(); i++){
+    //     final_quads_colors.pop_back();
+    // }
+    // fill color vector for the final quads with hue arranged colors
+    for (int i = 0; i < num_x_quads*num_y_quads; i++){
+        ofColor color;
+        float hue = ofMap(i, 0, num_x_quads*num_y_quads, 0, 255);
+        color.setHsb(hue, 220, 120);
 
-            final_quads_colors.push_back(color);
-        }
+        final_quads_colors.push_back(color);
     }
 }
 
@@ -699,130 +700,141 @@ void MovementISource::drawColouredLines(float currentShowTime){
 
     // draw different coloured lines
     // horizontal
-    if (current_time > 0){
-        for (int i = 0; i < num_rects_h_1; i++){
-            // size
-            size_x = fbo->getWidth()/4;
-            size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
-            // colors
-            hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
-            color.setHsb(hue, saturation, darkness, 255);
-            ofSetColor(color);
-            // ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(current_time * 0.005)) * 20), size_x, size_y);
-            ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i, current_time)) * 10), size_x, size_y);
+    if (!bg_started_fade){
+        
+        if (current_time > 0){
+            for (int i = 0; i < num_rects_h_1; i++){
+                // size
+                size_x = fbo->getWidth()/4;
+                size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
+                // colors
+                hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
+                color.setHsb(hue, saturation, darkness, 255);
+                ofSetColor(color);
+                // ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(current_time * 0.005)) * 20), size_x, size_y);
+                ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i, current_time)) * 10), size_x, size_y);
+            }
         }
-    }
-    if (num_rects_h_1 > 0){
-        // increase saturation
+        if (num_rects_h_1 > 0){
+            // increase saturation
+                saturation *= 2;
+                // increase vertical size of the rectangles
+                max_y_rect_size *= 2;
+                ofTranslate(fbo->getWidth()/4, 0, 0);
+            for (int i = num_rects_h_2; i > 0; i--){
+                // size
+                size_x = fbo->getWidth()/4;
+                size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
+                // colors
+                hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
+                color.setHsb(hue, saturation, darkness, 255);
+                ofSetColor(color);
+                ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i+2, current_time)) * 20), size_x, size_y);
+            }
+        }
+        if (num_rects_h_2 > 0){
+            // increase saturation
             saturation *= 2;
             // increase vertical size of the rectangles
             max_y_rect_size *= 2;
             ofTranslate(fbo->getWidth()/4, 0, 0);
-        for (int i = num_rects_h_2; i > 0; i--){
-            // size
-            size_x = fbo->getWidth()/4;
-            size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
-            // colors
-            hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
-            color.setHsb(hue, saturation, darkness, 255);
-            ofSetColor(color);
-            ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i+2, current_time)) * 20), size_x, size_y);
+            for (int i = 0; i < num_rects_h_3; i++){
+                // size
+                size_x = fbo->getWidth()/4;
+                size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
+                // colors
+                hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
+                color.setHsb(hue, saturation, darkness, 255);
+                ofSetColor(color);
+                ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i-1, current_time)) * 30), size_x, size_y);
+            }
+        }
+        if (num_rects_h_3 > 0){
+            // increase saturation
+            saturation *= 2;
+            // increase vertical size of the rectangles
+            max_y_rect_size *= 2;
+            ofTranslate(fbo->getWidth()/4, 0, 0);
+            for (int i = num_rects_h_4; i > 0; i--){
+                // size
+                size_x = fbo->getWidth()/4;
+                size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
+                // colors
+                hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
+                color.setHsb(hue, saturation, darkness, 255);
+                ofSetColor(color);
+                ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i-1, current_time)) * 40), size_x, size_y);
+            }
+        }
+        ofPopMatrix();
+        ofDisableBlendMode();
+
+        // when we reached the end, start the next animation
+        if (num_rects_h_4 > 10 && !coloured_quads_started){
+            coloured_quads_started = true;
+            coloured_quads_start_time = current_time;
         }
     }
-    if (num_rects_h_2 > 0){
-        // increase saturation
-        saturation *= 2;
-        // increase vertical size of the rectangles
-        max_y_rect_size *= 2;
-        ofTranslate(fbo->getWidth()/4, 0, 0);
-        for (int i = 0; i < num_rects_h_3; i++){
-            // size
-            size_x = fbo->getWidth()/4;
-            size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
-            // colors
-            hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
-            color.setHsb(hue, saturation, darkness, 255);
-            ofSetColor(color);
-            ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i-1, current_time)) * 30), size_x, size_y);
-        }
-    }
-    if (num_rects_h_3 > 0){
-        // increase saturation
-        saturation *= 2;
-        // increase vertical size of the rectangles
-        max_y_rect_size *= 2;
-        ofTranslate(fbo->getWidth()/4, 0, 0);
-        for (int i = num_rects_h_4; i > 0; i--){
-            // size
-            size_x = fbo->getWidth()/4;
-            size_y = ofMap(ofSignedNoise(i, current_time*3), -1, 1, 2, max_y_rect_size);
-            // colors
-            hue = ofMap(i * lines_y_step, 0, fbo->getHeight(), 0, 255);
-            color.setHsb(hue, saturation, darkness, 255);
-            ofSetColor(color);
-            ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i-1, current_time)) * 40), size_x, size_y);
-        }
-    }
-    ofPopMatrix();
-    ofDisableBlendMode();
 
     ofEnableAlphaBlending();
 
-    // slowly fade in a rect from the background
-    if (num_rects_h_4 > 10 && !bg_started_fade){
-        white_bg_fade_in_time = current_time;
-        bg_started_fade = true;
-        coloured_quads_start_time = current_time;
-    }
-
-    // TODO: fill canvas with quads of random colours, then fade to black
-    if (bg_started_fade){
+    // fill canvas with quads of hue arranged colours
+    if (coloured_quads_started){
         
-        float duration = 2.5f; // duration of the animation
-        float alpha_duration = 3.5f; // duration of the alpha fade in
-        float x_time_offset_multiplier = 0.012; // used to delay quads on different cols
-        float y_time_offset_multiplier = 0.016; // used to delay quads on different rows
+        float duration = 1.0f; // duration of the animation
+        float alpha_duration = 0.8f; // duration of the alpha fade in
+        float x_time_offset_multiplier = 0.020f; // used to delay quads on different cols
+        float y_time_offset_multiplier = 0.0f; // used to delay quads on different rows
         int i = 0; // keeps track of the current index we're in
 
         for (int y = 0; y < fbo->getHeight(); y+=quad_size){
             for (int x = 0; x < fbo->getWidth(); x+=quad_size){
                 
-                float time_offset = (x * x_time_offset_multiplier * 0.5) + (y * y_time_offset_multiplier);
+                y_time_offset_multiplier = (int(x / quad_size) % 2 == 0) ? 0.05f : 0.0f;
+                float time_offset = (x * x_time_offset_multiplier) + y_time_offset_multiplier;
                 
                 // animate color, scale, rotation
-                float scale_animated = ofMap(current_time, coloured_quads_start_time, coloured_quads_start_time + duration, 0.001, 1, true);
-                float rotation_animated = ofMap(current_time, coloured_quads_start_time, coloured_quads_start_time + duration, 90, 0, true);
+                float scale_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset+ duration, 0.001f, 1.0f, true);
+                float rotation_animated = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + duration, 90, 0, true);
 
-                ofColor current_color = final_quads_colors[i];
-                current_color.a = ofMap(current_time, coloured_quads_start_time, coloured_quads_start_time + alpha_duration, 0, 255, true);
+                // pick the color
+                ofColor current_color = final_quads_colors.at(i);
+                // fade in animation using the alpha
+                current_color.a = ofMap(current_time, coloured_quads_start_time + time_offset, coloured_quads_start_time + time_offset + alpha_duration, 0, 255, true);
 
                 ofPushMatrix();
                     ofTranslate(x, y, 0);
                     
                     ofRotateY(rotation_animated);
+                    ofRotateZ(rotation_animated);
 
                     ofSetColor(current_color);
                     ofDrawRectangle(0, 0, quad_size * scale_animated, quad_size * scale_animated);
 
                 ofPopMatrix();
 
+                if (!bg_started_fade){
+                    if (y >= fbo->getHeight() - quad_size && x >= fbo->getWidth() - quad_size){
+                        if (current_color.a == 255 && scale_animated == 1.0f && rotation_animated == 0.0f){
+                            bg_started_fade = true;
+                            black_bg_fade_in_time = current_time;
+                            cout << "HEEEEEEEE" << endl;
+                        }
+                    }
+                }
+
                 i++;
             }
         }
     }
-
-    // if (bg_started_fade){
-    //     float duration = 6;
-    //     float animated_alpha = ofMap(current_time, white_bg_fade_in_time, white_bg_fade_in_time + duration, 0, 255, true);
-    //     ofColor center_color(255, 255, 255, animated_alpha);
-    //     ofColor sides_color(0, 0, 0, animated_alpha);
-    //     ofSetColor(center_color);
-    //     ofDrawRectangle(fbo->getWidth()/4, 0, fbo->getWidth()/2, fbo->getHeight());
-        
-    //     ofSetColor(sides_color);
-    //     ofDrawRectangle(0, 0, fbo->getWidth()/4, fbo->getHeight());
-    //     ofDrawRectangle(fbo->getWidth()*3/4, 0, fbo->getWidth()/4, fbo->getHeight());
-    // }
+    // start the final fade out to black
+    if (bg_started_fade){
+        float duration = 5;
+        float animated_alpha = ofMap(current_time, black_bg_fade_in_time, black_bg_fade_in_time + duration, 0, 255, true);
+        ofColor target_color(0, 0, 0, animated_alpha);
+        ofSetColor(target_color);
+        ofDrawRectangle(0, 0, fbo->getWidth(), fbo->getHeight());
+    }
 
     ofDisableAlphaBlending();
 

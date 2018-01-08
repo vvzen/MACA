@@ -47,6 +47,10 @@ void ofApp::setup(){
 void ofApp::update(){
 	piMapper.update();
     sceneManager.update();
+
+    std::stringstream strm;
+	strm << "fps: " << ofGetFrameRate();
+    ofSetWindowTitle(strm.str());
 }
 
 void ofApp::draw(){
