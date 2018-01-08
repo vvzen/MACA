@@ -47,7 +47,7 @@ void ofApp::update(){
 
 void ofApp::draw(){
 
-    dummyObjects.draw(200, 30);
+    // dummyObjects.draw(200, 30);
     
     piMapper.draw();
 }
