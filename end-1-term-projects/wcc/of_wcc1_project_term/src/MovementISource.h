@@ -56,7 +56,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         bool white_quads_ended;
         float white_quads_start_time;
         float black_quads_start_time;
-        float black_quads_ended;
+        bool black_quads_ended;
         float v_lines_start_time;
 
         bool CHECKPOINT_4;
@@ -64,6 +64,9 @@ class MovementISource : public ofx::piMapper::FboSource {
         bool coloured_lines_started;
         float white_bg_fade_in_time;
         bool bg_started_fade;
+        bool coloured_quads_started;
+        float coloured_quads_start_time;
+        bool coloured_quads_ended;
 
         // checkpoint 3
         ofVec2f center_rect_size;
@@ -80,6 +83,9 @@ class MovementISource : public ofx::piMapper::FboSource {
         int num_rects_h_2;
         int num_rects_h_3;
         int num_rects_h_4;
+        vector<ofColor> final_quads_colors;
+        int num_x_quads;
+        int num_y_quads;
 
         // used to keep track of the timing of the rectangles
         bool rectangle_triggers[6] = {false, false, false, false, false, false};
