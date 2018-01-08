@@ -6,7 +6,7 @@
 #include "VideoSource.h"
 #include "SceneManager.h"
 
-#include "MovementISource.h"
+#include "VVSource.h"
 
 class ofApp : public ofBaseApp {
 	public:
@@ -25,7 +25,7 @@ class ofApp : public ofBaseApp {
 
 		// By using a custom source that is derived from FboSource
 		// you will be able to see the source listed in sources editor
-        MovementISource * movementISource;
+        VVSource * vv_source;
         
         ofImage dummyObjects;
 

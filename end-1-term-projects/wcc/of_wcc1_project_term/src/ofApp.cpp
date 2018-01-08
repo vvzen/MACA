@@ -12,21 +12,14 @@ void ofApp::setup(){
 	// FBO sources should be added before piMapper.setup() so the
 	// piMapper is able to load the source if it is assigned to
 	// a surface in XML settings.
-    // bouncingBallsSource = new BouncingBallsSource();
-    // bouncingBallsSource->setup();
-    // piMapper.registerFboSource(bouncingBallsSource);
 
-    // movingRectSource = new MovingRectSource();
-    // movingRectSource->setup();
-    // piMapper.registerFboSource(movingRectSource);
-
-    // register the source for the first movement
-    movementISource = new MovementISource();
-    movementISource->setup();
-    piMapper.registerFboSource(movementISource);
+    // register my source
+    vv_source = new VVSource();
+    vv_source->setup();
+    piMapper.registerFboSource(vv_source);
 
     // events!
-    ofAddListener(ofEvents().keyPressed, movementISource, &MovementISource::onKeyPressed);
+    ofAddListener(ofEvents().keyPressed, vv_source, &VVSource::onKeyPressed);
 
 	piMapper.setup();
 
@@ -46,6 +39,7 @@ void ofApp::update(){
 	piMapper.update();
     sceneManager.update();
 
+    // view fps on the window title
     std::stringstream strm;
 	strm << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());

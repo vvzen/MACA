@@ -3,7 +3,9 @@
 #include "ofMain.h"
 #include "FboSource.h"
 
-class MovementISource : public ofx::piMapper::FboSource {
+#define EXHIBITION_TIME 130 // this value must mutch the one inside the scenes.json
+
+class VVSource : public ofx::piMapper::FboSource {
 	public:
         void setup();
 		void update();
@@ -18,12 +20,11 @@ class MovementISource : public ofx::piMapper::FboSource {
 
         void drawCalibrationGrid(int numOfLines);
         // checkpoint 1
-        void drawFlashingIntro(int & time_multiplier);
+        void drawFlashingIntro(int & time_multiplier, float currentShowTime);
         // checkpoint 2
         void drawMovingLines(float currentShowTime);
         // checkpoint 3
         void drawFadingQuads(float currentShowTime);
-        int find_max_square_to_evenly_fit_rect(int w, int h);
         // checkpoint 4
         void drawColouredLines(float currentShowTime);
         // events
@@ -39,7 +40,10 @@ class MovementISource : public ofx::piMapper::FboSource {
         // checkpoints related vars
         bool CHECKPOINT_1;
         // determines the timing of the intro rectangles
+        float intro_checkpoints[7];
         int intro_time_multiplier;
+        bool intro_started;
+        float intro_start_time;
 
         // checkpoint 2
         bool CHECKPOINT_2;
@@ -53,7 +57,6 @@ class MovementISource : public ofx::piMapper::FboSource {
         float bars_start_time;
         bool bars_started;
         bool show_left_ellipse;
-        bool ball_disappeared;
         bool white_quads_started;
         bool white_quads_ended;
         float white_quads_start_time;
@@ -62,12 +65,7 @@ class MovementISource : public ofx::piMapper::FboSource {
         float v_lines_start_time;
 
         ofVec2f center_rect_size;
-        ofVec2f ellipse_1_pos;
-        ofVec2f ellipse_2_pos;
-        ofVec2f ellipse_velocity;
-        ofVec2f ellipse_acceleration;
         float circles_size_multiplier;
-        unsigned int bounce_count;
         float quad_size; 
 
         // checkpoint 4
@@ -88,5 +86,5 @@ class MovementISource : public ofx::piMapper::FboSource {
         int num_y_quads;
 
         // used to keep track of the timing of the rectangles
-        bool rectangle_triggers[6] = {false, false, false, false, false, false};
+        bool rectangle_triggers[6];
 };

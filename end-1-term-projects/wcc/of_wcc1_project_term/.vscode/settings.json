@@ -8,6 +8,14 @@
         "utility": "cpp",
         "vector": "cpp",
         "memory": "cpp",
-        "atomic": "cpp"
+        "atomic": "cpp",
+        "__config": "cpp",
+        "cstddef": "cpp",
+        "exception": "cpp",
+        "new": "cpp",
+        "stdexcept": "cpp",
+        "typeinfo": "cpp",
+        "ostream": "cpp",
+        "chrono": "cpp"
     }
 }

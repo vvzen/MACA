@@ -1,24 +1,25 @@
-#include "MovementISource.h"
+#include "VVSource.h"
+#include "vv_math.h"
 
 //--------------------------------------------------------------
 // initialise all the vars required by the various checkpoints
 //--------------------------------------------------------------
-void MovementISource::init_vars(){
+void VVSource::init_vars(){
 
     // initialise time at the start of source
     show_start_time = ofGetElapsedTimef();
+    if (show_start_time >= EXHIBITION_TIME) show_start_time = ofGetElapsedTimef() - current_show_time;
 
     // reference_image.allocate(990, 585, OF_IMAGE_COLOR_ALPHA);
     reference_image.load("accordion_reference_matching_bg.png");
 
+    CHECKPOINT_1 = false;
     // used to keep timing in the intro
     intro_time_multiplier = 1;
-
-    // start positions of the circles used in the checkpoint 3
-    ellipse_1_pos = ofVec2f(fbo->getWidth()/8, fbo->getHeight()/2);
-    ellipse_2_pos = ofVec2f(fbo->getWidth() * 7/8, fbo->getHeight()/2);
-    
-    CHECKPOINT_1 = false;
+    intro_started = false;
+    for (int i = 0; i < 6; i++){
+        rectangle_triggers[i] = false;
+    }
 
     // checkpoint 2
     CHECKPOINT_2 = false;
@@ -26,21 +27,14 @@ void MovementISource::init_vars(){
     rects_started = false;
 
     // checkpoint 3
-    // speeds of the ellipses
-    // ellipse_velocity = ofVec2f(0, 0);
-    // ellipse_acceleration= ofVec2f(0, 0.09);
-    // circles_size_multiplier = 1;
-    // bounce_count = 0;
     CHECKPOINT_3 = false;
     center_rect_size = ofVec2f(fbo->getWidth(), fbo->getHeight());
     bars_started = false;
     show_left_ellipse = false;
-    // ball_disappeared = false;
     white_quads_started = false;
     white_quads_ended = false;
-    white_quads_started = false;
     black_quads_ended = false;
-    // find the biggest quad that if tiled covers the a 1/4 of the fbo
+    // find the biggest quad that if tiled covers a 1/4 of the fbo
     quad_size = find_max_square_to_evenly_fit_rect(int(fbo->getWidth() / 4), int(fbo->getHeight()));
 
     // checkpoint 4
@@ -55,7 +49,7 @@ void MovementISource::init_vars(){
 }
 
 //--------------------------------------------------------------
-void MovementISource::setup(){
+void VVSource::setup(){
 	// Give our source a decent name
     name = "VV Source";
 
@@ -85,23 +79,28 @@ void MovementISource::setup(){
 }
 
 //--------------------------------------------------------------
-void MovementISource::setName(string _name){
+void VVSource::setName(string _name){
     name = _name;
 }
 
 // Don't do any drawing here
-void MovementISource::update(){
+void VVSource::update(){
     current_show_time = (ofGetElapsedTimef() - show_start_time);
+    // cout << endl;
+    // cout << "ofGetElapsedTimef(): " << ofGetElapsedTimef() << endl;
+    // cout << "current_show_time  : " << current_show_time << endl;
+    // cout << "show_start_time    : " << show_start_time << endl;
 }
 
-void MovementISource::reset(){
+void VVSource::reset(){
     ofClear(0); // uncomment if you want canvas to be reset on the buffer when fbo source is called again
+    cout << "vv, called reset" << endl;
     init_vars();
 }
 
 // No need to take care of fbo.begin() and fbo.end() here.
 // All within draw() is being rendered into fbo;
-void MovementISource::draw(){
+void VVSource::draw(){
 
     ofPushStyle();
     ofClear(0); // remove if you never want to update the background
@@ -112,7 +111,7 @@ void MovementISource::draw(){
 
     // draw flashing intro rectangles
     if (!CHECKPOINT_1){
-        drawFlashingIntro(intro_time_multiplier);
+        drawFlashingIntro(intro_time_multiplier, current_show_time);
     }
     // moving lines and quads
     else if (CHECKPOINT_1 && !CHECKPOINT_2){
@@ -136,15 +135,13 @@ void MovementISource::draw(){
         drawCalibrationGrid(32);
     }
 
-    // cout << "current show time: " << current_show_time << endl;
-
     ofPopStyle();
 }
 //--------------------------------------------------------------
 // 0
 // draw a grid, useful for calibration
 //--------------------------------------------------------------
-void MovementISource::drawCalibrationGrid(int numOfLines){
+void VVSource::drawCalibrationGrid(int numOfLines){
     
     for (int i = 0; i < numOfLines; i++){
         ofVec2f increment(i * fbo->getWidth() / numOfLines, i * fbo->getHeight() / numOfLines);
@@ -160,43 +157,68 @@ void MovementISource::drawCalibrationGrid(int numOfLines){
 //--------------------------------------------------------------
 // 1
 //--------------------------------------------------------------
-void MovementISource::drawFlashingIntro(int & time_multiplier){
-
-    ofPushStyle();
+void VVSource::drawFlashingIntro(int & time_multiplier, float currentShowTime){
 
     int colors[] = {0, 0, 0, 0};
-    float checkpoints[7] = {4, 8, 10, 12, 14, 15, 17}; // seconds
+    float durations[7] = {4, 4, 2, 2, 2, 1, 2}; // seconds
+
+    if (!intro_started){
+        intro_started = true;
+        intro_start_time = currentShowTime;
+        cout << "----------------" << endl;
+        cout << "   VV STARTED" << endl;
+        cout << "----------------" << endl;
+
+        for (int i = 0; i < 7; i++){
+            if (i > 0){
+                intro_checkpoints[i] = durations[i] + intro_checkpoints[i-1];
+            }
+            else {
+                intro_checkpoints[i] = 0;
+            }
+            // cout << "current_checkpoint : " << i << " : " << intro_checkpoints[i] << endl;
+        }
+    }
+
+    // cout << "time multiplier : " << time_multiplier << endl;
+
+    ofPushStyle();
+    
     bool show_rects = true;
 
-    float current_time = (ofGetElapsedTimef() - show_start_time);
+    // compute local start time
+    float current_time = (currentShowTime - intro_start_time);
+
+    // cout << endl << "intro_start_time: " << intro_start_time << endl;
+    // cout << "current_time: " << current_time << endl;
 
     // change rect color based on current time
-    if ((current_time > checkpoints[0] && current_time < checkpoints[1]) && (rectangle_triggers[0] == false)){
+    if ((current_time >= intro_checkpoints[0]) && (current_time < intro_checkpoints[1]) && (rectangle_triggers[0] == false)){
         time_multiplier = 2;
         rectangle_triggers[0] = true;
         // cout << "increased time:" << time_multiplier << "x" << endl;
     }
-    else if ((current_time > checkpoints[1] && current_time < checkpoints[2]) && (rectangle_triggers[1] == false)){
+    else if ((current_time >= intro_checkpoints[1] && current_time < intro_checkpoints[2]) && (rectangle_triggers[1] == false)){
         time_multiplier = 4;
         rectangle_triggers[1] = true;
         // cout << "increased time:" << time_multiplier << "x" << endl;
     }
-    else if ((current_time >= checkpoints[2] && current_time < checkpoints[3]) && rectangle_triggers[2] == false){
+    else if ((current_time >= intro_checkpoints[2] && current_time < intro_checkpoints[3]) && rectangle_triggers[2] == false){
         time_multiplier = 8;
         rectangle_triggers[2] = true;
         // cout << "increased time:" << time_multiplier << "x" << endl;
     }
-    else if ((current_time >= checkpoints[3] && current_time < checkpoints[4]) && (rectangle_triggers[3] == false)){
+    else if ((current_time >= intro_checkpoints[3] && current_time < intro_checkpoints[4]) && (rectangle_triggers[3] == false)){
         time_multiplier = 20;
         rectangle_triggers[3] = true;
         // cout << "increased time:" << time_multiplier << "x" << endl;
     }
-    else if ((current_time >= checkpoints[4] && current_time < checkpoints[5]) && (rectangle_triggers[4] == false)){
+    else if ((current_time >= intro_checkpoints[4] && current_time < intro_checkpoints[5]) && (rectangle_triggers[4] == false)){
         time_multiplier = 100;
         rectangle_triggers[4] = true;
         // cout << "increased time:" << time_multiplier << "x" << endl;
     }
-    else if (current_time >= checkpoints[6] && rectangle_triggers[5] == false){
+    else if (current_time >= intro_checkpoints[6] && rectangle_triggers[5] == false){
         show_rects = false;
     }
     
@@ -234,7 +256,7 @@ void MovementISource::drawFlashingIntro(int & time_multiplier){
 //--------------------------------------------------------------
 // 2
 //--------------------------------------------------------------
-void MovementISource::drawMovingLines(float currentShowTime){
+void VVSource::drawMovingLines(float currentShowTime){
 
     if (!lines_started){
         lines_start_time = currentShowTime;
@@ -404,7 +426,7 @@ void MovementISource::drawMovingLines(float currentShowTime){
 // draw the quads fadeing in while rotating
 // and the lines animated from bottom to top
 //--------------------------------------------------------------
-void MovementISource::drawFadingQuads(float currentShowTime){
+void VVSource::drawFadingQuads(float currentShowTime){
     
     // save the start time
     if (!bars_started){
@@ -577,7 +599,6 @@ void MovementISource::drawFadingQuads(float currentShowTime){
                         if (quads_color == 0 && scale_animated == 0.001f && rotation_animated == 90){
                             black_quads_ended = true;
                             v_lines_start_time = current_time;
-                            cout << "HERE" << endl;
                             break;
                         }
                     }
@@ -603,7 +624,7 @@ void MovementISource::drawFadingQuads(float currentShowTime){
         float rotate_amount; // animated rotation around X axis
         float move_amount; // animated movement along Y axis
 
-        // break the 2D barriers! rotate around X axis
+        // 3.2 break the 2D barriers! rotate around X axis
         if (current_time >= v_lines_start_time + v_lines_duration){
 
             float movement_start_time = v_lines_start_time + v_lines_duration + 1;
@@ -624,7 +645,7 @@ void MovementISource::drawFadingQuads(float currentShowTime){
                 animated_y_tail = ofMap(current_time, z_movement_start_time, z_movement_end_time, fbo->getHeight(), -fbo->getHeight()*100, true);
             }
         }
-        // draw the lines
+        // 3.1 draw the lines
         int num_of_lines = 32;
         float line_spacing_x = fbo->getWidth() / num_of_lines;
         for (int i = 0; i < num_of_lines; i++){
@@ -650,7 +671,7 @@ void MovementISource::drawFadingQuads(float currentShowTime){
 //--------------------------------------------------------------
 // 4
 //--------------------------------------------------------------
-void MovementISource::drawColouredLines(float currentShowTime){
+void VVSource::drawColouredLines(float currentShowTime){
 
     // save the start time
     if (!coloured_lines_started){
@@ -690,6 +711,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
 
     ofPushMatrix();
 
+    // this if cascade makes different things happen based on certain bools and conditions
     // draw different coloured lines
     // horizontal
     if (!bg_started_fade){
@@ -707,6 +729,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
                 ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i, current_time)) * 10), size_x, size_y);
             }
         }
+        // draw rects on second panel
         if (num_rects_h_1 > 0){
             // increase saturation
             saturation *= 2;
@@ -724,6 +747,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
                 ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i+2, current_time)) * 20), size_x, size_y);
             }
         }
+        // draw rects on third panel
         if (num_rects_h_2 > 0){
             // increase saturation
             saturation *= 2;
@@ -741,6 +765,7 @@ void MovementISource::drawColouredLines(float currentShowTime){
                 ofDrawRectangle(0, i * lines_y_step + (sin(ofSignedNoise(i-1, current_time)) * 30), size_x, size_y);
             }
         }
+        // draw rects on fourth panel
         if (num_rects_h_3 > 0){
             // increase saturation
             saturation *= 2;
@@ -833,59 +858,9 @@ void MovementISource::drawColouredLines(float currentShowTime){
 }
 
 //--------------------------------------------------------------
-// MATHS
-//--------------------------------------------------------------
-// this algorithm takes a width and a height and returns
-// the length of the side of the biggest square that can be repeated
-// in order to fill up the width x height rectangle evenly
-// 
-//  __ __ __
-// |__|__|__|
-// |__|__|LL| <-- this 1x1 square is the biggest one able to fill this 3x2 rectangle evenly
- 
-int MovementISource::find_max_square_to_evenly_fit_rect(int w, int h){
-
-    // DIVIDE AND CONQUER
-    // 1. we do this only at the start: get the smallest side of our 2 sides.
-    // 2. we create a new side equal to the modulo of the biggest side by the smallest side.
-    //    is this new side a multiple of the biggest one?
-    //       yes -> this one is the side of the square we're looking for!
-    //       no  -> we start again: the biggest side will be the current smallest side
-    //              and the smallest side will be our new side
-
-    cout << "starting... " << w << "x" << h << endl;
-
-    int target_side;
-    int smallest_side = (w > h) ? h : w;
-    int previous_smallest_side = (w > h) ? w : h;
-
-    // recursion is nice for the programmer but evil for the memory (can lead to stack overflow)
-    // we'll use a while loop
-    while (true){
-        
-        target_side = previous_smallest_side % smallest_side;
-
-        // cout << "smallest side:          " << smallest_side << endl;
-        // cout << "previous smallest side: " << previous_smallest_side << endl;
-        // cout << "target side:            " << target_side << endl;
-
-        if (previous_smallest_side % target_side == 0){
-            cout << "found target side: " << target_side << "!" << endl;
-            return target_side;
-        }
-        previous_smallest_side = smallest_side;
-        smallest_side = target_side;
-
-        if (target_side == 0){
-            return -1;
-        }
-    }
-}
-
-//--------------------------------------------------------------
 // EVENTS
 //--------------------------------------------------------------
-void MovementISource::onKeyPressed(ofKeyEventArgs & event){
+void VVSource::onKeyPressed(ofKeyEventArgs & event){
     switch (event.key){
         case 'd': {
             show_calibration_grid = !show_calibration_grid;
