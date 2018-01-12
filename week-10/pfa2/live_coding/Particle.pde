@@ -42,7 +42,7 @@ class Particle {
             position.y = height;
         }
         else if (position.y > height + radius){
-            position.y = 0;
+            position.y = 0; 
         }
     }
 
