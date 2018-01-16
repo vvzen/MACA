@@ -10,6 +10,9 @@ PeasyCam cam;
 
 ArrayList<Vert> vertices;
 
+int w, h;
+float gap;
+
 void setup(){
     size(1280, 800, P3D);
 
@@ -22,16 +25,16 @@ void setup(){
     vertices = new ArrayList<Vert>();
 
     // fill it up with vertices
-    int w = 127;
-    int h = 127;
-    float gap = 10;
+    w = 128;
+    h = 128;
+    gap = 6;
 
     for (int i = 0; i < w; i++){
         for (int j = 0; j < h; j++){
             
             // tell it where should go
             PVector position = new PVector();
-            Vert v = new Vert(i * gap - (w * gap / 2), j * gap - (h * gap / 2), 0);
+            Vert v = new Vert(i * gap, j * gap, 0);
 
             // store in the arraylist
             vertices.add(v);
@@ -46,14 +49,17 @@ void draw(){
 
     background(0);
     strokeWeight(4);
-    stroke(255);
+    // stroke(255);
     noFill();
-
+    
     // update all vertices
     for (int i = 0; i < vertices.size(); i++){
         vertices.get(i).update();
     }
 
+    pushMatrix();
+    
+    translate(-w / 2 * gap, -h / 2 * gap);
     // draw all vertices
     // draw them all together, so it's faster
     // because we're sending them to the gpu just in one big step
@@ -61,8 +67,12 @@ void draw(){
     for (int i = 0; i < vertices.size(); i++){
         PVector p = vertices.get(i).position;
         vertex(p.x, p.y, p.z);
+        stroke(vertices.get(i).col);
+        strokeWeight(vertices.get(i).radius);
     }
     endShape();
+
+    popMatrix();
 
     popStyle();
 
