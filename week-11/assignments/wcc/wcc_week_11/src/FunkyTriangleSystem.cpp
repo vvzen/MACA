@@ -3,15 +3,15 @@
 //--------------------------------------------------------------
 void FunkyTriangleSystem::setup(){
 
-    ofxDelaunay triangulation;
-
     // add random points in the triangulation object of ofxDelaunay
-    int triangles_num = ofRandom(15, 20);
+    int triangles_num = ofRandom(18, 23);
     for (int i = 0; i < triangles_num; i++){
         triangulation.addPoint(ofPoint(ofRandomWidth(), ofRandomHeight()));
     }
     triangulation.triangulate(); // calculate the triangulation!
     
+    float hue = ofRandom(0, 255);
+
     // add a triangle in our vector from each triangle
     // createad by the ofxDelaunay triangulation
     for (int g = 0; g < triangulation.getNumTriangles(); g++){
@@ -20,7 +20,7 @@ void FunkyTriangleSystem::setup(){
         vector <ofPoint> pts = get_triangle_points(triangulation, g);
 
         FunkyTriangle tri;
-        tri.setup(pts[0], pts[1], pts[2]);
+        tri.setup(pts[0], pts[1], pts[2], hue);
 
         add_triangle(tri);
     }
@@ -62,6 +62,7 @@ int FunkyTriangleSystem::size(){
 
 //--------------------------------------------------------------
 void FunkyTriangleSystem::clear(){
+    triangulation.reset();
     tris_vector.clear();
 }
 
@@ -71,12 +72,10 @@ void FunkyTriangleSystem::update(){
         tris_vector.at(i).update();
     }
 
-    cout << "modulo: " << fmod(ofGetElapsedTimef(), 5) << endl;
-    // cout << "millis: " << ofGetElapsedTimeMillis() << endl;
+    // cout << "modulo: " << fmod(ofGetElapsedTimef(), 5) << endl;
 
-    bool trigger = fmod(ofGetElapsedTimef(), 5) > 0.0f && fmod(ofGetElapsedTimef(), 5) < 0.02f;
-
-    // bool trigger = ofGetElapsedTimeMillis() % 5000 == 0;
+    // change triangulation every 6 seconds
+    bool trigger = fmod(ofGetElapsedTimef(), 6) > 0.0f && fmod(ofGetElapsedTimef(), 6) < 0.02f;
 
     if (trigger){
        clear();
@@ -86,6 +85,9 @@ void FunkyTriangleSystem::update(){
 
 //--------------------------------------------------------------
 void FunkyTriangleSystem::draw(){
+
+    // triangulation.triangleMesh.drawWireframe(); //draw the wireframe for debugging purposes
+
     for (int i = 0; i < tris_vector.size(); i++){
         tris_vector.at(i).draw();
     }

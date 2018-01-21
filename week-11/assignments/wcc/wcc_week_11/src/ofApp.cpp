@@ -20,7 +20,6 @@ void ofApp::draw(){
     
     ofNoFill();
     ofSetColor(0);
-    //triangulation.triangleMesh.drawWireframe(); //draw the wireframe for debugging purposes
 
     ofFill();
 

@@ -15,4 +15,5 @@ class FunkyTriangleSystem {
         void draw();
 
         vector <FunkyTriangle> tris_vector;
+        ofxDelaunay triangulation;
 };
