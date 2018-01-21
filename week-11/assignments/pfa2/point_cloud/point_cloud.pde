@@ -6,52 +6,79 @@
 
 import peasy.*;
 
-PeasyCam cam;
+// PeasyCam cam;
 
 DNASpiral dna;
 
+float x_rotation = 0;
+float rotation_speed = 0.02;
+
 void setup(){
-    size(540, 960, P3D);
+    size(500, 800, P3D);
 
     // peasy cam stuff
-    cam = new PeasyCam(this, 1000);
-    cam.setMinimumDistance(50);
-    cam.setMaximumDistance(5000);
+    // cam = new PeasyCam(this, 3000);
+    // cam.setMinimumDistance(50);
+    // cam.setMaximumDistance(7000);
 
     dna = new DNASpiral(new PVector(0, 0, 0));
 
-    println("points size : " + dna.points.size());
+    println("num of vertices : " + (dna.inner_vertices.size() + dna.spiral_vertices.size()));
 }
 
 
 void draw(){
 
-    background(0);
+    background(20);
 
     dna.update();
 
     pushStyle();
 
-    stroke(255);
-    strokeWeight(2);
-
     pushMatrix();
-    translate(0, 0, -dna.height/2);
+
+    translate(width/2, height/2, 0);
+    // translate(0, 0, 20);
+    rotateX(23);
+    // translate(0, 0, (-dna.height/2) - 300);
+    translate(0, 2000, 0);
+
+    rotateZ(x_rotation);
     
-    beginShape(POINTS);
-    // draw the points all at once
+    // draw the vertices all at once
     // so that we're optimizing the work for the gpu
     // nice tip from Lior
-    for (int i = 0; i < dna.points.size(); i++){
-        PVector position = dna.points.get(i);
-        vertex(position.x, position.y, position.z);
+
+    beginShape(POINTS);
+    // two spirals
+    for (int i = 0; i < dna.spiral_vertices.size(); i++){
+        Vertex vertex = dna.spiral_vertices.get(i);
+        stroke(vertex.col);
+        strokeWeight(vertex.size);
+        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
     }
     endShape();
 
-    popMatrix();
-    popStyle();
+    beginShape(POINTS);
+    // center vertices
+    for (int i = 0; i < dna.inner_vertices.size(); i++){
+        Vertex vertex = dna.inner_vertices.get(i);
+        stroke(vertex.col);
+        strokeWeight(vertex.size);
+        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
+    }
+    endShape();
 
-    drawAxis();
+    // drawAxis();
+    
+    popStyle();
+    popMatrix();
+
+    x_rotation += rotation_speed;
+}
+
+void mousePressed(){
+    println("mouse X: " + mouseX);
 }
 
 // draw xyz reference axis
