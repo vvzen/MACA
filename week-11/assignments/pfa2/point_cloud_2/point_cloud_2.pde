@@ -6,22 +6,36 @@
 
 import peasy.*;
 
-PeasyCam cam;
+// PeasyCam cam;
 
 Fingerprint fingerprint;
 
-float x_rotation = 0;
-float rotation_speed = 0.02;
+// dna
+DNASpiral dna;
+float dna_rotation_x = 0.47916603;
+float dna_rotation = 0;
+float rotation_speed = 0.025;
+
+// fingerprint
+float fingerprint_rotation_x = 2.369164;
+float fingerprint_rotation_y = 2.969164;
+float fingerprint_rotation_z = 0.17;
+
+// camera
+float offset_x = 0;
+float offset_z = -435.41663;
+float rotation_z = 0.80;
 
 void setup(){
     size(960, 540, P3D);
 
     // peasy cam stuff
-    cam = new PeasyCam(this, 3000);
-    cam.setMinimumDistance(50);
-    cam.setMaximumDistance(7000);
+    // cam = new PeasyCam(this, 3000);
+    // cam.setMinimumDistance(50);
+    // cam.setMaximumDistance(7000);
 
     fingerprint = new Fingerprint(new PVector(0, 0, 0));
+    dna = new DNASpiral(new PVector(0, 0, 0));
 
     println("num of vertices : " + (fingerprint.spiral_vertices.size()));
 }
@@ -31,26 +45,83 @@ void draw(){
 
     background(20);
 
+    dna.update();
     fingerprint.update();
+
+    pushMatrix();
+    
+    translate(100, 0, 0);
+    translate(width/2, height/2, 0);
+    
+    // offset_z = map(mouseX, 0, width, -1000, 1000);
+    translate(offset_x, 0, offset_z);
+    
+    // rotation_z = map(mouseX, 0, width, -40, 40);
+    rotateX(rotation_z);
+
+
+    //fingerprint_rotation_x += rotation_speed * 0.3;
+    pushMatrix();
+        translate(100, 160, 190);
+        rotateX(fingerprint_rotation_x);
+        rotateY(-fingerprint_rotation_y);
+        rotateZ(fingerprint_rotation_z);
+        // draw_axis();
+        draw_fingerprint();
+    popMatrix();
+
+    translate(-330, 340, 0);
+    
+    pushMatrix();
+        // dna_rotation_x = map(mouseX, 0, width, -10, 10);
+        rotateX(dna_rotation_x);
+        rotateY(0.12);
+        rotateZ(dna_rotation);
+        draw_dna();
+    popMatrix();
+    
+    popMatrix();
+
+    dna_rotation += rotation_speed;
+}
+
+// draws the points of the dna spirals
+void draw_dna(){
 
     pushStyle();
 
-    pushMatrix();
+    beginShape(POINTS);
+    // two spirals
+    for (int i = 0; i < dna.spiral_vertices.size(); i++){
+        Vertex vertex = dna.spiral_vertices.get(i);
+        stroke(vertex.col);
+        strokeWeight(vertex.size);
+        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
+    }
+    endShape();
 
-    // translate(width/2, height/2, 0);
-    // translate(0, 0, 20);
-    // rotateX(23);
-    // translate(0, 0, (-dna.height/2) - 300);
-    // translate(0, 2000, 0);
+    beginShape(POINTS);
+    // center vertices
+    for (int i = 0; i < dna.inner_vertices.size(); i++){
+        Vertex vertex = dna.inner_vertices.get(i);
+        stroke(vertex.col);
+        strokeWeight(vertex.size);
+        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
+    }
+    endShape();
+    popStyle();
+}
 
-    // rotateZ(x_rotation);
-    
+// draws the points of the fingerprint
+void draw_fingerprint(){
+
+    pushStyle();
+
     // draw the vertices all at once
     // so that we're optimizing the work for the gpu
     // nice tip from Lior
 
     beginShape(POINTS);
-    // two spirals
     for (int i = 0; i < fingerprint.spiral_vertices.size(); i++){
         Vertex vertex = fingerprint.spiral_vertices.get(i);
         stroke(vertex.col);
@@ -59,20 +130,13 @@ void draw(){
     }
     endShape();
 
-    drawAxis();
-    
     popStyle();
-    popMatrix();
 
-    x_rotation += rotation_speed;
 }
 
-void mousePressed(){
-    println("mouse X: " + mouseX);
-}
 
 // draw xyz reference axis
-void drawAxis(){
+void draw_axis(){
 
     float size = 100;
 
@@ -88,4 +152,14 @@ void drawAxis(){
     line(0, 0, -size, 0, 0, size);
 
     popStyle();
+}
+
+// EVENTS
+void mousePressed(){
+    println("mouse X: " + mouseX);
+    println("offset_z: " + offset_z);
+    println("rotation_z: " + rotation_z);
+    println("dna_rotation_x: " + dna_rotation_x);
+    println("fingerprint_rotation_x: " + fingerprint_rotation_x);
+
 }

@@ -13,9 +13,9 @@ class DNASpiral {
     DNASpiral(PVector center){
         center_point = center.copy();
 
-        radius = 200;
         z = 0;
-        z_increment = 75;
+        z_increment = 12;
+        radius = z_increment * 2.66;
 
         create_dna();
     }
@@ -34,7 +34,7 @@ class DNASpiral {
             this.z += this.z_increment;
             Vertex vertex_1 = new Vertex(x1, y1, this.z);
             vertex_1.col = color(255);
-            vertex_1.size = 7;
+            vertex_1.size = 4;
 
             spiral_vertices.add(vertex_1);
 
@@ -43,7 +43,7 @@ class DNASpiral {
             float y2 = radius * sin(a + PI);
             Vertex vertex_2 = new Vertex(x2, y2, this.z);
             vertex_2.col = color(255);
-            vertex_2.size = 7;
+            vertex_2.size = 4;
 
             spiral_vertices.add(vertex_2);
 

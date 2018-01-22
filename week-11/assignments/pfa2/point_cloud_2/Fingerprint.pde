@@ -53,15 +53,15 @@ class Fingerprint {
         float amplitude = 0.09;
         float period = 120;
 
-        // println("test : " + test);
-
         for (int i = 0; i < spiral_vertices.size(); i++){
             Vertex vertex = spiral_vertices.get(i);
+
+            period += random(-0.001, 0.001);
 
             float displacement_x = amplitude * cos((TWO_PI * frameCount / (period * 0.3)) + i);
             float displacement_z = amplitude * cos((TWO_PI * frameCount / period) + i);
             
-            vertex.position.x += displacement_x + random(-0.1, 0.1);
+            vertex.position.x += displacement_x + random(-0.11, 0.11);
             vertex.position.z += displacement_z;
         }
     }
