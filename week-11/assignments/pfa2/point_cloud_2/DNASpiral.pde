@@ -9,7 +9,6 @@ class DNASpiral {
     float z_increment;
     float height;
 
-    // methods
     DNASpiral(PVector center){
         center_point = center.copy();
 
@@ -47,7 +46,7 @@ class DNASpiral {
 
             spiral_vertices.add(vertex_2);
 
-            // TODO: draw the connections between the two spirals
+            // draw the connections between the two spirals
             float num_inner_vertices = 18.0;
             float inner_vertices_step = 1.0 / num_inner_vertices;
             for (float i = 0.0; i <= 1.0; i+=inner_vertices_step) {
@@ -68,12 +67,6 @@ class DNASpiral {
     }
 
     void update(){
-        
-        // for (int i = 0; i < spiral_vertices.size(); i++){
-        //     Vertex vertex = spiral_vertices.get(i);
-        //     vertex.position.z += sin(second() * 5.4) * 1;
-        // }
-
-        // TODO:
+        // nothing to add here for the moment
     }
 }

@@ -2,6 +2,11 @@
     @title : Study 1 - RANDOM. 3D point cloud primitive
     @date :  21/01/2018
     @author: vvz3n
+    @brief : A study of fingerprints using spirals and randomness.
+            Probably much more interesting results could be obtained using 
+            a reaction diffusion approach or a vector field with a relatively
+            small flock simulation.
+            This code can be found online here: https://github.com/VVZen/MACA/tree/master/week-11/assignments/pfa2/point_cloud_2
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import peasy.*;
@@ -34,10 +39,9 @@ void setup(){
     // cam.setMinimumDistance(50);
     // cam.setMaximumDistance(7000);
 
+    // setup the shapes
     fingerprint = new Fingerprint(new PVector(0, 0, 0));
     dna = new DNASpiral(new PVector(0, 0, 0));
-
-    println("num of vertices : " + (fingerprint.spiral_vertices.size()));
 }
 
 
@@ -50,6 +54,7 @@ void draw(){
 
     pushMatrix();
     
+    // get the places at the right places
     translate(100, 0, 0);
     translate(width/2, height/2, 0);
     
@@ -59,10 +64,10 @@ void draw(){
     // rotation_z = map(mouseX, 0, width, -40, 40);
     rotateX(rotation_z);
 
-
-    //fingerprint_rotation_x += rotation_speed * 0.3;
+    // draw the fingerprint
+    fingerprint_rotation_x += rotation_speed * 0.3;
     pushMatrix();
-        translate(100, 160, 190);
+        translate(100, 190, 190);
         rotateX(fingerprint_rotation_x);
         rotateY(-fingerprint_rotation_y);
         rotateZ(fingerprint_rotation_z);
@@ -70,8 +75,9 @@ void draw(){
         draw_fingerprint();
     popMatrix();
 
-    translate(-330, 340, 0);
+    translate(-330, 390, 0);
     
+    // draw the dna
     pushMatrix();
         // dna_rotation_x = map(mouseX, 0, width, -10, 10);
         rotateX(dna_rotation_x);
@@ -117,10 +123,6 @@ void draw_fingerprint(){
 
     pushStyle();
 
-    // draw the vertices all at once
-    // so that we're optimizing the work for the gpu
-    // nice tip from Lior
-
     beginShape(POINTS);
     for (int i = 0; i < fingerprint.spiral_vertices.size(); i++){
         Vertex vertex = fingerprint.spiral_vertices.get(i);
@@ -133,7 +135,6 @@ void draw_fingerprint(){
     popStyle();
 
 }
-
 
 // draw xyz reference axis
 void draw_axis(){
@@ -162,4 +163,14 @@ void mousePressed(){
     println("dna_rotation_x: " + dna_rotation_x);
     println("fingerprint_rotation_x: " + fingerprint_rotation_x);
 
+}
+
+void keyPressed(){
+
+    switch (key){
+        case 's':{
+            saveFrame("vv_pcloud_random.png");
+            break;
+        }
+    }
 }
