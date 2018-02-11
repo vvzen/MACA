@@ -20,7 +20,7 @@ float y_rotation_speed = 0.005;
 
 // colors
 // color bg_color = color(255, 255, 255);
-color bg_color = color(20, 20, 20);
+color bg_color = color(5, 5, 5);
 // color label_color = color(20, 20, 20);
 color label_color = color(255, 255, 255);
 
@@ -30,7 +30,7 @@ ArrayList<Integer> input_numbers;
 
 int branch_length = 8;
 //float angle = 0;
-int max_iterations = 20;
+int max_iterations = 30;
 
 void setup(){
     size(1280, 720, P3D);
@@ -39,7 +39,7 @@ void setup(){
     setup_GUI();
 
     translate_x = width*0.5;
-    translate_y = height-100;
+    translate_y = height-50;
     angle_x = 0;
     angle_y = 0;
 
@@ -114,16 +114,14 @@ ArrayList<Integer> collatz(int n, float branchLength, float radAngleX, float rad
         //red = map(n, 0, max_iterations*10, 0, 255);
         //blue = map(n, 0, max_iterations*10, 0, 255);
         red = 255 - collatz_numbers.size();
+        green = 255 - collatz_numbers.size();
+        blue = 255 - collatz_numbers.size();
+        float col = map(collatz_numbers.size(), 0, 100, 0, 255);
         //green = 255 - collatz_numbers.size();
         //blue = 255 - collatz_numbers.size();
-        if (n % 2 == 0){
-            //red = 255;
-        }
-        else {
-            //red = 0;
-            // blue = map(n, 0, max_iterations*10, 255, 0);
-        }
-        stroke(red, green, blue);
+        
+        // stroke(red, green, blue);
+        stroke(col, 0, blue);
         line(0, 0, 0, 0, -branchLength, 0);
 
         // strokeWeight(3);
