@@ -54,6 +54,9 @@ void Population::natural_selection(){
 // Create a new population picking only the best parents!
 void Population::generate(){
 
+    // clear current population
+    triangles.clear();
+
     for (int i = 0; i < mating_pool.size(); i++){
         int t_male_index = ofRandom(mating_pool.size());
         int t_female_index = ofRandom(mating_pool.size());
@@ -62,8 +65,12 @@ void Population::generate(){
         Triangle t_female = triangles.get(t_female_index);
 
         // make the crossover
-        Triangle child;
-        child.crossover(t_male, t_female);
+        Triangle child = Triangle.crossover(t_male, t_female);
+        // some random mutations happen
+        child.mutateGenes();
+        
+        // add child to population
+        triangles.push_back(child);
     }
-
+    num_generations++;
 }

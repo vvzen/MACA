@@ -6,7 +6,8 @@ void ofApp::setup(){
     painting.allocate(ofGetWidth(), ofGetHeight(), OF_IMAGE_COLOR   );
     painting.load("piet_mondrian_red_tree_768.jpg");
 
-    population = Population(0.01, 50);
+    population = Population();
+    population.setup(painting, 0.05, 100);
 }
 
 //--------------------------------------------------------------
