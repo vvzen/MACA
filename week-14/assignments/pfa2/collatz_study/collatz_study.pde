@@ -17,6 +17,7 @@ float translate_x;
 float translate_y;
 float y_rotation = 0.0;
 float y_rotation_speed = 0.005;
+float stroke_width;
 
 // colors
 // color bg_color = color(255, 255, 255);
@@ -49,6 +50,7 @@ void setup(){
 
     input_numbers = new ArrayList<Integer>();
 
+    // generate {max_iterations} of random numbers to be feed into the collatz function
     for (int i = 0; i < max_iterations; i++){
         
         int num = floor(random(0, max_iterations*10));
@@ -66,14 +68,13 @@ void setup(){
         }
     }
 
-    // println("collatz of " + n + ": " + collatz_numbers);
     println("input numbers : " + input_numbers);
 }
 
 void draw(){
     background(bg_color);
-    //stroke(255);
-    strokeWeight(1);
+    
+    strokeWeight(stroke_width);
 
     y_rotation += y_rotation_speed;
 
@@ -83,7 +84,6 @@ void draw(){
     pushMatrix();
     
     translate(translate_x, translate_y, 0);
-    // translate(map(mouseX, 0, width, -300, 300), 0, 0);
     rotateY(y_rotation);
 
     //draw_axis();
@@ -100,6 +100,7 @@ void draw(){
     draw_GUI();
 }
 
+// Using while approach instead of recursion
 ArrayList<Integer> collatz(int n, float branchLength, float radAngleX, float radAngleY){
 
     ArrayList <Integer> collatz_numbers = new ArrayList<Integer>();
@@ -110,31 +111,22 @@ ArrayList<Integer> collatz(int n, float branchLength, float radAngleX, float rad
 
         collatz_numbers.add(n);
 
-        float red = 0, blue = 0, green = 0;
-        //red = map(n, 0, max_iterations*10, 0, 255);
-        //blue = map(n, 0, max_iterations*10, 0, 255);
-        red = 255 - collatz_numbers.size();
-        green = 255 - collatz_numbers.size();
-        blue = 255 - collatz_numbers.size();
-        float col = map(collatz_numbers.size(), 0, 100, 0, 255);
-        //green = 255 - collatz_numbers.size();
-        //blue = 255 - collatz_numbers.size();
+        // set the colors
+        float blue = 255 - collatz_numbers.size();
+        float red = map(collatz_numbers.size(), 0, 100, 0, 255);
         
-        // stroke(red, green, blue);
-        stroke(col, 0, blue);
+        stroke(red, 0, blue);
+        // make the first line
         line(0, 0, 0, 0, -branchLength, 0);
-
-        // strokeWeight(3);
-        // stroke(255, 0, 0);
-        // vertex(0, 0, 0);
-
+        // move at the end of it
         translate(0, -branchLength, 0);
-        // vertex(0, 0, 0);
 
+        // if we reached one we're done
         if (n == 1){
             endShape();
             return collatz_numbers;
         }
+        // turn left or right depending on number parity
         else if (n % 2 == 0){
             rotateX(radAngleX);
             rotateY(radAngleY);
@@ -187,13 +179,18 @@ void setup_GUI(){
         .setRange(1, 16)
         .setColorCaptionLabel(label_color);
     
-    cp5.addSlider("translate_x")
+    cp5.addSlider("stroke_width")
         .setPosition(20, 80)
+        .setRange(0.5, 5)
+        .setColorCaptionLabel(label_color);
+    
+    cp5.addSlider("translate_x")
+        .setPosition(20, 100)
         .setRange(0, width)
         .setColorCaptionLabel(label_color);
     
     cp5.addSlider("translate_y")
-        .setPosition(20, 100)
+        .setPosition(20, 120)
         .setRange(0, height)
         .setColorCaptionLabel(label_color);
 }
