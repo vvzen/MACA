@@ -2,34 +2,47 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
+    ofBackground(0);
+    
+    popmax = 150;
+    mutation_rate = 0.01;
     painting.allocate(ofGetWidth(), ofGetHeight(), OF_IMAGE_COLOR   );
-    painting.load("piet_mondrian_red_tree_768.jpg");
+    painting.load("piet_mondrian_red_tree_320.jpg");
 
-    population = Population();
-    population.setup(painting, 0.05, 100);
+    activate = false;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    // compute fitness for each member
-    population.calculate_fitness();
-    
-    // select parents and make children!
-    population.natural_selection();
-    
-    // create next generation
-    population.generate();
-
-    //population.evolve();
+    if (activate){
+        
+        // select parents and make children!
+        population.natural_selection();
+        
+        // create next generation
+        population.generate();
+        
+        // compute fitness for each member
+        population.calculate_fitness();
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
     painting.draw(0, 0);
-    
+    if (activate) displayInfo();
+}
+
+//--------------------------------------------------------------
+void ofApp::displayInfo(){
+
+    ofImage answer = population.get_best();
+    answer.draw(330,0);
+    ofDrawBitmapString("total generations: " + ofToString(population.num_generations), 20, 260);
+    ofDrawBitmapString("average fitness: " + ofToString(population.get_average_fitness()), 20, 275);
+    // ofDrawBitmapString("mutation rate: " + ofToString(int(mutation_rate * 100)) + "%", 20, 305);
 }
 
 //--------------------------------------------------------------
@@ -52,4 +65,17 @@ vector <ofPoint> ofApp::get_triangle_points(ofxDelaunay & triangulation, int i){
     points.push_back(pointC);
     
     return points;
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key){
+
+    if (key=='g' || key == 'G'){
+        activate = !activate;
+        if (activate){
+            ofImage lowResTarget = painting;
+            lowResTarget.resize(painting.getWidth(), painting.getHeight());
+            population.setup(lowResTarget, mutation_rate, 100);
+        }
+    }
 }

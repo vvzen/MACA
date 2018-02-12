@@ -10,13 +10,19 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
+		void keyPressed(int key);
+		void displayInfo();
+
 		ofImage painting;
 
 		// triangulation stuff
 		vector <ofPoint> get_triangle_points(ofxDelaunay & triangulation, int i);
 		vector<ofPoint> points;
 		
-		int num_points;
+		//int num_points;
+		bool activate;
+		int popmax;
+        float mutation_rate;
 
 		// genetic stuff
 		Population population;

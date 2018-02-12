@@ -10,6 +10,18 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "OF_ROOT=/Users/vv/code/of/openFrameworks make clean",
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]
