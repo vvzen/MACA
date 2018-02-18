@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "compile",
+            "label": "compile and run",
             "type": "shell",
-            "command": "make && make RunRelease",
+            "command": "OF_ROOT=/Users/vv/code/of/openFrameworks make && OF_ROOT=/Users/vv/code/of/openFrameworks make RunRelease",
             "group": {
                 "kind": "build",
                 "isDefault": true
