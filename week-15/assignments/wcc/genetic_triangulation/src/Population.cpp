@@ -18,7 +18,7 @@ void Population::setup(ofImage _target, float m, int num)
     for (int x=0; x<num; x++){
         Individual tempIndividual;
         // tempIndividual.setup(300); //300 genes = 300 triangles
-        tempIndividual.setup(7*17); // the more the genes the more the triangles
+        tempIndividual.setup(105); // the more the genes the more the triangles
         individuals.push_back(tempIndividual);
     }
     calcFitness();

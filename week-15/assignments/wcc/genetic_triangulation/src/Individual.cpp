@@ -90,57 +90,20 @@ ofImage Individual::getPhenotype(int width, int height){
         centroid.x = (tri_points.at(0).x + tri_points.at(1).x + tri_points.at(2).x) / 3;
         centroid.y = (tri_points.at(0).y + tri_points.at(1).y + tri_points.at(2).y) / 3;
 
-        int genetic_point_index = 0;
         // for this delaunay triangle, find the closest genetic point
-        // so that we can know which color it should be
-        float min_distance = fbo.getWidth();
-
-        
-        // sort genetic points using lambda function that compute distance from centroid
+        // so that we can know of which color it should be
+        // Instead of looping, I'm gonna sort the genetic points using a lambda function that computes distance from centroid
         // see : https://www.youtube.com/watch?v=uk0Ytomv0wY 
         // and https://stackoverflow.com/questions/32634239/c-sort-vector-based-on-distance-to-external-point
         sort(begin(genetic_points), end(genetic_points), [centroid](const genetic_point& gp1, const genetic_point& gp2){
             return ofDist(centroid.x, centroid.y, gp1.pos.x, gp1.pos.y) < ofDist(centroid.x, centroid.y, gp2.pos.x, gp2.pos.y);
         });
 
-        // for (int g = 0; g < genetic_points.size(); g++){
-            
-        //     genetic_point current_gen_point = genetic_points.at(g);
-
-        //     float distance = ofDist(centroid.x, centroid.y, current_gen_point.pos.x, current_gen_point.pos.y);
-
-        //     if (distance < min_distance){
-        //         min_distance = distance;
-        //         genetic_point_index = g;
-        //     }
-        // }
-
-        ofColor color = genetic_points.at(genetic_point_index).color;
+        ofColor color = genetic_points.at(0).color;
         ofSetColor(color);
 
         ofDrawTriangle(tri_points.at(0), tri_points.at(1), tri_points.at(2));
     }
-
-
-    /* for (int i = 0; i < dna.genes.size(); i += geneSize){
-
-        // color
-        int red = ofMap(dna.genes[i], 0, 1, 0, 255);
-        int green = ofMap(dna.genes[i+1], 0, 1, 0, 255);
-        int blue = ofMap(dna.genes[i+2], 0, 1, 0, 255);
-        int alpha = ofMap(max(dna.genes[i+3]*dna.genes[i+4], 0.2f), 0, 1, 0, 255); // could just multiply by 255
-        ofSetColor(red, green, blue, alpha);
-
-        // points positions
-        triangulation.addPoint();
-
-        // ofPoint anchor = ofPoint(ofMap(dna.genes[i+5], 0, 1, 0, width), ofMap(dna.genes[i+6], 0, 1, 0, height));
-        // ofPoint offset1 = ofPoint(ofMap(dna.genes[i+7], 0, 1, -width/2, width/2), ofMap(dna.genes[i+8], 0, 1, -height/2, height/2));
-        // ofPoint offset2 = ofPoint(ofMap(dna.genes[i+9], 0, 1, -width/2, width/2), ofMap(dna.genes[i+10], 0, 1, -height/2, height/2));
-        // ofPoint offset3 = ofPoint(ofMap(dna.genes[i+11], 0, 1, -width/2, width/2), ofMap(dna.genes[i+12], 0, 1, -height/2, height/2));
-
-        // ofDrawTriangle(offset1+anchor, offset2+anchor, offset3+anchor);
-    } */
 
     fbo.end();
 

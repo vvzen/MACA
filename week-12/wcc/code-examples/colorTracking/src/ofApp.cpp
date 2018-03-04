@@ -53,14 +53,14 @@ void ofApp::update(){
                     }
                 }
             }
+            //calculate the average coordinate
+            if (count>0) {
+                closestColorX = closestColorX / count;
+                closestColorY = closestColorY / count;
+                snakes[s].addLocation(closestColorX, closestColorY);
+            }
         }
 
-        //calculate the average coordinate
-        if (count>0) {
-            closestColorX = closestColorX / count;
-            closestColorY = closestColorY / count;
-            snakes[s].addLocation(closestColorX, closestColorY);
-        }
     }
 }
 

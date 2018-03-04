@@ -9,12 +9,13 @@ void ofApp::setup(){
     // vidGrabber.setDesiredFrameRate(60);
     // vidGrabber.initGrabber(320, 240);
 
-    popmax = 150;
-    mutationRate = 0.005;
+    popmax = 200;
+    // mutationRate = 0.0007;
+    mutationRate = 0.03;
     
     // target image
     target.allocate(320, 240, OF_IMAGE_COLOR);
-    target.load("caravaggio_bari.jpg");
+    target.load("test_320_240.jpg");
 
     activate = false;
 }
