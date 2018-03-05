@@ -5,7 +5,6 @@ void ofApp::setup(){
 
     // GRAPHICS
 
-    current_pos = ofPoint(ofGetWidth() / 8, ofGetHeight() / 8);
     current_size = 4;
     next_trigger = 0;
     playhead = 0;
@@ -23,6 +22,8 @@ void ofApp::setup(){
     ofSoundStreamSetup(2, 2, this, sample_rate, buffer_size, 4);
 
     ofSetCircleResolution(30);
+    ofBackground(255);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -31,20 +32,20 @@ void ofApp::update(){
 
     if (ofGetElapsedTimeMillis() > next_trigger){
 
-        next_trigger += 400;
+        next_trigger += 1300;
 
         current_pos.x = ofRandom(ofGetWidth() / 8, ofGetWidth() * 7 / 8);
         current_pos.y = ofRandom(ofGetHeight() / 8, ofGetHeight() * 7 / 8);
         
         if (kick_track[playhead % 16] == 1){
             // cout << "tum" << endl;
-            current_size = ofRandom(min_size*2, max_size*2);
-            current_color = ofColor(255, 0, 0);
+            current_size = ofRandom(max_size, max_size*2);
+            current_color = ofColor(255, 0, 0, 200);
         }
         else {
             // cout << "tish" << endl;
             current_size = ofRandom(min_size, max_size);
-            current_color = ofColor(0, 0, 0);
+            current_color = ofColor(ofRandom(255), 200);
         }
 
         dot new_dot;
@@ -54,82 +55,36 @@ void ofApp::update(){
         dots.push_back(new_dot);
         playhead++;
     }
-    
-    /*
-    // add dots in a grid
-    // every second add a circle
-    // float second_remainder = fmod(ofGetElapsedTimef(), 2);
-    // if (second_remainder <= 0.05f){
-    if (ofGetElapsedTimeMillis() > next_trigger){
-        
-        cout << "adding dot" << endl;
-        next_trigger += 1000;
-
-        current_size = ofRandom(min_size, max_size);
-        current_color = ofColor(ofRandom(255));
-
-        dot new_dot;
-        new_dot.pos = ofPoint(current_pos.x, current_pos.y);
-        new_dot.col = current_color;
-        new_dot.size = current_size;
-        dots.push_back(new_dot);
-
-        current_pos.x = ofGetWidth() / 8 + ofRandom(ofGetWidth() * 6 / 8);
-        current_pos.y = ofGetHeight() / 8 + ofRandom(ofGetHeight() * 6 / 8);
-
-        // current_pos.x += ofGetWidth() / 8;
-        // current_size += 1;
-        // if (current_size < 1) current_size = 2;
-
-        // if (current_pos.x > (ofGetWidth() * 7 / 8)){
-        //     current_pos.x = ofGetWidth() / 8;
-        //     current_pos.y += ofGetHeight() / 8;
-        // }
-        // if (current_pos.y > ofGetHeight()){
-        //     dots.clear();
-        //     current_pos.x = ofGetWidth() / 8;
-        //     current_pos.y = ofGetHeight() / 8;
-        // }
-    }
-    */
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
-    ofBackground(255);
+
+    ofBackground(0);
 
     ofPushStyle();
     for (int i = 0; i < dots.size(); i++){
         ofSetColor(dots.at(i).col);
         ofDrawCircle(dots.at(i).pos.x, dots.at(i).pos.y, dots.at(i).size, dots.at(i).size);
     }
+    // ofSetColor(current_color);
+    // ofDrawCircle(current_pos.x, current_pos.y, current_size, current_size);
     ofPopStyle();
 
-    drawImGui();
+    // drawImGui();
 }
 
 //--------------------------------------------------------------
 void ofApp::audioOut(float * output, int bufferSize, int numChannels){
 
     for (int i = 0; i < bufferSize; i++){
+        
+        float carrier_frequency = ofMap(current_size, min_size, max_size, 1000, 50);
 
-        // Make the sound texture vary continuously over a period of 20-30 seconds through the use of low-frequency oscillators, so that the sound texture develops over the entire period.
-        // float amplitude_modulation = osc4.sawn(GUI_amp_frequency_1);
-        // float frequency_modulation = osc2.sinewave(GUI_frequency_mod_1) * GUI_frequency_mod_2;
-        // double wave = osc1.pulse(GUI_carrier_frequency + frequency_modulation, GUI_carrier_cycle) * amplitude_modulation;
-
-        // float amplitude_modulation = osc4.triangle(float(current_color.r));
-        // float frequency_modulation = osc2.sinewave(GUI_frequency_mod_1) * GUI_frequency_mod_2;
-        
-        // float carrier_frequency = ofMap(current_size, min_size, max_size, 1200.0f, 5.0f);
-        // float carrier_cycle = ofMap(current_size, 0, 22, 0.0f, 1.0f);
-        
-        // double wave = osc1.pulse(carrier_frequency + frequency_modulation, 0.5) * amplitude_modulation;
-        
-        // float carrier_frequency = ofMap(current_size, min_size, max_size, 1200.0f, 5.0f);
-        double wave = osc1.pulse(carrier_frequency, 0.5) * amplitude_modulation;
-        // double wave = osc1.sinewave(carrier_frequency) * amplitude_modulation;
+        float freq_mod =osc2.saw(osc3.phasor(0.05, 0, 100)) * 200;
+        float amp_mod = osc4.pulse(current_size * 0.1, 0.5);
+    
+        double wave = osc1.sawn(carrier_frequency + freq_mod) * amp_mod;
 
         output[i] = wave;
         output[i + 1] = wave;
@@ -154,7 +109,7 @@ void ofApp::audioOut(float * output, int bufferSize, int numChannels){
     // ImGui::SliderFloat("Amp Frequency 1", &GUI_amp_frequency_1, 0.1f, 200.0f);
     ImGui::SliderFloat("Frequency Mod 1", &GUI_frequency_mod_1, 0.1f, 1000.0f);
     ImGui::SliderFloat("Frequency Mod 2", &GUI_frequency_mod_2, 0.1f, 600.0f);
-    ImGui::SliderFloat("Timer Frequency", &GUI_timer_frequency, 0.1f, 20);
+    // ImGui::SliderFloat("Timer Frequency", &GUI_timer_frequency, 0.1f, 20);
   
     ofxImGui::EndWindow(main_settings);
     gui.end();

@@ -35,7 +35,7 @@ class ofApp : public ofBaseApp{
 		int buffer_size;
         int sample_rate;
 		int playhead;
-		int kick_track[16] = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+		int kick_track[16] = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
 		
 		maxiOsc osc1, osc2, osc3, osc4;
 		maxiOsc metronome;
