@@ -50,7 +50,6 @@ class Vert{
     return res;
   }
 
-
 } // class Vert
 
 

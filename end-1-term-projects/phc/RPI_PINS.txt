@@ -1,0 +1,18 @@
+THERMAL PRINTER
+
+printer    RaspberryPi
+GND        GND (pin 14)
+RX (blue)  TXD (pin 8)     
+TX (green) RXD (pin 10)
+
+DISPLAY
+
+e-Paper  RaspberryPi
+3.3V     3.3V (pin1)
+GND      GND  (pin6)
+DIN      MOSI (pin19)
+CLK      SCLK (pin23)
+CS       CE0  (pin24)
+DC       BCM25(pin22)
+RST      BCM17(pin11)
+BUSY     BCM24(pin18)

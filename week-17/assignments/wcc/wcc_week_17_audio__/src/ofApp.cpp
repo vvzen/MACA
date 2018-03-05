@@ -1,3 +1,12 @@
+//--------------------------------------------------------------
+// @brief:      audio visual application
+// @shortcuts:  
+//      
+// @author:     vvzen
+// @date:       05/03/2018
+// @notes:      not very inspired or beautiful.. struggling with ofxMaxim
+//--------------------------------------------------------------
+
 #include "ofApp.h"
 
 //--------------------------------------------------------------
@@ -6,6 +15,7 @@ void ofApp::setup(){
     // GRAPHICS
 
     current_size = 4;
+    // a trigger for adding new dots to the screen
     next_trigger = 0;
     playhead = 0;
 
@@ -29,10 +39,10 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
+    // every 1100 millis
     if (ofGetElapsedTimeMillis() > next_trigger){
 
-        next_trigger += 1300;
+        next_trigger += 1100;
 
         current_pos.x = ofRandom(ofGetWidth() / 8, ofGetWidth() * 7 / 8);
         current_pos.y = ofRandom(ofGetHeight() / 8, ofGetHeight() * 7 / 8);
@@ -55,6 +65,10 @@ void ofApp::update(){
         dots.push_back(new_dot);
         playhead++;
     }
+
+    if (ofGetElapsedTimeMillis() > 30 * 1000){
+        ofExit();
+    }
 }
 
 //--------------------------------------------------------------
@@ -67,11 +81,9 @@ void ofApp::draw(){
         ofSetColor(dots.at(i).col);
         ofDrawCircle(dots.at(i).pos.x, dots.at(i).pos.y, dots.at(i).size, dots.at(i).size);
     }
-    // ofSetColor(current_color);
-    // ofDrawCircle(current_pos.x, current_pos.y, current_size, current_size);
     ofPopStyle();
 
-    // drawImGui();
+    // drawImGui(); // needed when testing sounds
 }
 
 //--------------------------------------------------------------
@@ -91,6 +103,8 @@ void ofApp::audioOut(float * output, int bufferSize, int numChannels){
     }
 }
 
+//--------------------------------------------------------------
+// USED ONLY DURING FIRST TESTING
 //--------------------------------------------------------------
  void ofApp::drawImGui(){
  
