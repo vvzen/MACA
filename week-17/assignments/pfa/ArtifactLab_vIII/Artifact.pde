@@ -83,7 +83,8 @@ public class Artifact{
   // https://n-e-r-v-o-u-s.com/tools/obj/
   public void exportMesh(String fileName){
     //export an x3d file, change to OBJExport for obj
-    MeshExport output = (MeshExport) createGraphics(10, 10, "nervoussystem.obj.X3DExport", fileName + ".x3d");
+    //MeshExport output = (MeshExport) createGraphics(10, 10, "nervoussystem.obj.X3DExport", fileName + ".x3d");
+    MeshExport output = (MeshExport) createGraphics(10, 10, "nervoussystem.obj.OBJExport", fileName + ".obj");
     output.beginDraw();
     this.draw(output);
     output.endDraw();
@@ -118,6 +119,10 @@ public class Artifact{
   // Version B - 3 floats
   public void pushVert(float x, float y, float z){
     vertices.add(new Vert(x,y,z));
+  }
+  // Version C - vector and color
+  public void pushVert(PVector v, color col){
+    vertices.add(new Vert(v.x, v.y, v.z, col));
   }
 
 } // END class Artifact

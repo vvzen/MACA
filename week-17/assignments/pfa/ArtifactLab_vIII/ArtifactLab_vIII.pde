@@ -181,7 +181,7 @@ public void recreate(int theValue) {
 }
 
 public void exportMesh(int theValue) {
-  shape.exportMesh("ArtifactLab_output");
+  shape.exportMesh("cuckoos");
 }
 
 

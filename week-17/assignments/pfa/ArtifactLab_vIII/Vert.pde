@@ -17,6 +17,7 @@ class Vert{
 
   PVector initPosition;
   PVector position;
+  color col;
 
 
   ////////////////////////
@@ -26,8 +27,15 @@ class Vert{
   // Constructor
   Vert(float x, float y, float z){
     // set position according to parameters
-    initPosition  = new PVector(x, y, z);
-    position = initPosition.copy();
+    this.initPosition  = new PVector(x, y, z);
+    this.position = initPosition.copy();
+  }
+  
+  Vert(float x, float y, float z, color col){
+    // set position according to parameters
+    this.initPosition  = new PVector(x, y, z);
+    this.position = initPosition.copy();
+    this.col = col;
   }
 
   ////////////////////////
