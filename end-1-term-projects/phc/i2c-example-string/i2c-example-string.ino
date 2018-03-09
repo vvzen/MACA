@@ -6,7 +6,6 @@ int state = 0; // current state of the led
 String current_sentence = "";
 int sentence_length = 0;
 int current_byte_count = 0;
-bool started_reception = false;
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -24,7 +23,7 @@ void setup() {
 }
 
 void loop() {
-  delay(100);
+  delay(50);
 }
 
 
@@ -33,9 +32,8 @@ void receive_data(int byte_count){
   // the first byte tells how much the sentence is long
   if (current_byte_count == 0){
     int transmission_length = Wire.read();
-    Serial.print("transmission length: ");
-    Serial.println(transmission_length);
-    started_reception = true;
+    //Serial.print("transmission length: ");
+    //Serial.println(transmission_length);
     sentence_length = transmission_length;
   }
   // if we arrived at the end, stop
@@ -60,11 +58,10 @@ void receive_data(int byte_count){
       char current_char = Wire.read(); 
       current_sentence += current_char;
       
-      Serial.print("current char: ");
-      Serial.println(current_char);
-      
-      Serial.print("current byte count: ");
-      Serial.println(current_byte_count);
+      //Serial.print("current char: ");
+      //Serial.println(current_char);
+      //Serial.print("current byte count: ");
+      //Serial.println(current_byte_count);
     }
   }
   current_byte_count++;
