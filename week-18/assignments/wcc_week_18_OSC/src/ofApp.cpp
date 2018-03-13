@@ -18,6 +18,15 @@ void ofApp::setup(){
     cam.initGrabber(640, 480);
 	// OSC
     receiver.setup(RECEIVE_PORT);
+
+    // GUI
+    // these parameters control how the digital makeup is drawn
+    GUI_interpolation_1 = 0.911;
+    GUI_interpolation_2 = 0.337;
+    GUI_interpolation_3 = 0.805;
+    GUI_interpolation_4 = 0.211;
+    GUI_interpolation_5 = 0.495;
+    GUI_interpolation_6 = 0.947;
 }
 
 //--------------------------------------------------------------
@@ -45,12 +54,10 @@ void ofApp::update(){
 			scale = m.getArgAsFloat(0);
             //cout << "/pose/scale: " << scale << endl;
 		}
-        else if(m.getAddress() == "/pose/orientation"){
-			// float x = m.getArgAsFloat(0);
-			// float y = m.getArgAsFloat(1);
-			// float z = m.getArgAsFloat(2);
-			//cout << "/pose/orientation: " << x << ", " << y << ", " << z << endl;
+        else if(m.getAddress() == "/gesture/eyebrow/left"){
+			bw_level = ofMap(m.getArgAsFloat(0), 6, 8, 0, 255, true);
 		}
+        // raw points
         else if(m.getAddress() == "/raw"){
             raw_points.clear();
 			for (int i = 0; i < 66; i+=2){
@@ -66,30 +73,16 @@ void ofApp::update(){
 void ofApp::draw(){
 
     ofBackground(40);
+    ofSetColor(bw_level);
     img.draw(0, 0);
 
-    // center red nose
-    /* ofPushMatrix();
-    
-    ofPushStyle();
-    ofTranslate(center.x, center.y);
-    ofScale(scale, scale);
-    ofSetColor(255, 10, 2);
-    ofDrawCircle(0, 0, 6, 6);
-    ofPopStyle();
-
-    ofPopMatrix(); */
-    
-
-    // draw all the raw positions with their index
+    // draw all the raw positions with their index when p is pressed
     if (show_raw_points){
         ofPushStyle();
         for (int i = 0; i < raw_points.size(); i++){
-            // ofColor col;
-            // col.setHsb(ofMap(i, 0, raw_points.size(), 0, 360), 120, 120, 255);
+            
             ofPoint current_point = raw_points.at(i);
             ofSetColor(255);
-            //ofDrawCircle(current_point.x, current_point.y, 4, 4);
             font.drawString(ofToString(i), current_point.x, current_point.y);
         }
         ofPopStyle();
@@ -100,38 +93,32 @@ void ofApp::draw(){
         ofPushMatrix();
         ofPushStyle();
 
+        // raw points
         ofPoint center_nose = raw_points.at(30);
         ofPoint left_ear = raw_points.at(1);
-        ofPoint right_ear = raw_points.at(15);
         ofPoint left_jaw = raw_points.at(3);
-        ofPoint right_jaw = raw_points.at(13);
         ofPoint left_chin = raw_points.at(6);
+        ofPoint right_ear = raw_points.at(15);
+        ofPoint right_jaw = raw_points.at(13);
         ofPoint right_chin = raw_points.at(10);
 
-        //ofTranslate(center_nose.x, center_nose.y);
-        ofSetColor(255);
-        
-        ofDrawCircle(center_nose.x, center_nose.y, 6, 6);
-        ofDrawCircle(left_ear.x, left_ear.y, 6, 6);
-        ofDrawCircle(right_ear.x, right_ear.y, 6, 6);
-        
+        // interpolated points
         // left
-        ofPoint mid_cheek_l1 = center_nose.getInterpolated(left_ear, 0.85);
-        ofPoint mid_cheek_l2 = center_nose.getInterpolated(left_ear, 0.40);
-        ofPoint mid_cheek_l3 = center_nose.getInterpolated(left_jaw, 0.70);
-        ofPoint mid_cheek_l4 = center_nose.getInterpolated(left_ear, 0.25);
-        ofPoint mid_cheek_l5 = left_chin.getInterpolated(left_ear, 0.35);
-        ofPoint mid_cheek_l6 = left_chin.getInterpolated(left_ear, 0.85);
+        ofPoint mid_cheek_l1 = center_nose.getInterpolated(left_ear, GUI_interpolation_1);
+        ofPoint mid_cheek_l2 = center_nose.getInterpolated(left_ear, GUI_interpolation_2);
+        ofPoint mid_cheek_l3 = center_nose.getInterpolated(left_jaw, GUI_interpolation_3);
+        ofPoint mid_cheek_l4 = center_nose.getInterpolated(left_ear, GUI_interpolation_4);
+        ofPoint mid_cheek_l5 = left_chin.getInterpolated(left_ear, GUI_interpolation_5);
+        ofPoint mid_cheek_l6 = left_chin.getInterpolated(left_ear, GUI_interpolation_6);
         // right
-        ofPoint mid_cheek_r1 = center_nose.getInterpolated(right_ear, 0.85);
-        ofPoint mid_cheek_r2 = center_nose.getInterpolated(right_ear, 0.40);
-        ofPoint mid_cheek_r3 = center_nose.getInterpolated(right_jaw, 0.70);
-        ofPoint mid_cheek_r4 = center_nose.getInterpolated(right_ear, 0.25);
-        ofPoint mid_cheek_r5 = right_chin.getInterpolated(right_ear, 0.35);
-        ofPoint mid_cheek_r6 = right_chin.getInterpolated(right_ear, 0.85);
+        ofPoint mid_cheek_r1 = center_nose.getInterpolated(right_ear, GUI_interpolation_1);
+        ofPoint mid_cheek_r2 = center_nose.getInterpolated(right_ear, GUI_interpolation_2);
+        ofPoint mid_cheek_r3 = center_nose.getInterpolated(right_jaw, GUI_interpolation_3);
+        ofPoint mid_cheek_r4 = center_nose.getInterpolated(right_ear, GUI_interpolation_4);
+        ofPoint mid_cheek_r5 = right_chin.getInterpolated(right_ear, GUI_interpolation_5);
+        ofPoint mid_cheek_r6 = right_chin.getInterpolated(right_ear, GUI_interpolation_6);
 
-        // left shape
-
+        // draw left shapes
         ofPath outerShape_l;
         outerShape_l.moveTo(mid_cheek_l4);
         outerShape_l.lineTo(mid_cheek_l5);
@@ -152,8 +139,7 @@ void ofApp::draw(){
         inner_triangle_l.setFilled(true);
         inner_triangle_l.draw();
         
-        // right shapes
-
+        // draw right shapes
         ofPath outerShape_r;
         outerShape_r.moveTo(mid_cheek_r4);
         outerShape_r.lineTo(mid_cheek_r5);
@@ -161,7 +147,7 @@ void ofApp::draw(){
         outerShape_r.lineTo(mid_cheek_r1);
         outerShape_r.lineTo(mid_cheek_r2);
         outerShape_r.close();
-        outerShape_r.setFillColor(ofColor(0));
+        outerShape_r.setFillColor(ofColor(255));
         outerShape_r.setFilled(true);
         outerShape_r.draw();
         
@@ -170,22 +156,45 @@ void ofApp::draw(){
         inner_triangle_r.lineTo(mid_cheek_r2);
         inner_triangle_r.lineTo(mid_cheek_r3);
         inner_triangle_r.close();
-        inner_triangle_r.setFillColor(ofColor(255));
+        inner_triangle_r.setFillColor(ofColor(0));
         inner_triangle_r.setFilled(true);
         inner_triangle_r.draw();
 
         ofPopStyle();
         ofPopMatrix();
     }
+
+    drawImGui();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     switch (key){
         case 'p':{
-            cout << "here" << endl;
             show_raw_points = !show_raw_points;
             break;
         }
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::drawImGui(){
+
+    gui.begin();
+ 	
+    auto main_settings = ofxImGui::Settings();
+    main_settings.windowPos = ofVec2f(10, 500); // set position
+    main_settings.windowSize = ofVec2f(0.0f, 0.0f); // auto resize based on parameters dimensions
+ 
+    ofxImGui::BeginWindow("GUI", main_settings, false);
+  
+    ImGui::SliderFloat("Interpolation 1", &GUI_interpolation_1, 0.0f, 1.0f);
+    ImGui::SliderFloat("Interpolation 2", &GUI_interpolation_2, 0.0f, 1.0f);
+    ImGui::SliderFloat("Interpolation 3", &GUI_interpolation_3, 0.0f, 1.0f);
+    ImGui::SliderFloat("Interpolation 4", &GUI_interpolation_4, 0.0f, 1.0f);
+    ImGui::SliderFloat("Interpolation 5", &GUI_interpolation_5, 0.0f, 1.0f);
+    ImGui::SliderFloat("Interpolation 6", &GUI_interpolation_6, 0.0f, 1.0f);
+  
+    ofxImGui::EndWindow(main_settings);
+    gui.end();
 }
