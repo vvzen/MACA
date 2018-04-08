@@ -28,6 +28,8 @@ void ofApp::setup(){
     
     word_bb = font.getStringBoundingBox(current_word, 0, 0);
     
+    test_meshes = extrude_mesh_from_text(current_word, font, extrusion_depth);
+
     /* vector <ofPath> word_paths = font.getStringAsPoints(current_word, 0, 0);
 
     // FUCK YEAH!
@@ -140,22 +142,27 @@ void ofApp::draw(){
 	ofFill();
     ofScale(1, -1, 1); // flip y axis
 
+    // for (int m = 0; m < test_meshes.size(); m++){
+    for (int m = 0; m < test_meshes.size(); m++){
+        test_meshes.at(m).draw();
+    }
+
     // draw all side meshes
-    for (int m = 0; m < word_meshes.size(); m++){
-        ofPushMatrix();
-        ofTranslate(0, 0, current_offset);
-        word_meshes.at(m).draw();
-        ofPopMatrix();
-    }
-    // draw all front and back paths
-    for (int f = 0; f < front_meshes.size(); f++){
-        ofPushMatrix();
-        ofTranslate(0, 0, current_offset);
-        front_meshes.at(f).draw();
-        ofTranslate(0, 0, extrusion_depth);
-        front_meshes.at(f).draw();
-        ofPopMatrix();
-    }
+    // for (int m = 0; m < word_meshes.size(); m++){
+    //     ofPushMatrix();
+    //     ofTranslate(0, 0, current_offset);
+    //     word_meshes.at(m).draw();
+    //     ofPopMatrix();
+    // }
+    // // draw all front and back paths
+    // for (int f = 0; f < front_meshes.size(); f++){
+    //     ofPushMatrix();
+    //     ofTranslate(0, 0, current_offset);
+    //     front_meshes.at(f).draw();
+    //     ofTranslate(0, 0, extrusion_depth);
+    //     front_meshes.at(f).draw();
+    //     ofPopMatrix();
+    // }
 
     ofPopMatrix();
 

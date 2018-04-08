@@ -38,4 +38,6 @@ class ofApp : public ofBaseApp{
 		// this will hold the front, back and extruded sides meshes
 		vector <ofVboMesh> word_meshes, front_meshes;
 		vector <ofPath> back_paths;
+
+		vector<ofVboMesh> test_meshes;
 };
