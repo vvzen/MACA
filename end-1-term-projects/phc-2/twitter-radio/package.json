@@ -1,0 +1,27 @@
+{
+	"name": "quick-prototype",
+	"version": "1.0.0",
+	"description": "A quick prototype using twitter streaming api",
+	"main": "app.js",
+	"scripts": {
+		"start": "node app.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"twitter"
+	],
+	"author": "vvzen",
+	"license": "MIT",
+	"dependencies": {
+		"aws-sdk": "^2.212.1",
+		"say": "^0.14.0",
+		"serialport": "^6.1.1",
+		"speaker": "^0.4.0",
+		"stream": "0.0.2",
+		"twit": "^2.2.9"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vvzen/twitter-radio.git"
+	}
+}
