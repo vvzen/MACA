@@ -20,41 +20,56 @@ public class CsvReader extends Artifact{
 
         vertices = new ArrayList<Vert>();
 
+        // I skip some of the points since I'm on a macbook air
+        // and the building of the geo inside houdini is taking too much time!
+        int skip = 3;
+
         // loop through dataset
-        for (TableRow row : table.rows()) {
+        for (int i = 0; i < table.getRowCount(); i+=skip){
+        // for (TableRow row : table.rows()) {
     
+            TableRow row = table.getRow(i);
+
             float lat = row.getFloat("location-lat");
             float lon = row.getFloat("location-long");
             // float alt = row.getFloat("argos:altitude");
 
+            // id of the bird
             String id = row.getString("tag-local-identifier");
             String isOutlier = row.getString("algorithm-marked-outlier");
             //String name = row.getString("individual-taxon-canonical-name");
 
-
             // for each bird use a different color
             color col = color(255, 255, 255);
-            if (id.equals("126694")){
-                col = color(141, 31, 177);
-            }
-            else if (id.equals("126695")){
-                col = color(151, 25, 232);
-            }
-            else if (id.equals("126696")){
-                col = color(41, 86, 255);
-            }
-            else if (id.equals("126697")){
-                col = color(25, 232, 229);
-            }
-            else if (id.equals("126698")){
-                col = color(41, 255, 68);
-            }
 
-            if (isOutlier == "True"){
-                println("outlier!");
+
+            // in order to export each bird path singularly
+            // I'm just commenting each if branch for the other birds
+            // if (id.equals("126694")){
+            //     col = color(141, 31, 177);
+                
+            //     PVector pos = sphericalToCartesian(lat, lon, 1000);
+            //     pushVert(pos, col);
+            // }
+            // if (id.equals("126695")){
+            //     col = color(151, 25, 232);
+                
+            // }
+            // if (id.equals("126696")){
+            //     col = color(41, 86, 255);
+            // }
+            if (id.equals("126697")){
+                col = color(25, 232, 229);
+                PVector pos = sphericalToCartesian(lat, lon, 1000);
+                pushVert(pos, col);
             }
-            PVector pos = sphericalToCartesian(lat, lon, 1000);
-            pushVert(pos, col);
+            // if (id.equals("126698")){
+            //     col = color(41, 255, 68);
+            // }
+
+            // if (isOutlier == "True"){
+            //     println("outlier!");
+            // }
         }
 
     }
