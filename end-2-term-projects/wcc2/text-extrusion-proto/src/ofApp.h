@@ -4,6 +4,12 @@
 #include "ofxDelaunay.h"
 #include "vv_extrudeFont.h"
 
+struct word {
+	ofPoint pos;
+	ofVec2f size;
+	string text;
+};
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -24,14 +30,19 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		ofTrueTypeFont font;
+		string available_words[5];
 
+		vector <word> all_words;
+
+		// 3d stuff
 		ofEasyCam cam;
-		ofLight key_light;
+		// ofCamera cam;
+		ofLight key_light_1, key_light_2;
 		ofMaterial text_mat;
 
-		string current_word;
+		// string current_word;
 		float current_offset;
-		int extrusion_depth;
+		float extrusion_depth;
 
 		// 2d bounding box of the current word
 		ofRectangle word_bb;
@@ -39,5 +50,5 @@ class ofApp : public ofBaseApp{
 		vector <ofVboMesh> word_meshes, front_meshes;
 		vector <ofPath> back_paths;
 
-		vector<ofVboMesh> test_meshes;
+		vector <vector<ofVboMesh>> all_meshes;
 };

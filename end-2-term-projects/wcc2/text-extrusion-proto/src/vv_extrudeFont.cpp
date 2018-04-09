@@ -15,9 +15,12 @@
 // }
 // 
 // void ofApp::draw(){
+//     ofPushMatrix();
+//     ofScale(1, -1, 1); // flip y axis
 //     for (int m = 0; m < my_extruded_word.size(); m++){
 //         my_extruded_word.at(m).draw();
 //     }
+//     ofPopMatrix();
 // }
 //--------------------------------------------------------------
 vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, float extrusion_depth){

@@ -11,164 +11,159 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    font.load("fonts/AndaleMono.ttf", 40, true, true, true);
+    font.load("fonts/AndaleMono.ttf", 16, true, true, true);
 
-    cam.setDistance(100);
-    key_light.setPointLight();
+    // camera stuff
+    cam.setDistance(327.812);
+    cam.setScale(1, -1, 1); // bug in ofEasyCam, see https://stackoverflow.com/questions/14416577/stop-the-inversion-of-y-axis-in-camera
+    cam.disableMouseInput();
 
-    ofSetSphereResolution(60);
+    // lighting
+    key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
+    key_light_1.setPointLight();
+    key_light_2.setAttenuation(1.0f, 0.f, 0.001f);
+    key_light_2.setPointLight();
 
-    extrusion_depth = 10;
+    // materials
+    text_mat.setDiffuseColor(ofFloatColor(1.0, 1.0, 1.0));
+    text_mat.setShininess(0.5f);
+    text_mat.setSpecularColor(ofFloatColor(1.0, 1.0, 1.0));
 
-    ///////////////////
-    // START DRAWING //
-    ///////////////////
+    ofSetSphereResolution(40);
 
-    current_word =  "openframeworks";
-    
-    word_bb = font.getStringBoundingBox(current_word, 0, 0);
-    
-    test_meshes = extrude_mesh_from_text(current_word, font, extrusion_depth);
+    extrusion_depth = 2.5f;
 
-    /* vector <ofPath> word_paths = font.getStringAsPoints(current_word, 0, 0);
+    //////////////////////
+    // START 3D DRAWING //
+    //////////////////////
 
-    // FUCK YEAH!
-    // create the front mesh using a temporary ofPath and then extract its tessellation
-    for (int i = 0; i < word_paths.size(); i++){
+    available_words[0] = "#openframeworks";
+    available_words[1] = "#asda";
+    available_words[2] = "#ShotOniPhone";
+    available_words[3] = "#nofilter";
+    available_words[4] = "#instafood";
 
-        // for every char break it into polyline
-        // (simply a collection of the inner and outer points)
-        vector <ofPolyline> char_polylines = word_paths.at(i).getOutline();
+    // Step 1. fill space evenly with the words
+    float current_h_offset = 0.0f;
+    float current_v_offset = font.getStringBoundingBox("iAAASg", 0, 0).getHeight() + 5.0f;
+    for (int y = current_v_offset*2; y < ofGetHeight(); y+=current_v_offset){
+        for (int x = ofRandom(0, current_h_offset); x < ofGetWidth() - current_h_offset; x+=current_h_offset){
+            
+            word current_word;
+            current_word.pos = ofPoint(x, y);
+            current_word.text = available_words[(int) floor(ofRandom(5))];
+            current_word.size = ofVec2f(
+                font.getStringBoundingBox(current_word.text, 0, 0).getWidth() + 50.0f,
+                font.getStringBoundingBox(current_word.text, 0, 0).getHeight());
+            all_words.push_back(current_word);
 
-        ofVboMesh front; // the final vbo used to store the vertices
-        ofPath front_path; // a temp path used for computing the tessellation of the 2d shape
+            // cout << "current h offset:  " << current_h_offset << endl;
+            // cout << "current v offset:  " << current_v_offset << endl;
+            // cout << "current_word.text: " << current_word.text << endl;
 
-        // First loop is for each polyline
-        // see http://openframeworks.cc/documentation/graphics/ofTrueTypeFont/#show_getStringAsPoints
-        for (int c = 0; c < char_polylines.size(); c++){
-            // Second loop is for each point on the polyline
-            for (int p = 0; p < char_polylines[c].size(); p++){
-
-                if (p == 0){
-                    front_path.moveTo(char_polylines[c][p]);
-                }
-                else {
-                    front_path.lineTo(char_polylines[c][p]);
-                }
-            }
+            current_h_offset = current_word.size.x;
         }
-        front = front_path.getTessellation();
-        front_meshes.push_back(front);
     }
-
-    // make the extruded sides
-    for (int i = 0; i < word_paths.size(); i++){
-        vector <ofPolyline> lines = word_paths.at(i).getOutline();
-        for (int j = 0; j < lines.size(); j++){
-            
-            ofVboMesh side;
-            vector <ofPoint> points = lines.at(j).getVertices();
-            int k = 0;
-
-            for (k = 0; k < points.size()-1; k++){
-                ofPoint p1 = points.at(k+0);
-                ofPoint p2 = points.at(k+1);
-
-                side.addVertex(p1);
-                side.addVertex(p2);
-                side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-                side.addVertex(ofPoint(p2.x, p2.y, p2.z+extrusion_depth));
-                side.addVertex(p2);
-            }
-
-            // connect the last to the first
-            ofPoint p1 = points.at(k);
-            ofPoint p2 = points.at(0);
-            side.addVertex(p1);
-            side.addVertex(p2);
-            side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-            
-            side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-            side.addVertex(ofPoint(p2.x, p2.y, p2.z+extrusion_depth));
-            side.addVertex(p2);
-
-            side.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-
-            word_meshes.push_back(side);
-        }
-    } */
+    
+    // Step 2. generate the 3d words
+    for (int i = 0; i < all_words.size(); i++){
+        word current_word = all_words.at(i);
+        // cout << "adding word at index:    " << i << endl;
+        vector<ofVboMesh> current_meshes = extrude_mesh_from_text(current_word.text, font, extrusion_depth);
+        all_meshes.push_back(current_meshes);
+        // cout << "current all_meshes size: " << all_meshes.size() << endl;
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    current_offset = ofMap(mouseX, 0, ofGetWidth(), 5, 1); // depth between front and back faces
+    // current_offset = ofMap(mouseX, 0, ofGetWidth(), 5, 1); // depth between front and back faces
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    ofEnableDepthTest();
-
     ofBackground(0);
     ofFill();
 
-    // enable lights
-    key_light.lookAt(ofVec3f(ofGetWidth() / 2, ofGetHeight() / 2, 0), ofVec3f(0, 1, 0));
-    float x, z;
-    float y = 30;
-    float radius = 30;
-    x = cos(ofGetElapsedTimeMillis() * 0.001) * radius;
-    z = sin(ofGetElapsedTimeMillis() * 0.001) * radius;
+    ofEnableDepthTest();
     
+    // cam.setDistance(ofMap(mouseX, 0, ofGetWidth(), 100, 1000));
     cam.begin();
-
-    ofDrawSphere(x, y, z, 5);
-
-    key_light.setGlobalPosition(x, y, z);
-    key_light.enable();
     
     // stuff for reference
     // ofDrawGrid();
-    // ofDrawSphere(0, 0, 0, 5);
 
     ofPushMatrix();
+    // ofScale(1, -1, 1); // flip y axis
+    ofTranslate(-ofGetWidth() /2, - ofGetHeight() / 2, 0);
 
-    // ofTranslate(60, ofGetHeight() / 2);
-    // ofRotateX(ofGetFrameNum() * 3);
-    ofScale(0.12, 0.12, 0.12);
-    ofTranslate(-word_bb.width / 2, - word_bb.height / 2);
+    // 4 reference points
+    /* ofSetColor(255, 0, 0);
+    ofDrawSphere(0, 0, 0, 5);
+    ofSetColor(255, 255, 0);
+    ofDrawSphere(0, ofGetHeight(), 0, 5);
+    ofSetColor(0, 255, 255);
+    ofDrawSphere(ofGetWidth(), 0, 0, 5);
+    ofSetColor(0, 0, 255);
+    ofDrawSphere(ofGetWidth(), ofGetHeight(), 0, 5);
+    ofSetColor(255); */
+
+    // add moving light
+    // key_light.lookAt(ofVec3f(ofGetWidth() / 2, ofGetHeight() / 2, 0), ofVec3f(0, 1, 0));
+    float light_x, light_y, light_z;
+    light_x = mouseX;
+    light_y = mouseY;
+    light_z = 50;
+    key_light_1.setPosition(light_x - ofGetWidth()/2 - 10, light_y - ofGetHeight()/2, light_z);
+    key_light_1.enable();
+    key_light_2.setPosition(light_x - ofGetWidth()/2 + 10, light_y - ofGetHeight()/2, light_z);
+    key_light_2.enable();
+
+    // ofVec3f mouse_world_pos = cam.screenToWorld(ofVec3f(mouseX, mouseY, 0), ofRectangle(ofPoint(0, 0), ofGetWidth(), ofGetHeight()));
+
+    // ofDrawSphere(x, y, z, 4);
+    // ofDrawSphere(mouse_world_pos.x, mouse_world_pos.y, mouse_world_pos.z, 4);
+
+    for (int i = 0; i < all_words.size(); i++){
+        vector <ofVboMesh> current_meshes = all_meshes.at(i);
+        word current_word = all_words.at(i);
+
+        ofPoint center_of_word = ofPoint(
+            current_word.pos.x + (current_word.size.x/2),
+            current_word.pos.y + (current_word.size.y/2));
+        
+        // ofDrawSphere(center_of_word.x, center_of_word.y, 0, 4);
+
+        //ofVec3f mouse_world_pos = cam.screenToWorld(ofVec3f(mouseX, mouseY, 0), ofRectangle(ofPoint(0, 0), ofGetWidth(), ofGetHeight()));
     
-	ofFill();
-    ofScale(1, -1, 1); // flip y axis
 
-    // for (int m = 0; m < test_meshes.size(); m++){
-    for (int m = 0; m < test_meshes.size(); m++){
-        test_meshes.at(m).draw();
+        float mouse_distance = ofDist(center_of_word.x, center_of_word.y, 0, mouseX, mouseY, 0);
+
+        text_mat.begin();
+
+        ofPushMatrix();
+        float z_move = 0.0f;
+        float max_distance = 64;
+        if (mouse_distance < 64) z_move = ofMap(mouse_distance, max_distance, 0, 0, 35);
+
+        ofTranslate(current_word.pos.x, current_word.pos.y, z_move);
+
+        for (int m = 0; m < current_meshes.size(); m++){
+            current_meshes.at(m).draw();
+        }
+        ofPopMatrix();
+
+        text_mat.end();
     }
-
-    // draw all side meshes
-    // for (int m = 0; m < word_meshes.size(); m++){
-    //     ofPushMatrix();
-    //     ofTranslate(0, 0, current_offset);
-    //     word_meshes.at(m).draw();
-    //     ofPopMatrix();
-    // }
-    // // draw all front and back paths
-    // for (int f = 0; f < front_meshes.size(); f++){
-    //     ofPushMatrix();
-    //     ofTranslate(0, 0, current_offset);
-    //     front_meshes.at(f).draw();
-    //     ofTranslate(0, 0, extrusion_depth);
-    //     front_meshes.at(f).draw();
-    //     ofPopMatrix();
-    // }
-
+    
     ofPopMatrix();
 
     cam.end();
 
-    key_light.disable();
+    key_light_1.disable();
+    key_light_2.disable();
 
    ofDisableDepthTest();
 }
@@ -195,7 +190,8 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    // cout << "mouse: " << x << ", " << y << endl;
+    // cout << ofMap(162, 0, ofGetWidth(), 100, 1000) << endl;
 }
 
 //--------------------------------------------------------------
