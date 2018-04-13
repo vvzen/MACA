@@ -22,45 +22,72 @@ void ofApp::setup(){
     }
 
     // attempting to load each polygon
-    cout << "number of polygons: " << geojson_map["features"].size() << endl;
+    cout << "number of total polygons: " << geojson_map["features"].size() << endl;
 
     for (Json::ArrayIndex i = 0; i < geojson_map["features"].size(); ++i){
 
         // {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0.152421995997429,51.59897994995117],[0.148128002882061,51.5844841003418]]},"properties":{"ID_0":242,"ISO":"GBR","NAME_0":"United Kingdom","ID_1":1,"NAME_1":"England","ID_2":1,"NAME_2":"Barking and Dagenham","TYPE_2":"London Borough","ENGTYPE_2":"London Borough","NL_NAME_2":null,"VARNAME_2":null}},
+        
+        ofxJSONElement coordinates = geojson_map["features"][i]["geometry"]["coordinates"];
 
         std::string type  = geojson_map["features"][i]["geometry"]["type"].asString();
-
+        
         if (type == "Polygon"){
-            int n_points = geojson_map["features"][i]["geometry"]["coordinates"][0].size();
 
-            cout << "current i: " << i << ", type: " << type << ", n_points: " << n_points << endl;
+            // we need to start a new ofVboMesh
+            ofVboMesh mesh;
 
-            for (Json::ArrayIndex c = 0; c < n_points; ++c){
+            int n_points = coordinates[0].size();
+
+            //cout << "current i: " << i << ", type: " << type << ", n_points: " << n_points << endl;
+
+            for (Json::ArrayIndex j = 0; j < n_points; ++j){
                 
-                float lon = geojson_map["features"][i]["geometry"]["coordinates"][0][c][0].asFloat();
-                float lat = geojson_map["features"][i]["geometry"]["coordinates"][0][c][1].asFloat();
-
-                // ofPoint point = ofPoint(
-                //     geojson_map["features"][i]["geometry"]["coordinates"][0][c][0].asFloat(),
-                //     geojson_map["features"][i]["geometry"]["coordinates"][0][c][1].asFloat());
+                float lon = coordinates[0][j][0].asFloat();
+                float lat = coordinates[0][j][1].asFloat();
 
                 //cout << "current point, float: "<< lon << ", " << lat << endl;
 
-                ofPoint projected = spherical_to_cartesian(lon, lat, 600);
+                ofPoint projected = spherical_to_cartesian(lon, lat, 100);
                 //cout << "current point after projection: "<< ofToString(projected) << endl;
 
-                points_mesh.addVertex(projected);
+                mesh.addVertex(projected);
+                mesh.addColor(ofFloatColor(1.0, 1.0, 1.0));
+            }
+            mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
+            poly_meshes.push_back(mesh);
+        }
+        else if (type == "MultiPolygon"){
+            
+            int n_polygons = coordinates.size();
+
+            cout << "current i: " << i << ", type: " << type << ", n_polygons: " << n_polygons << endl;
+            
+            for (Json::ArrayIndex k = 0; k < n_polygons; ++k){
+                
+                ofVboMesh mesh;
+
+                int n_points = coordinates[k][0].size();
+
+                for (Json::ArrayIndex j = 0; j < n_points; ++j){
+                    float lon = coordinates[k][0][j][0].asFloat();
+                    float lat = coordinates[k][0][j][1].asFloat();
+
+                    ofPoint projected = spherical_to_cartesian(lon, lat, 100);
+                    //cout << "current point after projection: "<< ofToString(projected) << endl;
+
+                    mesh.addVertex(projected);
+                    mesh.addColor(ofFloatColor(1.0, 1.0, 1.0));
+                    mesh.addIndex(j);
+                }
+                mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
+                // mesh.setMode(OF_PRIMITIVE_POINTS);
+                poly_meshes.push_back(mesh);
             }
         }
-
-        points_mesh.setMode(OF_PRIMITIVE_POINTS);
-        cout << "ended parsing of file" << endl;
-
-        // std::string author = json["response"]["docs"][i]["byline"]["original"].asString();
-        // std::string date   = json["response"]["docs"][i]["pub_date"].asString();
-        // std::string text   = title + " - " + author + " (" + date + ")";
-        // ofDrawBitmapString(text, 20, i * 24 + 40);
     }
+    cout << "ended parsing of file" << endl;
+    cout << "poly_meshes.size(): " << poly_meshes.size() << endl;
 }
 
 //--------------------------------------------------------------
@@ -84,7 +111,9 @@ void ofApp::draw(){
     ofDrawSphere(0, 0, 3, 3);
     ofDrawGrid();
 
-    points_mesh.draw();
+    for (int i = 0; i < poly_meshes.size(); i++){
+        poly_meshes.at(i).drawWireframe();
+    }
     // for (int i = 0; i < poly_points.size(); i++){
     //     ofPushMatrix();
     //     ofTranslate(poly_points.at(i).x, poly_points.at(i).y, poly_points.at(i).z);

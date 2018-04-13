@@ -18,6 +18,6 @@ class ofApp : public ofBaseApp{
 
 		ofxJSONElement geojson_map;
 
-		vector <ofPoint> poly_points;
+		vector <ofVboMesh> poly_meshes;
 		ofVboMesh points_mesh;
 };
