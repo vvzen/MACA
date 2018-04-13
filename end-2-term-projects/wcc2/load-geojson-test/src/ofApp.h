@@ -10,14 +10,21 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
+		void mousePressed(int x, int y, int button);
+		void keyPressed(int key);
+
+		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
+
 		ofEasyCam cam;
 
-		// ofPoint mercator(float lon, float lat);
-		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
-		// float pvRadians(float degrees);
+		// used to compute the boundary
+		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
+		ofPoint geoshape_centroid; // overall shape centroid coordinates
+		ofVec3f overall_rotation;
+
+		float geojson_scale;
 
 		ofxJSONElement geojson_map;
 
 		vector <ofVboMesh> poly_meshes;
-		ofVboMesh points_mesh;
 };

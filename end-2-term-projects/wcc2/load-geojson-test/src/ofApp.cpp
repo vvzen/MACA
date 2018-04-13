@@ -4,10 +4,15 @@
 void ofApp::setup(){
 
     // 3D
-    cam.setDistance(100);
+    cam.setDistance(40);
+    cam.setNearClip(2);
 
+    geoshape_centroid = ofPoint(0, 0, 0);
+    overall_rotation = ofVec3f(130, -6, -78);
 
     // GEOJSON
+
+    geojson_scale = 200;
 
     std::string file_path = "uk_borders_poly_simplified.geojson";
 
@@ -21,9 +26,10 @@ void ofApp::setup(){
         cout << "Failed to parse JSON" << endl;
     }
 
-    // attempting to load each polygon
+    // load each polygon from the geojson
     cout << "number of total polygons: " << geojson_map["features"].size() << endl;
 
+    // todo: compute boundaries of the whole current feature
     for (Json::ArrayIndex i = 0; i < geojson_map["features"].size(); ++i){
 
         // {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0.152421995997429,51.59897994995117],[0.148128002882061,51.5844841003418]]},"properties":{"ID_0":242,"ISO":"GBR","NAME_0":"United Kingdom","ID_1":1,"NAME_1":"England","ID_2":1,"NAME_2":"Barking and Dagenham","TYPE_2":"London Borough","ENGTYPE_2":"London Borough","NL_NAME_2":null,"VARNAME_2":null}},
@@ -48,7 +54,7 @@ void ofApp::setup(){
 
                 //cout << "current point, float: "<< lon << ", " << lat << endl;
 
-                ofPoint projected = spherical_to_cartesian(lon, lat, 100);
+                ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
                 //cout << "current point after projection: "<< ofToString(projected) << endl;
 
                 mesh.addVertex(projected);
@@ -56,6 +62,13 @@ void ofApp::setup(){
             }
             mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
             poly_meshes.push_back(mesh);
+
+            ofPoint mesh_centroid = mesh.getCentroid();
+
+            poly_meshes_centroids.addVertex(mesh_centroid);
+            poly_meshes_centroids.addColor(ofFloatColor(1.0, 0.0, 0.0));
+
+            geoshape_centroid += mesh_centroid;
         }
         else if (type == "MultiPolygon"){
             
@@ -73,9 +86,9 @@ void ofApp::setup(){
                     float lon = coordinates[k][0][j][0].asFloat();
                     float lat = coordinates[k][0][j][1].asFloat();
 
-                    ofPoint projected = spherical_to_cartesian(lon, lat, 100);
+                    ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
                     //cout << "current point after projection: "<< ofToString(projected) << endl;
-
+                    
                     mesh.addVertex(projected);
                     mesh.addColor(ofFloatColor(1.0, 1.0, 1.0));
                     mesh.addIndex(j);
@@ -83,9 +96,25 @@ void ofApp::setup(){
                 mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
                 // mesh.setMode(OF_PRIMITIVE_POINTS);
                 poly_meshes.push_back(mesh);
+
+                ofPoint mesh_centroid = mesh.getCentroid();
+
+                poly_meshes_centroids.addVertex(mesh_centroid);
+                poly_meshes_centroids.addColor(ofFloatColor(0.0, 0.0, 1.0));
+
+                geoshape_centroid += mesh_centroid;
             }
         }
     }
+    
+    poly_meshes_centroids.setMode(OF_PRIMITIVE_POINTS);
+
+    // set the overall geoshape centroid
+    // making an average of the centroids
+    geoshape_centroid /= poly_meshes_centroids.getNumVertices();
+
+    cout << "overall centroid: " << geoshape_centroid << endl;
+
     cout << "ended parsing of file" << endl;
     cout << "poly_meshes.size(): " << poly_meshes.size() << endl;
 }
@@ -102,24 +131,26 @@ void ofApp::draw(){
     ofSetColor(255);
     ofFill();
 
+    glPointSize(5);
+
     ofEnableDepthTest();
 
+    // cam.lookAt(geoshape_centroid);
     cam.begin();
 
-    // ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
+    ofDrawAxis(100);
 
-    ofDrawSphere(0, 0, 3, 3);
-    ofDrawGrid();
+    // rotate the geoshape so that it faces us
+    ofRotateX(overall_rotation.x);
+    ofRotateY(overall_rotation.y);
+    ofRotateZ(overall_rotation.z);
+    // move shape to the center of the world
+    ofTranslate(-geoshape_centroid);
 
+    // draw the vbo meshes for the polygons
     for (int i = 0; i < poly_meshes.size(); i++){
-        poly_meshes.at(i).drawWireframe();
+        poly_meshes.at(i).draw();
     }
-    // for (int i = 0; i < poly_points.size(); i++){
-    //     ofPushMatrix();
-    //     ofTranslate(poly_points.at(i).x, poly_points.at(i).y, poly_points.at(i).z);
-    //     ofDrawSphere(0, 0, 0.25, 0.25);
-    //     ofPopMatrix();
-    // }
 
     cam.end();
 
@@ -142,6 +173,46 @@ ofPoint ofApp::spherical_to_cartesian(float lon, float lat, float radius){
 }
 
 
+//--------------------------------------------------------------
+void ofApp::mousePressed(int x, int y, int button){
+    cout << "overall_rotation: " << overall_rotation << endl;
+    cout << "cam properties" << endl;
+    cout << "cam.getGlobalPosition():    " << cam.getGlobalPosition() << endl;
+    cout << "cam.getGlobalOrientation(): " << cam.getGlobalOrientation() << endl;
+    cout << "cam.getDistance():          " << cam.getDistance() << endl;
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key){
+
+    switch (key){
+        case 'q':{
+            overall_rotation.x -= 1.0;
+            break;
+        }
+        case 'w':{
+            overall_rotation.x += 1.0;
+            break;
+        }
+        case 'a':{
+            overall_rotation.y -= 1.0;
+            break;
+        }
+        case 's':{
+            overall_rotation.y += 1.0;
+            break;
+        }
+        case 'z':{
+            overall_rotation.z -= 1.0;
+            break;
+        }
+        case 'x':{
+            overall_rotation.z += 1.0;
+            break;
+        }
+    }
+
+}
 //--------------------------------------------------------------
 // ofPoint ofApp::mercator(float lon, float lat) {
 //     ofPoint position;
