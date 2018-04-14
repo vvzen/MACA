@@ -10,18 +10,22 @@ void ofApp::setup(){
     geoshape_centroid = ofPoint(0, 0, 0);
     overall_rotation = ofVec3f(130, -6, -78);
 
+    // LIGHTS
+    // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
+    key_light_1.setDirectional();
+
     // CAMERA
     cam.setDistance(40);
     cam.setNearClip(0.5);
     // camera placement settings
     // movement
     cam_move_speed = 0.05f;
-    cam_position = cam.getGlobalPosition();
+    cam_position = ofPoint(2.38566, -19.6323, 29.135);
     cam_move_velocity = ofVec3f(0, 0, 0);
     cam_move_acceleration = ofVec3f(0, 0, 0);
     // orientation
     cam_orient_speed = 0.05f;
-    cam_orientation = ofVec3f(0, 0, 0);
+    cam_orientation = ofVec3f(31, 0, 0);
     cam_orient_velocity = ofVec3f(0, 0, 0);
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
@@ -58,7 +62,7 @@ void ofApp::setup(){
 
             std::string city_name = geojson_map["features"][i]["properties"]["name"].asString();
 
-            cout << "current city: " << city_name << endl;
+            // cout << "current city: " << city_name << endl;
 
             // I'm excluding those ones for aesthetic reasons
             if (city_name != "City of Westminster" && city_name != "City of London"){
@@ -93,7 +97,7 @@ void ofApp::setup(){
                 //cout << "current point after projection: "<< ofToString(projected) << endl;
 
                 mesh.addVertex(projected);
-                mesh.addColor(ofFloatColor(1.0, 1.0, 1.0));
+                mesh.addColor(ofFloatColor(0.7));
             }
             mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
             poly_meshes.push_back(mesh);
@@ -125,7 +129,7 @@ void ofApp::setup(){
                     //cout << "current point after projection: "<< ofToString(projected) << endl;
                     
                     mesh.addVertex(projected);
-                    mesh.addColor(ofFloatColor(1.0, 1.0, 1.0));
+                    mesh.addColor(ofFloatColor(0.7));
                     mesh.addIndex(j);
                 }
                 mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
@@ -176,8 +180,10 @@ void ofApp::draw(){
     cam.setPosition(cam_position); // see compute_cam_movement()
     cam.setOrientation(cam_orientation);
 
-    // cam.lookAt(geoshape_centroid);
     cam.begin();
+    
+    key_light_1.enable();
+    key_light_1.setOrientation(cam_orientation);
 
     ofDrawAxis(100);
 
@@ -198,9 +204,13 @@ void ofApp::draw(){
         ofPushMatrix();
             ofTranslate(cities_names_meshes.at(i).position);
             ofTranslate(0, 0, -0.1f);
-            ofRotateZ(69.082);
-            ofRotateX(95);
-            ofRotateZ(-6.67969);
+            // ofRotateZ(69.082);
+            // ofRotateX(88);
+            // // ofRotateZ(-20.5664);
+            // ofRotateZ(3.75);
+            ofRotateX(90);
+            ofRotateZ(-49.7461);
+            ofRotateY(76.75);
             ofScale(0.01, 0.01, 0.01);
             for (int m = 0; m < cities_names_meshes.at(i).meshes.size(); m++){
                 cities_names_meshes.at(i).meshes.at(m).draw();
@@ -209,6 +219,7 @@ void ofApp::draw(){
     }
 
     cam.end();
+    key_light_1.disable();
 
     ofDisableDepthTest();
 }
@@ -280,11 +291,14 @@ void ofApp::compute_cam_orientation(){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
     cout << "ofMap(mouseX, 0, ofGetWidth(), -90, 90): " << ofMap(mouseX, 0, ofGetWidth(), -90, 90) << endl;
+    cout << "ofMap(mouseY, 0, ofGetHeight(), -90, 90): " << ofMap(mouseY, 0, ofGetHeight(), -90, 90) << endl;
     cout << "overall_rotation: " << overall_rotation << endl;
     cout << "cam properties" << endl;
     cout << "cam.getGlobalPosition():    " << cam.getGlobalPosition() << endl;
     cout << "cam.getGlobalOrientation(): " << cam.getGlobalOrientation() << endl;
     cout << "cam.getDistance():          " << cam.getDistance() << endl;
+    cout << "cam_orientation: " << cam_orientation << endl;
+    cout << "cam_position:    " << cam_position << endl;
 }
 
 //--------------------------------------------------------------

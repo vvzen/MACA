@@ -20,8 +20,7 @@ class ofApp : public ofBaseApp{
 		void mousePressed(int x, int y, int button);
 		void keyPressed(int key);
 
-		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
-
+		// 3D
 		ofEasyCam cam;
 		ofPoint cam_position;
 		ofVec3f cam_move_velocity, cam_move_acceleration;
@@ -31,13 +30,17 @@ class ofApp : public ofBaseApp{
 		void compute_cam_movement();
 		void compute_cam_orientation();
 
+		ofLight key_light_1;
+
 		// used to compute the boundary
 		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
 		ofPoint geoshape_centroid; // overall shape centroid coordinates
 		ofVec3f overall_rotation;
 
+		// GEOJSON
 		float geojson_scale;
 
+		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
 		ofxJSONElement geojson_map;
 
 		vector <ofVboMesh> poly_meshes;
