@@ -7,11 +7,23 @@ void ofApp::setup(){
     font.load("fonts/AndaleMono.ttf", 16, true, true, true);
 
     // 3D
-    cam.setDistance(40);
-    cam.setNearClip(2);
-
     geoshape_centroid = ofPoint(0, 0, 0);
     overall_rotation = ofVec3f(130, -6, -78);
+
+    // CAMERA
+    cam.setDistance(40);
+    cam.setNearClip(0.5);
+    // camera placement settings
+    // movement
+    cam_move_speed = 0.05f;
+    cam_position = cam.getGlobalPosition();
+    cam_move_velocity = ofVec3f(0, 0, 0);
+    cam_move_acceleration = ofVec3f(0, 0, 0);
+    // orientation
+    cam_orient_speed = 0.05f;
+    cam_orientation = ofVec3f(0, 0, 0);
+    cam_orient_velocity = ofVec3f(0, 0, 0);
+    cam_orient_acceleration = ofVec3f(0, 0, 0);
 
     // GEOJSON
 
@@ -20,7 +32,7 @@ void ofApp::setup(){
     // std::string file_path = "uk_borders_poly_simplified.geojson";
     std::string file_path = "uk_borders_and_cities.geojson";
 
-    // Now parse the JSON
+    // Parse the JSON
     bool parsing_successful = geojson_map.open(file_path);
 
     if (parsing_successful){
@@ -30,16 +42,14 @@ void ofApp::setup(){
         cout << "Failed to parse JSON" << endl;
     }
 
-    // load each polygon from the geojson
     cout << "number of total polygons: " << geojson_map["features"].size() << endl;
 
-    // todo: compute boundaries of the whole current feature
+    // load each feature from the geojson
     for (Json::ArrayIndex i = 0; i < geojson_map["features"].size(); ++i){
 
-        // {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0.152421995997429,51.59897994995117],[0.148128002882061,51.5844841003418]]},"properties":{"ID_0":242,"ISO":"GBR","NAME_0":"United Kingdom","ID_1":1,"NAME_1":"England","ID_2":1,"NAME_2":"Barking and Dagenham","TYPE_2":"London Borough","ENGTYPE_2":"London Borough","NL_NAME_2":null,"VARNAME_2":null}},
-        
         ofxJSONElement coordinates = geojson_map["features"][i]["geometry"]["coordinates"];
-
+        // current geojson feature type
+        // currently supported: Point, Polygon, MultiPolygon
         std::string type  = geojson_map["features"][i]["geometry"]["type"].asString();
 
         if (type == "Point"){
@@ -47,7 +57,6 @@ void ofApp::setup(){
             float lat = coordinates[1].asFloat();
 
             std::string city_name = geojson_map["features"][i]["properties"]["name"].asString();
-            // std::replace(city_name.begin(), city_name.end(), ' ', '_');
 
             cout << "current city: " << city_name << endl;
 
@@ -149,7 +158,8 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    compute_cam_movement();
+    compute_cam_orientation();
 }
 
 //--------------------------------------------------------------
@@ -162,6 +172,9 @@ void ofApp::draw(){
     glPointSize(5);
 
     ofEnableDepthTest();
+
+    cam.setPosition(cam_position); // see compute_cam_movement()
+    cam.setOrientation(cam_orientation);
 
     // cam.lookAt(geoshape_centroid);
     cam.begin();
@@ -184,6 +197,7 @@ void ofApp::draw(){
     for (int i = 0; i < cities_names_meshes.size(); i++){
         ofPushMatrix();
             ofTranslate(cities_names_meshes.at(i).position);
+            ofTranslate(0, 0, -0.1f);
             ofRotateZ(69.082);
             ofRotateX(95);
             ofRotateZ(-6.67969);
@@ -214,6 +228,54 @@ ofPoint ofApp::spherical_to_cartesian(float lon, float lat, float radius){
     return position;
 }
 
+//--------------------------------------------------------------
+void ofApp::compute_cam_movement(){
+
+    float max_speed = 0.21f;
+    
+    ofVec3f friction = cam_move_velocity;
+    friction.normalize();
+    friction *= -1;
+    friction *= 0.003f;
+
+    cam_move_velocity += cam_move_acceleration;
+    
+    cam_move_velocity += friction;
+    cam_move_velocity *= 0.975f;
+    cam_move_velocity.limit(max_speed);
+    if (cam_move_velocity.length() < 0.0009f){
+        cam_move_velocity = ofVec3f(0, 0, 0);
+    }
+    // update position
+    cam_position += cam_move_velocity;
+    // reset acceleration
+    cam_move_acceleration = ofVec3f(0, 0, 0);
+}
+
+//--------------------------------------------------------------
+void ofApp::compute_cam_orientation(){
+
+    float max_speed = 0.21f;
+    
+    ofVec3f friction = cam_orient_velocity;
+    friction.normalize();
+    friction *= -1;
+    friction *= 0.003f;
+
+    cam_orient_velocity += cam_orient_acceleration;
+    
+    cam_orient_velocity += friction;
+    cam_orient_velocity *= 0.975f;
+    cam_orient_velocity.limit(max_speed);
+    // after a certain speed threshold, save computing time by remaining still
+    if (cam_orient_velocity.length() < 0.0009f){
+        cam_orient_velocity = ofVec3f(0, 0, 0);
+    }
+    // update position
+    cam_orientation += cam_orient_velocity;
+    // reset acceleration
+    cam_orient_acceleration = ofVec3f(0, 0, 0);
+}
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
@@ -229,33 +291,60 @@ void ofApp::mousePressed(int x, int y, int button){
 void ofApp::keyPressed(int key){
 
     switch (key){
+        // CAMERA MOVEMENTS
+        case '[': {
+            cam_move_acceleration.z+=cam_move_speed;
+            break;
+        }
+        case ']': {
+            cam_move_acceleration.z-=cam_move_speed;
+            break;
+        }
+        case OF_KEY_UP: {
+            cam_move_acceleration.y+=cam_move_speed;
+            break;
+        }
+        case OF_KEY_DOWN: {
+            cam_move_acceleration.y-=cam_move_speed;
+            break;
+        }
+        case OF_KEY_RIGHT: {
+            cam_move_acceleration.x+=cam_move_speed;
+            break;
+        }
+        case OF_KEY_LEFT: {
+            cam_move_acceleration.x-=cam_move_speed;
+            break;
+        }
+        //
         case 'q':{
-            overall_rotation.x -= 1.0;
+            cam_orient_acceleration.x -= cam_orient_speed;
             break;
         }
         case 'w':{
-            overall_rotation.x += 1.0;
+            cam_orient_acceleration.x += cam_orient_speed;
             break;
         }
         case 'a':{
-            overall_rotation.y -= 1.0;
+            cam_orient_acceleration.y -= cam_orient_speed;
             break;
         }
         case 's':{
-            overall_rotation.y += 1.0;
+            cam_orient_acceleration.y += cam_orient_speed;
             break;
         }
         case 'z':{
-            overall_rotation.z -= 1.0;
+            cam_orient_acceleration.z -= cam_orient_speed;
             break;
         }
         case 'x':{
-            overall_rotation.z += 1.0;
+            cam_orient_acceleration.z += cam_orient_speed;
             break;
         }
     }
 
 }
+
 //--------------------------------------------------------------
 // ofPoint ofApp::mercator(float lon, float lat) {
 //     ofPoint position;

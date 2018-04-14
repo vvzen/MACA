@@ -23,6 +23,13 @@ class ofApp : public ofBaseApp{
 		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
 
 		ofEasyCam cam;
+		ofPoint cam_position;
+		ofVec3f cam_move_velocity, cam_move_acceleration;
+		ofVec3f cam_orientation, cam_orient_velocity, cam_orient_acceleration;
+		float cam_move_speed, cam_orient_speed;
+
+		void compute_cam_movement();
+		void compute_cam_orientation();
 
 		// used to compute the boundary
 		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
