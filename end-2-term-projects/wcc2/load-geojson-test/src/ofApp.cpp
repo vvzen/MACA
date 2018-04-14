@@ -3,6 +3,9 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    // TYPE
+    font.load("fonts/AndaleMono.ttf", 16, true, true, true);
+
     // 3D
     cam.setDistance(40);
     cam.setNearClip(2);
@@ -14,7 +17,8 @@ void ofApp::setup(){
 
     geojson_scale = 200;
 
-    std::string file_path = "uk_borders_poly_simplified.geojson";
+    // std::string file_path = "uk_borders_poly_simplified.geojson";
+    std::string file_path = "uk_borders_and_cities.geojson";
 
     // Now parse the JSON
     bool parsing_successful = geojson_map.open(file_path);
@@ -37,8 +41,30 @@ void ofApp::setup(){
         ofxJSONElement coordinates = geojson_map["features"][i]["geometry"]["coordinates"];
 
         std::string type  = geojson_map["features"][i]["geometry"]["type"].asString();
-        
-        if (type == "Polygon"){
+
+        if (type == "Point"){
+            float lon = coordinates[0].asFloat();
+            float lat = coordinates[1].asFloat();
+
+            std::string city_name = geojson_map["features"][i]["properties"]["name"].asString();
+            // std::replace(city_name.begin(), city_name.end(), ' ', '_');
+
+            cout << "current city: " << city_name << endl;
+
+            // I'm excluding those ones for aesthetic reasons
+            if (city_name != "City of Westminster" && city_name != "City of London"){
+                
+                ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
+
+                vector<ofVboMesh> city_name_meshes = extrude_mesh_from_text(city_name, font, 3);
+                city current_city;
+                current_city.meshes = city_name_meshes;
+                current_city.position = projected;
+                current_city.name = city_name;
+                cities_names_meshes.push_back(current_city);
+            }
+        }
+        else if (type == "Polygon"){
 
             // we need to start a new ofVboMesh
             ofVboMesh mesh;
@@ -74,7 +100,7 @@ void ofApp::setup(){
             
             int n_polygons = coordinates.size();
 
-            cout << "current i: " << i << ", type: " << type << ", n_polygons: " << n_polygons << endl;
+            //cout << "current i: " << i << ", type: " << type << ", n_polygons: " << n_polygons << endl;
             
             for (Json::ArrayIndex k = 0; k < n_polygons; ++k){
                 
@@ -108,6 +134,7 @@ void ofApp::setup(){
     }
     
     poly_meshes_centroids.setMode(OF_PRIMITIVE_POINTS);
+    // cities_mesh.setMode(OF_PRIMITIVE_POINTS);
 
     // set the overall geoshape centroid
     // making an average of the centroids
@@ -117,6 +144,7 @@ void ofApp::setup(){
 
     cout << "ended parsing of file" << endl;
     cout << "poly_meshes.size(): " << poly_meshes.size() << endl;
+    cout << "cities_names_meshes.size(): " << cities_names_meshes.size() << endl;
 }
 
 //--------------------------------------------------------------
@@ -152,6 +180,20 @@ void ofApp::draw(){
         poly_meshes.at(i).draw();
     }
 
+    // draw the text of each city
+    for (int i = 0; i < cities_names_meshes.size(); i++){
+        ofPushMatrix();
+            ofTranslate(cities_names_meshes.at(i).position);
+            ofRotateZ(69.082);
+            ofRotateX(95);
+            ofRotateZ(-6.67969);
+            ofScale(0.01, 0.01, 0.01);
+            for (int m = 0; m < cities_names_meshes.at(i).meshes.size(); m++){
+                cities_names_meshes.at(i).meshes.at(m).draw();
+            }
+        ofPopMatrix();
+    }
+
     cam.end();
 
     ofDisableDepthTest();
@@ -175,6 +217,7 @@ ofPoint ofApp::spherical_to_cartesian(float lon, float lat, float radius){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+    cout << "ofMap(mouseX, 0, ofGetWidth(), -90, 90): " << ofMap(mouseX, 0, ofGetWidth(), -90, 90) << endl;
     cout << "overall_rotation: " << overall_rotation << endl;
     cout << "cam properties" << endl;
     cout << "cam.getGlobalPosition():    " << cam.getGlobalPosition() << endl;

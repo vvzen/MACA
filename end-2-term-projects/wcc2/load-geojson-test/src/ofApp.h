@@ -2,6 +2,13 @@
 
 #include "ofMain.h"
 #include "ofxJSON.h"
+#include "vv_extrudeFont.h"
+
+struct city {
+	std::string name;
+	vector <ofVboMesh> meshes;
+	ofPoint position;
+};
 
 class ofApp : public ofBaseApp{
 
@@ -27,4 +34,7 @@ class ofApp : public ofBaseApp{
 		ofxJSONElement geojson_map;
 
 		vector <ofVboMesh> poly_meshes;
+		vector <city> cities_names_meshes;
+
+		ofTrueTypeFont font;
 };
