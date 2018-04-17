@@ -28,20 +28,26 @@ function send_osc_message(city){
     return udp.send(buffer, 0, buffer.length, osc_port, "localhost");
 }
 
-const uk_cities = JSON.parse(fs.readFileSync('uk_cities_clipped.geojson'));
+const world_capitals = JSON.parse(fs.readFileSync('world_cities_countries.geojson'));
 
 const target_cities_for_streaming = [];
-uk_cities.features.forEach(function(city){
+world_capitals.features.forEach(function(city){
 
-    let name = city.properties.name
+    console.log(city);
+
+    let name = city.properties.NAME_EN;
+
+    if (name){
+        name = name
         .toLowerCase()
         .replace(/ /g, '')
+        .replace(/,/g, '')
         .replace(/\'/, '');
-    
-    name = `#${name}`;
 
-    target_cities_for_streaming.push(name);
-        
+        name = `#${name}`;
+
+        target_cities_for_streaming.push(name);
+    }
 });
 
 // start streaming
