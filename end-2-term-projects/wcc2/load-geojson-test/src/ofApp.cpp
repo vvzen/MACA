@@ -1,10 +1,31 @@
 #include "ofApp.h"
+#include <chrono>
+#include <thread> // for sleeping
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    ofSetVerticalSync(true);
+	ofSetFrameRate(60);
+
     // TYPE
     font.load("fonts/AndaleMono.ttf", 16, true, true, true);
+
+    // ARDUINO
+    joystick = ofVec2f(0, 0);
+    joystick_pressed = false;
+    arduino.connect("/dev/tty.usbmodem1421", 57600);
+    can_setup_arduino = false;
+
+    // listen for EInitialized notification. this indicates that
+	// the arduino is ready to receive commands and it is safe to
+	// call setup_arduino()
+	ofAddListener(arduino.EInitialized, this, &ofApp::setupArduino);
+	can_setup_arduino = false;
+
+    // OSC
+    current_tweeted_city = "";
+    osc_receiver.setup(9000);
 
     // 3D
     geoshape_centroid = ofPoint(0, 0, 0);
@@ -19,7 +40,7 @@ void ofApp::setup(){
     cam.setNearClip(0.5);
     // camera placement settings
     // movement
-    cam_move_speed = 0.05f;
+    cam_move_speed = 0.035f;
     cam_position = ofPoint(2.38566, -19.6323, 29.135);
     cam_move_velocity = ofVec3f(0, 0, 0);
     cam_move_acceleration = ofVec3f(0, 0, 0);
@@ -33,7 +54,6 @@ void ofApp::setup(){
 
     geojson_scale = 200;
 
-    // std::string file_path = "uk_borders_poly_simplified.geojson";
     std::string file_path = "uk_borders_and_cities.geojson";
 
     // Parse the JSON
@@ -68,6 +88,10 @@ void ofApp::setup(){
             if (city_name != "City of Westminster" && city_name != "City of London"){
                 
                 ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
+
+                // make lowercase and prepend hashtag to city name
+                std::transform(city_name.begin(), city_name.end(), city_name.begin(), ::tolower);
+                city_name = "#" + city_name;
 
                 vector<ofVboMesh> city_name_meshes = extrude_mesh_from_text(city_name, font, 3);
                 city current_city;
@@ -162,8 +186,19 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+
+    updateArduino();
     compute_cam_movement();
     compute_cam_orientation();
+
+    // check for osc messages
+	while(osc_receiver.hasWaitingMessages()){
+        ofxOscMessage m;
+        osc_receiver.getNextMessage(m);
+        if(m.getAddress() == "/twitter-app"){
+			current_tweeted_city = m.getArgAsString(0);
+		}
+    }
 }
 
 //--------------------------------------------------------------
@@ -222,6 +257,19 @@ void ofApp::draw(){
     key_light_1.disable();
 
     ofDisableDepthTest();
+
+    // 2D STUFF
+
+    ofSetColor(255);
+    ofFill();
+    ofDrawBitmapString(current_tweeted_city, 20, 30);
+    if (!can_setup_arduino){
+        ofDrawBitmapString("arduino not ready...\n", 20, 50);
+    }
+    else {
+        if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
+        ofDrawBitmapString(analog_status, 20, 90);
+    }
 }
 
 //--------------------------------------------------------------
@@ -241,6 +289,9 @@ ofPoint ofApp::spherical_to_cartesian(float lon, float lat, float radius){
 
 //--------------------------------------------------------------
 void ofApp::compute_cam_movement(){
+
+    // add joystick acceleration
+    cam_move_acceleration += joystick;
 
     float max_speed = 0.21f;
     
@@ -314,22 +365,22 @@ void ofApp::keyPressed(int key){
             cam_move_acceleration.z-=cam_move_speed;
             break;
         }
-        case OF_KEY_UP: {
-            cam_move_acceleration.y+=cam_move_speed;
-            break;
-        }
-        case OF_KEY_DOWN: {
-            cam_move_acceleration.y-=cam_move_speed;
-            break;
-        }
-        case OF_KEY_RIGHT: {
-            cam_move_acceleration.x+=cam_move_speed;
-            break;
-        }
-        case OF_KEY_LEFT: {
-            cam_move_acceleration.x-=cam_move_speed;
-            break;
-        }
+        // case OF_KEY_UP: {
+        //     cam_move_acceleration.y+=cam_move_speed;
+        //     break;
+        // }
+        // case OF_KEY_DOWN: {
+        //     cam_move_acceleration.y-=cam_move_speed;
+        //     break;
+        // }
+        // case OF_KEY_RIGHT: {
+        //     cam_move_acceleration.x+=cam_move_speed;
+        //     break;
+        // }
+        // case OF_KEY_LEFT: {
+        //     cam_move_acceleration.x-=cam_move_speed;
+        //     break;
+        // }
         //
         case 'q':{
             cam_orient_acceleration.x -= cam_orient_speed;
@@ -357,6 +408,73 @@ void ofApp::keyPressed(int key){
         }
     }
 
+}
+
+//--------------------------------------------------------------
+// ARDUINO METHODS
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+void ofApp::setupArduino(const int & version) {
+	
+	// remove listener because we don't need it anymore
+	ofRemoveListener(arduino.EInitialized, this, &ofApp::setupArduino);
+
+    /* // a little blink to start
+    for (int i = 0; i < 5; i++){
+	    arduino.sendDigital(13, ARD_LOW);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	    arduino.sendDigital(13, ARD_HIGH);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    } */
+    
+    // it is now safe to send commands to the Arduino
+    can_setup_arduino = true;
+    
+    // print firmware name and version to the console
+    ofLogNotice() << arduino.getFirmwareName(); 
+    ofLogNotice() << "firmata v" << arduino.getMajorFirmwareVersion() << "." << arduino.getMinorFirmwareVersion();
+
+    // set pin 2 as INPUT_PULLUP
+    arduino.sendDigitalPinMode(2, ARD_INPUT);
+    arduino.sendDigital(2, ARD_HIGH);
+
+    // set pin A0, A1 to analog input
+    arduino.sendAnalogPinReporting(0, ARD_ANALOG);
+    arduino.sendAnalogPinReporting(1, ARD_ANALOG);
+	
+    // Listen for changes on the digital and analog pins
+    ofAddListener(arduino.EDigitalPinChanged, this, &ofApp::digitalPinChanged);
+    ofAddListener(arduino.EAnalogPinChanged, this, &ofApp::analogPinChanged);    
+}
+
+//--------------------------------------------------------------
+void ofApp::updateArduino(){
+	arduino.update();
+}
+
+//--------------------------------------------------------------
+// digital pin event handler, called whenever a digital pin value has changed
+//--------------------------------------------------------------
+void ofApp::digitalPinChanged(const int & pinNum) {
+    if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
+}
+
+//--------------------------------------------------------------
+// analog pin event handler, called whenever an analog pin value has changed
+//--------------------------------------------------------------
+void ofApp::analogPinChanged(const int & pinNum) {
+    float joystick_speed_divider = 6.5f;
+    switch(pinNum){
+        case 0:{
+            joystick.y = ofMap(arduino.getAnalog(pinNum), 1023, 0, -cam_move_speed/joystick_speed_divider, cam_move_speed/joystick_speed_divider);
+            break;
+        }
+        case 1:{
+            joystick.x = ofMap(arduino.getAnalog(pinNum), 1023, 0, -cam_move_speed/joystick_speed_divider, cam_move_speed/joystick_speed_divider);
+            break;
+        }
+    }
+    analog_status = "joystick x: " + ofToString(joystick.x) + ", y: " + ofToString(joystick.y);
 }
 
 //--------------------------------------------------------------

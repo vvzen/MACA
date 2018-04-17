@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxJSON.h"
+#include "ofxOsc.h"
 #include "vv_extrudeFont.h"
 
 struct city {
@@ -19,6 +20,17 @@ class ofApp : public ofBaseApp{
 
 		void mousePressed(int x, int y, int button);
 		void keyPressed(int key);
+
+		// ARDUINO
+		ofArduino arduino;
+		bool can_setup_arduino; // flag variable for setting up arduino once
+		bool joystick_pressed;
+    	string analog_status;
+		ofVec2f joystick;
+
+		// OSC
+		ofxOscReceiver osc_receiver;
+		std::string current_tweeted_city;
 
 		// 3D
 		ofEasyCam cam;
@@ -43,8 +55,16 @@ class ofApp : public ofBaseApp{
 		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
 		ofxJSONElement geojson_map;
 
-		vector <ofVboMesh> poly_meshes;
-		vector <city> cities_names_meshes;
+		vector <ofVboMesh> poly_meshes; // stores the geojson shapes
+		vector <city> cities_names_meshes; // stores the extruded text
 
 		ofTrueTypeFont font;
+
+	// ARDUINO METHODS
+	private:
+    
+		void setupArduino(const int & version);
+		void digitalPinChanged(const int & pinNum);
+		void analogPinChanged(const int & pinNum);
+		void updateArduino();
 };
