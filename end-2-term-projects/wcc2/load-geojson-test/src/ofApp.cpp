@@ -1,6 +1,7 @@
 #include "ofApp.h"
-#include <chrono>
-#include <thread> // for sleeping
+#include <regex>
+
+using namespace vvMapProjections;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -9,7 +10,7 @@ void ofApp::setup(){
 	ofSetFrameRate(60);
 
     // TYPE
-    font.load("fonts/AndaleMono.ttf", 16, true, true, true);
+    font.load("fonts/AndaleMono.ttf", 16, true, true, true, 1.0f);
 
     // ARDUINO
     joystick = ofVec2f(0, 0);
@@ -30,6 +31,7 @@ void ofApp::setup(){
     // 3D
     geoshape_centroid = ofPoint(0, 0, 0);
     overall_rotation = ofVec3f(130, -6, -78);
+    text_scale = 0.2f;
 
     // LIGHTS
     // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
@@ -40,7 +42,7 @@ void ofApp::setup(){
     cam.setNearClip(0.5);
     // camera placement settings
     // movement
-    cam_move_speed = 0.035f;
+    cam_move_speed = 0.065f;
     cam_position = ofPoint(2.38566, -19.6323, 29.135);
     cam_move_velocity = ofVec3f(0, 0, 0);
     cam_move_acceleration = ofVec3f(0, 0, 0);
@@ -54,7 +56,7 @@ void ofApp::setup(){
 
     geojson_scale = 200;
 
-    std::string file_path = "uk_borders_and_cities.geojson";
+    std::string file_path = "world_cities_countries.geojson";
 
     // Parse the JSON
     bool parsing_successful = geojson_map.open(file_path);
@@ -80,25 +82,29 @@ void ofApp::setup(){
             float lon = coordinates[0].asFloat();
             float lat = coordinates[1].asFloat();
 
-            std::string city_name = geojson_map["features"][i]["properties"]["name"].asString();
+            std::string city_name = geojson_map["features"][i]["properties"]["NAME_EN"].asString();
 
-            // cout << "current city: " << city_name << endl;
+            ofPoint projected = mercator(lon, lat, geojson_scale);
 
-            // I'm excluding those ones for aesthetic reasons
-            if (city_name != "City of Westminster" && city_name != "City of London"){
+            // make lowercase and prepend hashtag to city name
+            std::transform(city_name.begin(), city_name.end(), city_name.begin(), ::tolower);
+            city_name = std::regex_replace(city_name, std::regex(","), "");
+
+            city_name = "#" + city_name;
+
+            cout << "current city: " << city_name << endl;
+
+            // excluding some cities for aesthetic reasons
+            if (city_name != "#vatican city"){
+
+                vector<ofVboMesh> city_name_meshes = extrude_mesh_from_text(city_name, font, 2, 0.012, true);
                 
-                ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
-
-                // make lowercase and prepend hashtag to city name
-                std::transform(city_name.begin(), city_name.end(), city_name.begin(), ::tolower);
-                city_name = "#" + city_name;
-
-                vector<ofVboMesh> city_name_meshes = extrude_mesh_from_text(city_name, font, 3);
                 city current_city;
                 current_city.meshes = city_name_meshes;
                 current_city.position = projected;
                 current_city.name = city_name;
                 cities_names_meshes.push_back(current_city);
+
             }
         }
         else if (type == "Polygon"){
@@ -117,7 +123,7 @@ void ofApp::setup(){
 
                 //cout << "current point, float: "<< lon << ", " << lat << endl;
 
-                ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
+                ofPoint projected = mercator(lon, lat, geojson_scale);
                 //cout << "current point after projection: "<< ofToString(projected) << endl;
 
                 mesh.addVertex(projected);
@@ -149,7 +155,7 @@ void ofApp::setup(){
                     float lon = coordinates[k][0][j][0].asFloat();
                     float lat = coordinates[k][0][j][1].asFloat();
 
-                    ofPoint projected = spherical_to_cartesian(lon, lat, geojson_scale);
+                    ofPoint projected = mercator(lon, lat, geojson_scale);
                     //cout << "current point after projection: "<< ofToString(projected) << endl;
                     
                     mesh.addVertex(projected);
@@ -176,6 +182,9 @@ void ofApp::setup(){
     // set the overall geoshape centroid
     // making an average of the centroids
     geoshape_centroid /= poly_meshes_centroids.getNumVertices();
+    
+    // let the cam start at the centroid of the shape
+    cam.lookAt(geoshape_centroid);
 
     cout << "overall centroid: " << geoshape_centroid << endl;
 
@@ -223,9 +232,9 @@ void ofApp::draw(){
     ofDrawAxis(100);
 
     // rotate the geoshape so that it faces us
-    ofRotateX(overall_rotation.x);
-    ofRotateY(overall_rotation.y);
-    ofRotateZ(overall_rotation.z);
+    // ofRotateX(overall_rotation.x);
+    // ofRotateY(overall_rotation.y);
+    // ofRotateZ(overall_rotation.z);
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
 
@@ -239,14 +248,8 @@ void ofApp::draw(){
         ofPushMatrix();
             ofTranslate(cities_names_meshes.at(i).position);
             ofTranslate(0, 0, -0.1f);
-            // ofRotateZ(69.082);
-            // ofRotateX(88);
-            // // ofRotateZ(-20.5664);
-            // ofRotateZ(3.75);
-            ofRotateX(90);
-            ofRotateZ(-49.7461);
-            ofRotateY(76.75);
-            ofScale(0.01, 0.01, 0.01);
+            ofRotateX(-90);
+            // ofScale(0.02, 0.02, 0.02);
             for (int m = 0; m < cities_names_meshes.at(i).meshes.size(); m++){
                 cities_names_meshes.at(i).meshes.at(m).draw();
             }
@@ -263,6 +266,7 @@ void ofApp::draw(){
     ofSetColor(255);
     ofFill();
     ofDrawBitmapString(current_tweeted_city, 20, 30);
+    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 110);
     if (!can_setup_arduino){
         ofDrawBitmapString("arduino not ready...\n", 20, 50);
     }
@@ -270,21 +274,6 @@ void ofApp::draw(){
         if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
         ofDrawBitmapString(analog_status, 20, 90);
     }
-}
-
-//--------------------------------------------------------------
-ofPoint ofApp::spherical_to_cartesian(float lon, float lat, float radius){
-
-    float latitude = ofDegToRad(lat);
-    float longitude = ofDegToRad(lon);
-
-    ofPoint position = ofPoint(
-        radius * sin(latitude) * cos(longitude),
-        radius * sin(latitude) * sin(longitude),
-        radius * cos(latitude)
-    );
-
-    return position;
 }
 
 //--------------------------------------------------------------
@@ -476,18 +465,3 @@ void ofApp::analogPinChanged(const int & pinNum) {
     }
     analog_status = "joystick x: " + ofToString(joystick.x) + ", y: " + ofToString(joystick.y);
 }
-
-//--------------------------------------------------------------
-// ofPoint ofApp::mercator(float lon, float lat) {
-//     ofPoint position;
-//     position.x = (lon / 180.0) * scale + translateX;
-//     position.y = /*_coordinate.latitude > 85 ? 1 : _coordinate.latitude < -85 ? -1 //<- we should consider about polar regions converting..
-//     : */ ( log(tan(PI / 4.0 + pvRadians(lat) / 2.0)) / PI ) * scale - translateY;
-//     return position;
-// };
-
-// //--------------------------------------------------------------
-// float ofApp::pvRadians(float degrees) {
-//     float radians = PI / 180.0;
-//     return radians * _degrees;
-// };

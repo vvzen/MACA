@@ -12,7 +12,7 @@
 //
 // void ofApp::setup(){
        // my_extruded_word is a vector<ofVboMesh>
-//     my_extruded_word = extrude_mesh_from_text(word, font, extrusion_depth);
+//     my_extruded_word = extrude_mesh_from_text(word, font, extrusion_depth, scale);
 // }
 // 
 // void ofApp::draw(){
@@ -24,26 +24,26 @@
 //     ofPopMatrix();
 // }
 //--------------------------------------------------------------
-vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, float extrusion_depth){
+vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, float extrusion_depth, float scale=1, bool get_front_only=false){
 
     std::replace(word.begin(), word.end(), ' ', '_');
 
     // contains all of the paths of the current word
-    vector <ofPath> word_paths = font.getStringAsPoints(word, 0, 0);
+    vector <ofPath> word_paths = get_string_as_sampled_points(font, word, 60);
 
     vector <ofVboMesh> front_meshes, back_meshes, side_meshes;
 
     // meshes for the sides and the front of the 3d extruded text
     vector<ofVboMesh> all_meshes; // returned meshese (sides + front + back)
 
-    // loop through all the characters paths
+    // for every character, get its path
     for (int i = 0; i < word_paths.size(); i++){
 
         ofVboMesh current_char_mesh;
         
         // 1. create the front mesh using a temporary ofPath and then extract its tessellation
 
-        // for every char break it into polyline
+        // for every character break it out to polylines
         // (simply a collection of the inner and outer points)
         vector <ofPolyline> char_polylines = word_paths.at(i).getOutline();
 
@@ -52,9 +52,10 @@ vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, flo
 
         // now we build an ofPath using the vertices from the character polylines
         // first loop is for each polyline in the character
-        // see http://openframeworks.cc/documentation/graphics/ofTrueTypeFont/#show_getStringAsPoints
         for (int c = 0; c < char_polylines.size(); c++){
-            // second loop is for each point on the polyline
+
+            // FRONT AND BACK
+            // this loop is for each point on the polyline
             for (int p = 0; p < char_polylines[c].size(); p++){
 
                 if (p == 0){
@@ -65,56 +66,124 @@ vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, flo
                 }
             }
         }
+
         front = front_path.getTessellation();
         ofVec3f * front_vertices = front.getVerticesPointer();
 
-        // compute the back by just offsetting the vertices of the required amount
-        ofVboMesh back = front;
+        // compute the front by just offsetting the vertices of the required amount
+        ofVboMesh back = front_path.getTessellation();
+        ofVec3f * back_vertices = back.getVerticesPointer();
 
         for (int v = 0; v < front.getNumVertices(); v++){
             front_vertices[v].z += extrusion_depth;
+            // scale the mesh
+            front_vertices[v] *= scale;
+            back_vertices[v] *= scale;
         }
 
         current_char_mesh.append(front);
-        current_char_mesh.append(back);
+        if (!get_front_only) current_char_mesh.append(back);
 
         all_meshes.push_back(current_char_mesh);
 
-        // 2. make the extruded sides
-        vector <ofPolyline> lines = word_paths.at(i).getOutline();
-        for (int j = 0; j < lines.size(); j++){
-            
-            ofVboMesh side;
-            vector <ofPoint> points = lines.at(j).getVertices();
-            int k = 0;
+        if (!get_front_only) {
 
-            for (k = 0; k < points.size()-1; k++){
-                ofPoint p1 = points.at(k+0);
-                ofPoint p2 = points.at(k+1);
+            // 2. make the extruded sides
+            vector <ofPolyline> lines = word_paths.at(i).getOutline();
+            for (int j = 0; j < char_polylines.size(); j++){
+
+                // SIDES
+                ofVboMesh side;
+                vector <ofPoint> points = char_polylines.at(j).getVertices();
+                // vector <ofPoint> points = char_polylines[c];
+                int k = 0;
+
+                for (k = 0; k < points.size()-1; k++){
+                    
+                    // skip half of the points
+                    ofPoint p1 = points.at(k+0);
+                    ofPoint p2 = points.at(k+1);
+                    
+                    // // scale the mesh
+                    p1 *= scale;
+                    p2 *= scale;
+
+                    side.addVertex(p1);
+                    side.addVertex(p2);
+                    side.addVertex(ofPoint(p1.x, p1.y, p1.z + extrusion_depth * scale));
+                    side.addVertex(ofPoint(p2.x, p2.y, p2.z + extrusion_depth * scale));
+                    side.addVertex(p2);
+                }
+
+                // connect the last to the first
+                ofPoint p1 = points.at(k);
+                ofPoint p2 = points.at(0);
+
+                // scale the mesh
+                p1 *= scale;
+                p2 *= scale;
 
                 side.addVertex(p1);
                 side.addVertex(p2);
-                side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-                side.addVertex(ofPoint(p2.x, p2.y, p2.z+extrusion_depth));
+                side.addVertex(ofPoint(p1.x, p1.y, p1.z + extrusion_depth * scale));
+                
+                side.addVertex(ofPoint(p1.x, p1.y, p1.z + extrusion_depth * scale));
+                side.addVertex(ofPoint(p2.x, p2.y, p2.z + extrusion_depth * scale));
                 side.addVertex(p2);
+
+                side.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+
+                all_meshes.push_back(side);
             }
-
-            // connect the last to the first
-            ofPoint p1 = points.at(k);
-            ofPoint p2 = points.at(0);
-            side.addVertex(p1);
-            side.addVertex(p2);
-            side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-            
-            side.addVertex(ofPoint(p1.x, p1.y, p1.z+extrusion_depth));
-            side.addVertex(ofPoint(p2.x, p2.y, p2.z+extrusion_depth));
-            side.addVertex(p2);
-
-            side.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-
-            all_meshes.push_back(side);
         }
     }
 
     return all_meshes;
+}
+
+//--------------------------------------------------------------
+// this handy method can be used as a substitute of the default font.getStringAsPoints()
+// since it gives you the chance to resample the polylines and get a lower number of points (thus optimising speed)
+//--------------------------------------------------------------
+vector <ofPath> get_string_as_sampled_points(ofTrueTypeFont & font, string s, int num_of_samples){
+
+    vector <ofPath> string_paths;
+    vector <ofTTFCharacter> paths = font.getStringAsPoints(s);
+
+    // find the biggest character in terms of perimeter (used for uniform resampling)
+    int max_perimeter = 0;
+    for (int i = 0; i < paths.size(); i++){
+       vector <ofPolyline> polylines = paths[i].getOutline();
+       for (int j = 0; j < polylines.size(); j++){
+           if (polylines[j].getPerimeter() > max_perimeter) max_perimeter = polylines[j].getPerimeter();
+       }
+    }
+    // for every character, get its path
+    for (int i = 0; i < paths.size(); i++){
+        // for every character break it out to polylines
+        vector <ofPolyline> polylines = paths[i].getOutline();
+
+        // this path will store the new points sampled
+        ofPath current_path;
+
+        // for every polyline, resample it
+        for (int j = 0; j < polylines.size(); j++){
+
+            // int num_of_points = ofMap(polylines[j].getPerimeter(), 0, max_perimeter, 0, num_of_samples, true);
+            int num_of_points = num_of_samples;
+
+            for (int i = 0; i < num_of_points; i++){
+                if (i == 0){
+                    current_path.moveTo(ofPoint(polylines[j].getPointAtPercent(float(i+1) / num_of_points)));
+                }
+                else {
+                    current_path.lineTo(ofPoint(polylines[j].getPointAtPercent(float(i+1) / num_of_points)));
+                }
+            }
+            current_path.close();
+        }
+        string_paths.push_back(current_path);
+    }
+
+    return string_paths;
 }

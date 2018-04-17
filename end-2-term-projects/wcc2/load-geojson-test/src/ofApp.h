@@ -4,6 +4,7 @@
 #include "ofxJSON.h"
 #include "ofxOsc.h"
 #include "vv_extrudeFont.h"
+#include "vv_mapProjections.h"
 
 struct city {
 	std::string name;
@@ -38,6 +39,7 @@ class ofApp : public ofBaseApp{
 		ofVec3f cam_move_velocity, cam_move_acceleration;
 		ofVec3f cam_orientation, cam_orient_velocity, cam_orient_acceleration;
 		float cam_move_speed, cam_orient_speed;
+		float text_scale;
 
 		void compute_cam_movement();
 		void compute_cam_orientation();
@@ -52,7 +54,7 @@ class ofApp : public ofBaseApp{
 		// GEOJSON
 		float geojson_scale;
 
-		ofPoint spherical_to_cartesian(float lon, float lat, float radius);
+		//ofPoint spherical_to_cartesian(float lon, float lat, float radius);
 		ofxJSONElement geojson_map;
 
 		vector <ofVboMesh> poly_meshes; // stores the geojson shapes
