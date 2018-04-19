@@ -8,6 +8,7 @@ void ofApp::setup(){
 
     // TYPE
     font.load("fonts/AndaleMono.ttf", 16, true, true, true, 1.0f);
+    // tweet_font.load("fonts/AndaleMono.ttf", 10, true, true, true, 1.0f);
 
     // ARDUINO
     joystick = ofVec2f(0, 0);
@@ -23,6 +24,7 @@ void ofApp::setup(){
 
     // OSC
     current_tweeted_city = "";
+    current_tweet_text = "";
     osc_receiver.setup(9000);
 
     // 3D
@@ -32,8 +34,15 @@ void ofApp::setup(){
     // firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
     // don't use the normal gl texture
 	ofDisableArbTex();
-    ofLoadImage(firework_texture, "dot.png");
-    glPointSize(12);
+    ofLoadImage(firework_texture, "solid_dot.png");
+    glPointSize(8);
+    fireworks_colors.push_back(ofFloatColor(1, 0, 0.780));
+    fireworks_colors.push_back(ofFloatColor(1, 0, 0.094));
+    fireworks_colors.push_back(ofFloatColor(0.282, 1, 0));
+    fireworks_colors.push_back(ofFloatColor(1, 0.494, 0));
+    fireworks_colors.push_back(ofFloatColor(0, 0.188, 1));
+    fireworks_colors.push_back(ofFloatColor(1, 0.968, 0));
+    fireworks_colors.push_back(ofFloatColor(0, 0.925, 1));
 
     // LIGHTS
     // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
@@ -54,9 +63,13 @@ void ofApp::setup(){
     cam_orient_velocity = ofVec3f(0, 0, 0);
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
+    // SOUND
+    fireworks_sound.load("sounds/fireworks_2.wav");
+    fireworks_sound.setVolume(0.5f);
+    fireworks_sound.setMultiPlay(true);
+
     // GEOJSON
     geojson_scale = 400;
-
     std::string file_path = "world_cities_countries.geojson";
 
     // create the actual geojson meshes and return the centroid
@@ -89,7 +102,11 @@ void ofApp::update(){
         osc_receiver.getNextMessage(m);
         if(m.getAddress() == "/twitter-app"){
 			current_tweeted_city = "#" + m.getArgAsString(0);
+			current_tweet_text = "#" + m.getArgAsString(1);
             cout << "heard a tweet related to: " << current_tweeted_city << endl;
+
+
+            // add the fireworks related to that city
 
             ofVec3f city_pos;
             bool found = false;
@@ -104,28 +121,18 @@ void ofApp::update(){
                 if (found) break;
             }
 
-            // find the location of the tweeted city
-            // while (i < cities.size()){
-            //     cout << "i: " << i << ", cities.size(): " << cities.size() << endl;
-            //     // TODO: binary search instead of stupid loop
-            //     if (cities.at(i).name == current_tweeted_city){
-            //         city_pos = cities.at(i).position;
-            //         found = true;
-            //     }
-            //     if (found){
-            //         break;
-            //     }
-            //     i++;
-            // }
-
             if (found){
                 if (fireworks.size() > 15){
                     fireworks.pop_front();
                 }
                 // add a firework
                 Firework firework;
-                firework.setup(city_pos, ofFloatColor(1.0, 0, 0));
+                ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
+                firework.setup(city_pos, col);
                 fireworks.push_back(firework);
+
+                fireworks_sound.play();
+                fireworks_sound.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
             }
             else {
                 cout << "!!!!!!ATTENTION!!!!!!" << endl;
@@ -133,6 +140,9 @@ void ofApp::update(){
             }
 		}
     }
+
+    // update the sound playing system
+	ofSoundUpdate();
 }
 
 //--------------------------------------------------------------
@@ -152,12 +162,13 @@ void ofApp::draw(){
     key_light_1.enable();
     key_light_1.setOrientation(cam_orientation);
 
-    ofDrawAxis(100);
+    // ofDrawAxis(100);
 
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
 
     // draw the vbo meshes for the polygons
+    ofSetColor(255, 0, 0);
     for (int i = 0; i < poly_meshes.size(); i++){
         poly_meshes.at(i).draw();
     }
@@ -214,6 +225,7 @@ void ofApp::draw(){
     ofFill();
     // ofDrawBitmapString(current_tweeted_city, 20, 30);
     font.drawString(current_tweeted_city, 20, 30);
+    font.drawString(current_tweet_text, ofGetWidth()/5, 30);
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
     if (!can_setup_arduino){
         ofDrawBitmapString("arduino not ready...\n", 20, 70);
@@ -395,7 +407,14 @@ void ofApp::updateArduino(){
 void ofApp::digitalPinChanged(const int & pinNum) {
     if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
     // DEBUG
-    // if (joystick_pressed) firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
+    if (joystick_pressed){
+
+        Firework firework;
+        firework.setup(ofVec3f(0, 0, 0), ofFloatColor(1.0, 0, 0));
+        fireworks.push_back(firework);
+    
+        fireworks_sound.play();
+    }
 }
 
 //--------------------------------------------------------------

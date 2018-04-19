@@ -43,7 +43,7 @@ void Firework::update(){
                 mesh.addColor(color);
             }
             _exploded = true;
-            cout << "Firework::exploded!" << endl;
+            // cout << "Firework::exploded!" << endl;
         }
         else {
             for (int i = 0; i < particles.size(); i++){

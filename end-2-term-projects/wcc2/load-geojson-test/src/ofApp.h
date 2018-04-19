@@ -5,7 +5,6 @@
 #include "Firework.h"
 #include "vv_geojson.h"
 
-
 class ofApp : public ofBaseApp{
 
 	public:
@@ -26,6 +25,7 @@ class ofApp : public ofBaseApp{
 		// OSC
 		ofxOscReceiver osc_receiver;
 		std::string current_tweeted_city;
+		std::string current_tweet_text;
 
 		// 3D
 		ofEasyCam cam;
@@ -37,6 +37,7 @@ class ofApp : public ofBaseApp{
 		// Firework firework;
 		deque <Firework> fireworks;
 		ofTexture firework_texture;
+		vector<ofFloatColor> fireworks_colors;
 
 		void compute_cam_movement();
 		void compute_cam_orientation();
@@ -57,7 +58,10 @@ class ofApp : public ofBaseApp{
 		vector <ofVboMesh> poly_meshes; // stores the geojson shapes
 		vector <vv_geojson::city> cities; // stores the extruded names of the cities
 
-		ofTrueTypeFont font;
+		ofTrueTypeFont font, tweet_font;
+
+		// SOUND
+		ofSoundPlayer fireworks_sound;
 
 	// ARDUINO METHODS
 	private:
