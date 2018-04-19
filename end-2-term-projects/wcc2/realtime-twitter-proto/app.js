@@ -16,14 +16,20 @@ const T = new Twit({
 // setup osc
 const udp = dgram.createSocket("udp4");
 const osc_port = 9000;
-function send_osc_message(city){
+function send_osc_message(city, tweet){
     let buffer;
     buffer = osc.toBuffer({
         address: "/twitter-app",
-        args: [{
-            type: "string",
-            value: city
-        }]
+        args: [
+            {
+                type: "string",
+                value: city
+            },
+            {
+                type: "string",
+                value: tweet
+            }
+        ]
     });
     return udp.send(buffer, 0, buffer.length, osc_port, "localhost");
 }
@@ -40,7 +46,7 @@ world_capitals.features.forEach(function(city){
     if (name){
         name = name
         .toLowerCase()
-        .replace(/ /g, '')
+        .replace(/ /g, '_')
         .replace(/,/g, '')
         .replace(/\'/, '');
 
@@ -90,13 +96,21 @@ stream.on('tweet', function (tweet) {
     else {
         // find which city is the tweet about
         for (let city of target_cities_for_streaming){
+            
             var re = new RegExp(city.toLowerCase(), "g");
+
             if (tweet_text.toLowerCase().match(re)){
                 console.log(`\ncurrent tweet city: ${city}`);
                 current_city = city.replace('#', '');
             }
+
         }
-        if (current_city) send_osc_message(current_city);
+        let hashtags = [];
+        tweet.entities.hashtags.forEach(function(hashtag){
+            hashtags.push(hashtag.text);
+        });
+        if (current_city) send_osc_message(current_city, hashtags.join(""));
+        
     }
     console.log(tweet_text);
     
@@ -105,10 +119,10 @@ stream.on('tweet', function (tweet) {
         console.log(`tweet location:`);
         console.log(tweet.coordinates);
     }
-    console.log('hashtags: ');
-    tweet.entities.hashtags.forEach(function(hashtag){
-        console.log(`\t${hashtag.text}`);
-    });
+    // console.log('hashtags: ');
+    // tweet.entities.hashtags.forEach(function(hashtag){
+    //     console.log(`\t${hashtag.text}`);
+    // });
     // console.log(tweet);
 
 });
