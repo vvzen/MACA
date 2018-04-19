@@ -1,4 +1,4 @@
-#include "vv_extrudeFont.h"
+#include "vv_extrude_font.h"
 
 
 //--------------------------------------------------------------
@@ -6,7 +6,7 @@
 //
 // This method returns a vector containing the vbo meshes required
 // to render the front, back and sides of each character in the given string.
-// ALERT! Spaces inside the passed word will be converted to underscores.
+// ALERT! Spaces inside the passed string will be converted to underscores.
 //
 // @example:
 //
@@ -26,9 +26,11 @@
 //--------------------------------------------------------------
 vector<ofVboMesh> extrude_mesh_from_text(string word, ofTrueTypeFont & font, float extrusion_depth, float scale=1, bool get_front_only=false){
 
+    // replace spaces with underscores
     std::replace(word.begin(), word.end(), ' ', '_');
 
     // contains all of the paths of the current word
+    // last argument is the numer of samples
     vector <ofPath> word_paths = get_string_as_sampled_points(font, word, 60);
 
     vector <ofVboMesh> front_meshes, back_meshes, side_meshes;

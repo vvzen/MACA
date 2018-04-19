@@ -1,7 +1,7 @@
-#include "vv_mapProjections.h"
+#include "vv_map_projections.h"
 
 //--------------------------------------------------------------
-ofPoint vvMapProjections::spherical_to_cartesian(float lon, float lat, float radius){
+ofPoint vv_map_projections::spherical_to_cartesian(float lon, float lat, float radius){
 
     float latitude = ofDegToRad(lat);
     float longitude = ofDegToRad(lon);
@@ -18,7 +18,7 @@ ofPoint vvMapProjections::spherical_to_cartesian(float lon, float lat, float rad
 //--------------------------------------------------------------
 // taken and edited from the ofxGeoJSON addon by moxuse
 //--------------------------------------------------------------
-ofPoint vvMapProjections::mercator(float lon, float lat, float scale){
+ofPoint vv_map_projections::mercator(float lon, float lat, float scale){
     
     ofVec2f offset = ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2);
 

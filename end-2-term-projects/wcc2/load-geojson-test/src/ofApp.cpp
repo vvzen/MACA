@@ -1,7 +1,4 @@
 #include "ofApp.h"
-#include <regex>
-
-using namespace vvMapProjections;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -29,16 +26,21 @@ void ofApp::setup(){
     osc_receiver.setup(9000);
 
     // 3D
-    geoshape_centroid = ofPoint(0, 0, 0);
     overall_rotation = ofVec3f(130, -6, -78);
     text_scale = 0.2f;
+    // fireworks
+    // firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
+    // don't use the normal gl texture
+	ofDisableArbTex();
+    ofLoadImage(firework_texture, "dot.png");
+    glPointSize(12);
 
     // LIGHTS
     // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
     key_light_1.setDirectional();
 
     // CAMERA
-    cam.setDistance(40);
+    cam.setDistance(80);
     cam.setNearClip(0.5);
     // camera placement settings
     // movement
@@ -53,135 +55,12 @@ void ofApp::setup(){
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
     // GEOJSON
-
-    geojson_scale = 200;
+    geojson_scale = 400;
 
     std::string file_path = "world_cities_countries.geojson";
 
-    // Parse the JSON
-    bool parsing_successful = geojson_map.open(file_path);
-
-    if (parsing_successful){
-        cout << "File " << file_path << " loaded correctly" << endl;
-    }
-    else {
-        cout << "Failed to parse JSON" << endl;
-    }
-
-    cout << "number of total polygons: " << geojson_map["features"].size() << endl;
-
-    // load each feature from the geojson
-    for (Json::ArrayIndex i = 0; i < geojson_map["features"].size(); ++i){
-
-        ofxJSONElement coordinates = geojson_map["features"][i]["geometry"]["coordinates"];
-        // current geojson feature type
-        // currently supported: Point, Polygon, MultiPolygon
-        std::string type  = geojson_map["features"][i]["geometry"]["type"].asString();
-
-        if (type == "Point"){
-            float lon = coordinates[0].asFloat();
-            float lat = coordinates[1].asFloat();
-
-            std::string city_name = geojson_map["features"][i]["properties"]["NAME_EN"].asString();
-
-            ofPoint projected = mercator(lon, lat, geojson_scale);
-
-            // make lowercase and prepend hashtag to city name
-            std::transform(city_name.begin(), city_name.end(), city_name.begin(), ::tolower);
-            city_name = std::regex_replace(city_name, std::regex(","), "");
-
-            city_name = "#" + city_name;
-
-            cout << "current city: " << city_name << endl;
-
-            // excluding some cities for aesthetic reasons
-            if (city_name != "#vatican city"){
-
-                vector<ofVboMesh> city_name_meshes = extrude_mesh_from_text(city_name, font, 2, 0.012, true);
-                
-                city current_city;
-                current_city.meshes = city_name_meshes;
-                current_city.position = projected;
-                current_city.name = city_name;
-                cities_names_meshes.push_back(current_city);
-
-            }
-        }
-        else if (type == "Polygon"){
-
-            // we need to start a new ofVboMesh
-            ofVboMesh mesh;
-
-            int n_points = coordinates[0].size();
-
-            //cout << "current i: " << i << ", type: " << type << ", n_points: " << n_points << endl;
-
-            for (Json::ArrayIndex j = 0; j < n_points; ++j){
-                
-                float lon = coordinates[0][j][0].asFloat();
-                float lat = coordinates[0][j][1].asFloat();
-
-                //cout << "current point, float: "<< lon << ", " << lat << endl;
-
-                ofPoint projected = mercator(lon, lat, geojson_scale);
-                //cout << "current point after projection: "<< ofToString(projected) << endl;
-
-                mesh.addVertex(projected);
-                mesh.addColor(ofFloatColor(0.7));
-            }
-            mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
-            poly_meshes.push_back(mesh);
-
-            ofPoint mesh_centroid = mesh.getCentroid();
-
-            poly_meshes_centroids.addVertex(mesh_centroid);
-            poly_meshes_centroids.addColor(ofFloatColor(1.0, 0.0, 0.0));
-
-            geoshape_centroid += mesh_centroid;
-        }
-        else if (type == "MultiPolygon"){
-            
-            int n_polygons = coordinates.size();
-
-            //cout << "current i: " << i << ", type: " << type << ", n_polygons: " << n_polygons << endl;
-            
-            for (Json::ArrayIndex k = 0; k < n_polygons; ++k){
-                
-                ofVboMesh mesh;
-
-                int n_points = coordinates[k][0].size();
-
-                for (Json::ArrayIndex j = 0; j < n_points; ++j){
-                    float lon = coordinates[k][0][j][0].asFloat();
-                    float lat = coordinates[k][0][j][1].asFloat();
-
-                    ofPoint projected = mercator(lon, lat, geojson_scale);
-                    //cout << "current point after projection: "<< ofToString(projected) << endl;
-                    
-                    mesh.addVertex(projected);
-                    mesh.addColor(ofFloatColor(0.7));
-                    mesh.addIndex(j);
-                }
-                mesh.setMode(OF_PRIMITIVE_LINE_STRIP);
-                // mesh.setMode(OF_PRIMITIVE_POINTS);
-                poly_meshes.push_back(mesh);
-
-                ofPoint mesh_centroid = mesh.getCentroid();
-
-                poly_meshes_centroids.addVertex(mesh_centroid);
-                poly_meshes_centroids.addColor(ofFloatColor(0.0, 0.0, 1.0));
-
-                geoshape_centroid += mesh_centroid;
-            }
-        }
-    }
-    
-    poly_meshes_centroids.setMode(OF_PRIMITIVE_POINTS);
-    // cities_mesh.setMode(OF_PRIMITIVE_POINTS);
-
-    // set the overall geoshape centroid
-    // making an average of the centroids
-    geoshape_centroid /= poly_meshes_centroids.getNumVertices();
+    // create the actual geojson meshes and return the centroid
+    ofPoint geoshape_centroid = vv_geojson::create_geojson_map(file_path, font, poly_meshes, cities, geojson_scale);
     
     // let the cam start at the centroid of the shape
     cam.lookAt(geoshape_centroid);
@@ -190,11 +69,15 @@ void ofApp::setup(){
 
     cout << "ended parsing of file" << endl;
     cout << "poly_meshes.size(): " << poly_meshes.size() << endl;
-    cout << "cities_names_meshes.size(): " << cities_names_meshes.size() << endl;
+    cout << "cities.size(): " << cities.size() << endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+
+    for (int f = 0; f < fireworks.size(); f++){
+        fireworks.at(f).update();
+    }
 
     updateArduino();
     compute_cam_movement();
@@ -205,7 +88,49 @@ void ofApp::update(){
         ofxOscMessage m;
         osc_receiver.getNextMessage(m);
         if(m.getAddress() == "/twitter-app"){
-			current_tweeted_city = m.getArgAsString(0);
+			current_tweeted_city = "#" + m.getArgAsString(0);
+            cout << "heard a tweet related to: " << current_tweeted_city << endl;
+
+            ofVec3f city_pos;
+            bool found = false;
+
+            for (int i = 0; i < cities.size(); i++){
+                
+                if (cities.at(i).name == current_tweeted_city){
+                    city_pos = cities.at(i).position;
+                    found = true;
+                }
+
+                if (found) break;
+            }
+
+            // find the location of the tweeted city
+            // while (i < cities.size()){
+            //     cout << "i: " << i << ", cities.size(): " << cities.size() << endl;
+            //     // TODO: binary search instead of stupid loop
+            //     if (cities.at(i).name == current_tweeted_city){
+            //         city_pos = cities.at(i).position;
+            //         found = true;
+            //     }
+            //     if (found){
+            //         break;
+            //     }
+            //     i++;
+            // }
+
+            if (found){
+                if (fireworks.size() > 15){
+                    fireworks.pop_front();
+                }
+                // add a firework
+                Firework firework;
+                firework.setup(city_pos, ofFloatColor(1.0, 0, 0));
+                fireworks.push_back(firework);
+            }
+            else {
+                cout << "!!!!!!ATTENTION!!!!!!" << endl;
+                cout << "city " << current_tweeted_city << " not found!" << endl;
+            }
 		}
     }
 }
@@ -213,11 +138,9 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    ofBackground(0);
-    ofSetColor(255);
+    ofBackground(255);
+    ofSetColor(0);
     ofFill();
-
-    glPointSize(5);
 
     ofEnableDepthTest();
 
@@ -231,10 +154,6 @@ void ofApp::draw(){
 
     ofDrawAxis(100);
 
-    // rotate the geoshape so that it faces us
-    // ofRotateX(overall_rotation.x);
-    // ofRotateY(overall_rotation.y);
-    // ofRotateZ(overall_rotation.z);
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
 
@@ -244,17 +163,45 @@ void ofApp::draw(){
     }
 
     // draw the text of each city
-    for (int i = 0; i < cities_names_meshes.size(); i++){
+    for (int i = 0; i < cities.size(); i++){
         ofPushMatrix();
-            ofTranslate(cities_names_meshes.at(i).position);
+            ofTranslate(cities.at(i).position);
             ofTranslate(0, 0, -0.1f);
             ofRotateX(-90);
             // ofScale(0.02, 0.02, 0.02);
-            for (int m = 0; m < cities_names_meshes.at(i).meshes.size(); m++){
-                cities_names_meshes.at(i).meshes.at(m).draw();
+            for (int m = 0; m < cities.at(i).meshes.size(); m++){
+                cities.at(i).meshes.at(m).draw();
             }
         ofPopMatrix();
     }
+
+    // fireworks
+    ofEnableAlphaBlending();
+    ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+    ofEnablePointSprites();
+    ofSetColor(255);
+
+    for (int f = 0; f < fireworks.size(); f++){
+        
+        Firework * firework = &fireworks.at(f);
+
+        if (!firework->exploded()){
+            ofDrawSphere(
+                firework->initial_particle.position.x,
+                firework->initial_particle.position.y,
+                firework->initial_particle.position.z,
+                0.3);
+        }
+        else {
+            firework_texture.bind();
+            firework->mesh.draw();
+            firework_texture.unbind();
+        }
+    }
+
+    ofDisableAlphaBlending();
+    ofDisableBlendMode();
+    ofDisablePointSprites();
 
     cam.end();
     key_light_1.disable();
@@ -263,16 +210,17 @@ void ofApp::draw(){
 
     // 2D STUFF
 
-    ofSetColor(255);
+    ofSetColor(0);
     ofFill();
-    ofDrawBitmapString(current_tweeted_city, 20, 30);
-    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 110);
+    // ofDrawBitmapString(current_tweeted_city, 20, 30);
+    font.drawString(current_tweeted_city, 20, 30);
+    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
     if (!can_setup_arduino){
-        ofDrawBitmapString("arduino not ready...\n", 20, 50);
+        ofDrawBitmapString("arduino not ready...\n", 20, 70);
     }
     else {
         if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
-        ofDrawBitmapString(analog_status, 20, 90);
+        // ofDrawBitmapString(analog_status, 20, 90);
     }
 }
 
@@ -446,6 +394,8 @@ void ofApp::updateArduino(){
 //--------------------------------------------------------------
 void ofApp::digitalPinChanged(const int & pinNum) {
     if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
+    // DEBUG
+    // if (joystick_pressed) firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
 }
 
 //--------------------------------------------------------------

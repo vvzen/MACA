@@ -1,16 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxJSON.h"
 #include "ofxOsc.h"
-#include "vv_extrudeFont.h"
-#include "vv_mapProjections.h"
+#include "Firework.h"
+#include "vv_geojson.h"
 
-struct city {
-	std::string name;
-	vector <ofVboMesh> meshes;
-	ofPoint position;
-};
 
 class ofApp : public ofBaseApp{
 
@@ -40,6 +34,9 @@ class ofApp : public ofBaseApp{
 		ofVec3f cam_orientation, cam_orient_velocity, cam_orient_acceleration;
 		float cam_move_speed, cam_orient_speed;
 		float text_scale;
+		// Firework firework;
+		deque <Firework> fireworks;
+		ofTexture firework_texture;
 
 		void compute_cam_movement();
 		void compute_cam_orientation();
@@ -58,7 +55,7 @@ class ofApp : public ofBaseApp{
 		ofxJSONElement geojson_map;
 
 		vector <ofVboMesh> poly_meshes; // stores the geojson shapes
-		vector <city> cities_names_meshes; // stores the extruded text
+		vector <vv_geojson::city> cities; // stores the extruded names of the cities
 
 		ofTrueTypeFont font;
 
