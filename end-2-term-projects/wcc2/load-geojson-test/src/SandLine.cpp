@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void SandLine::setup(float w, float h, float max_size, float max_alpha){
 
-    fbo.allocate(w, h, GL_RGBA, 16);
+    fbo.allocate(w, h, GL_RGBA, 8);
 
     _max_size = max_size;
     _max_alpha = max_alpha;
@@ -193,6 +193,6 @@ void SandLine::set_target(ofVec2f target){
 
 //--------------------------------------------------------------
 void SandLine::set_mode(int mode){
-    cout << "SandLine::set_mode: " << mode << endl;
+    // cout << "SandLine::set_mode: " << mode << endl;
     current_mode = mode;
 }

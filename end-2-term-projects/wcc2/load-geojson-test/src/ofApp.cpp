@@ -7,8 +7,12 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
 	ofSetFrameRate(60);
 
+    ofHideCursor();
+
+    // FBO FOR THE 3D ENVIRONMENT 
+    threed_map_fbo.allocate(WIDTH/2, HEIGHT, GL_RGBA, 8);
     // CANVAS FOR THE GENERATIVE ARTWORK
-    sand_line.setup(ofGetWidth(), ofGetHeight(), 1, 35);
+    sand_line.setup(WIDTH/2, HEIGHT, 1, 35);
     draw_artwork = false;
 
     // TYPE
@@ -17,7 +21,7 @@ void ofApp::setup(){
 
     // ARDUINO
     joystick_pressed = false;
-    arduino.connect("/dev/tty.usbmodem1421", 57600);
+    arduino.connect("/dev/tty.usbmodem11", 57600);
     can_setup_arduino = false;
     joystick = ofVec2f(0, 0);
 
@@ -49,17 +53,18 @@ void ofApp::setup(){
     fireworks_colors.push_back(ofFloatColor(0, 0.925, 1));
 
     // CAMERA
-    cam.setDistance(210);
+    // cam.setDistance(610);
     cam.setNearClip(0.5);
+    // cam.setFarClip(1200);
     // camera movement and orientation settings
     // cam_move_speed = 1.265f;
     cam_move_speed = 0.065f;
-    cam_position = ofPoint(2.38566, -19.6323, 29.135);
+    cam_position = ofPoint(0, -212, 512);
     cam_move_velocity = ofVec3f(0, 0, 0);
     cam_move_acceleration = ofVec3f(0, 0, 0);
     // orientation
     cam_orient_speed = 0.05f;
-    cam_orientation = ofVec3f(31, 0, 0);
+    cam_orientation = ofVec3f(26, 0, 0);
     cam_orient_velocity = ofVec3f(0, 0, 0);
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
@@ -89,13 +94,19 @@ void ofApp::setup(){
     // GEOJSON
     geojson_scale = 400;
     std::string file_path = "world_cities_countries.geojson";
-    geoshape_bb = ofRectangle(ofPoint(-120, -36), 170, 80);
+    // geoshape_bb = ofRectangle(ofPoint(-120, -36), 170, 80); // testing on the macbook air
+    geoshape_bb = ofRectangle(ofPoint(-310, -120), 406, 184); // with the full res
 
     // create the actual geojson meshes and return the centroid
     ofPoint geoshape_centroid = vv_geojson::create_geojson_map(file_path, font, poly_meshes, cities, geojson_scale);
     
     // let the cam look at the centroid of the shape
     cam.lookAt(geoshape_centroid);
+
+    // clean the buffer
+    threed_map_fbo.begin();
+    ofClear(255);
+    threed_map_fbo.end();
 
     cout << "overall centroid: " << geoshape_centroid << endl;
     cout << "ended parsing of file" << endl;
@@ -133,9 +144,9 @@ void ofApp::update(){
 			float lon = m.getArgAsFloat(3);
 			float lat = m.getArgAsFloat(4);
 
-            cout << "heard a tweet related to: " << current_tweeted_city;
-            cout << ", nation: " << current_tweet_nation;
-            cout << ", coordinates: " << lon << ", " << lat << endl;
+            // cout << "heard a tweet related to: " << current_tweeted_city;
+            // cout << ", nation: " << current_tweet_nation;
+            // cout << ", coordinates: " << lon << ", " << lat << endl;
 
             ofVec3f city_pos;
             bool found = false;
@@ -165,7 +176,8 @@ void ofApp::update(){
                 // VISUALIZATION
                 // add a firework to visualize the tweet
                 Firework firework;
-                ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
+                // ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
+                ofFloatColor col = ofFloatColor(0.0f);
                 firework.setup(city_pos, col);
                 fireworks.push_back(firework);
 
@@ -175,8 +187,9 @@ void ofApp::update(){
                 // DRAWING
                 // use that city in the artwork
                 ofPoint screen_pos;
-                screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
-                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), ofGetHeight(), 0);
+                ofFbo * fbo = sand_line.get_fbo_pointer();
+                screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, fbo->getWidth());
+                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), fbo->getHeight(), 0);
                 // get the max offset from the second letter of the tweet (first char is the hashtag)
                 int max_offset;
                 try {
@@ -209,6 +222,8 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    threed_map_fbo.begin();
+
     ofPushStyle();
     
     ofBackground(255);
@@ -224,14 +239,15 @@ void ofApp::draw(){
 
     cam.begin();
 
-    // ofDrawAxis(100); // for debugging
-
+    // ofDrawAxis(320); // for debugging
+    
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
 
-    ofSetColor(255, 0, 0);
-    ofDrawSphere(geoshape_bb.x, geoshape_bb.y, 0, 1);
-    ofDrawSphere(geoshape_bb.getWidth(), geoshape_bb.getHeight(), 0, 1);
+    // for debugging
+    // ofSetColor(255, 0, 0);
+    // ofDrawSphere(geoshape_bb.x, geoshape_bb.y, 0, 8);
+    // ofDrawSphere(geoshape_bb.getWidth(), geoshape_bb.getHeight(), 0, 8);
 
     // draw the vbo meshes for the polygons
     ofSetColor(255, 0, 0);
@@ -245,9 +261,9 @@ void ofApp::draw(){
 
             ofPoint city_screen_pos = cam.worldToScreen(cities.at(i).position);
             // check if the city can actually be seen from the camera
-            // otherwise don't ever bother doing all this stuff
-            if (city_screen_pos.x > 0 && city_screen_pos.x < ofGetWidth()){
-                if (city_screen_pos.y > 0 && city_screen_pos.y < ofGetHeight()){
+            // otherwise don't even bother doing all this stuff (this saves a good 20-30fps)
+            if (city_screen_pos.x > 0 && city_screen_pos.x < WIDTH/2){
+                if (city_screen_pos.y > 0 && city_screen_pos.y < HEIGHT){
             
                     ofTranslate(cities.at(i).position);
                     ofTranslate(0, 0, -0.1f);
@@ -279,6 +295,8 @@ void ofApp::draw(){
                 0.23);
         }
         else {
+            // all points drawed after the bind will be displayed
+            // as the texture instead
             firework_texture.bind();
             firework->mesh.draw();
             firework_texture.unbind();
@@ -298,20 +316,6 @@ void ofApp::draw(){
 
     // 2D STUFF
 
-    // ARTWORK
-    if (joystick_pressed){
-
-        ofPushStyle();
-        
-        ofFbo * art_fbo = sand_line.get_fbo_pointer();
-        // ofSetColor(255, 55);
-        art_fbo->draw(0, 0);
-        
-        ofPopStyle();
-    }
-
-    // draw_artwork = false;
-
     // DATA 
     ofPushStyle();
 
@@ -319,8 +323,9 @@ void ofApp::draw(){
     ofFill();
     // ofDrawBitmapString(current_tweeted_city, 20, 30);
     font.drawString(current_tweeted_city, 20, 30);
-    font.drawString(current_tweet_hashtags, ofGetWidth()/5, 30);
+    font.drawString(current_tweet_hashtags, WIDTH/5, 30);
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
+    ofDrawBitmapString("mouse screen coords to world: " + ofToString(cam.screenToWorld(ofPoint(mouseX, mouseY))), 20, 90);
     if (!can_setup_arduino){
         ofDrawBitmapString("arduino not ready...\n", 20, 70);
     }
@@ -328,8 +333,16 @@ void ofApp::draw(){
         if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
         // ofDrawBitmapString(analog_status, 20, 90);
     }
-
     ofPopStyle();
+
+    threed_map_fbo.end();
+
+    // ARTWORK        
+    ofFbo * art_fbo = sand_line.get_fbo_pointer();
+    art_fbo->draw(WIDTH/2, 0);
+
+    // DRAW THE 3D ENVIRONMENT
+    threed_map_fbo.draw(0, 0);
 }
 
 
@@ -422,38 +435,34 @@ void ofApp::play_sound_for_nation(std::string nation){
 
     float speed = ofRandom(0.85, 1.1);
     if (is_orient){
-        cout << "is orient" << endl;
+        // cout << "is orient" << endl;
         // chatting_sound_jp.stop();
         chatting_sound_jp.stop();
         // chatting_sound_jp.setSpeed(speed);
         // chatting_sound_jp.setPositionMS(ofRandom(32 * 1000));
         chatting_sound_jp.play();
-        // chatting_sound_jp.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
     }
     else if (is_english){
-        cout << "is english" << endl;
+        // cout << "is english" << endl;
         // chatting_sound_en.stop();
         chatting_sound_en.stop();
         chatting_sound_en.setSpeed(speed);
         chatting_sound_es.setPositionMS(ofRandom(120 * 1000));
         chatting_sound_en.play();
-        // chatting_sound_en.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
     }
     else if (is_spanish) {
-        cout << "is spanish" << endl;
+        // cout << "is spanish" << endl;
         // chatting_sound_es.stop();
         chatting_sound_es.stop();
         chatting_sound_es.setSpeed(speed);
         chatting_sound_es.setPositionMS(ofRandom(60 * 1000));
         chatting_sound_es.play();
-        // chatting_sound_es.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
     }
     else if (is_french) {
-        cout << "is french" << endl;
+        // cout << "is french" << endl;
         chatting_sound_fr.stop();
         chatting_sound_fr.setSpeed(speed);
         chatting_sound_fr.play();
-        // chatting_sound_fr.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
     }
     else if (is_italian){
         chatting_sound_it.stop();
@@ -472,9 +481,11 @@ void ofApp::play_sound_for_nation(std::string nation){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 
-    cout << "ofMap(mouseX, 0, ofGetWidth(), -90, 90): " << ofMap(mouseX, 0, ofGetWidth(), -90, 90) << endl;
-    cout << "ofMap(mouseY, 0, ofGetHeight(), -90, 90): " << ofMap(mouseY, 0, ofGetHeight(), -90, 90) << endl;
+    cout << "x, y: " << x << ", "  << y << endl;
+    cout << "ofMap(mouseX, 0, WIDTH, -90, 90): " << ofMap(mouseX, 0, WIDTH, -90, 90) << endl;
+    cout << "ofMap(mouseY, 0, HEIGHT, -90, 90): " << ofMap(mouseY, 0, HEIGHT, -90, 90) << endl;
     cout << "cam properties" << endl;
+    cout << "cam.screenToWorld(ofPoint(mouseX, mouseY): " << cam.screenToWorld(ofPoint(mouseX, mouseY)) << endl;
     cout << "cam.getGlobalPosition():    " << cam.getGlobalPosition() << endl;
     cout << "cam.getGlobalOrientation(): " << cam.getGlobalOrientation() << endl;
     cout << "cam.getDistance():          " << cam.getDistance() << endl;
@@ -631,14 +642,15 @@ void ofApp::exit(){
     for (int i = 0; i < cities.size(); i++){
 
         ofPoint screen_pos;
-        screen_pos.x = ofMap(cities.at(i).position.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
-        screen_pos.y = ofMap(cities.at(i).position.y, geoshape_bb.y, geoshape_bb.getHeight(), ofGetHeight(), 0);
+        screen_pos.x = ofMap(cities.at(i).position.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, fbo->getWidth());
+        screen_pos.y = ofMap(cities.at(i).position.y, geoshape_bb.y, geoshape_bb.getHeight(), fbo->getHeight(), 0);
         legend_font.drawString(cities.at(i).name, screen_pos.x, screen_pos.y);
     }
     fbo->end();
 
     cout << "saving fbo...";
-    save_fbo(fbo, current_date_time() + ".png");
+    // save_fbo(fbo, current_date_time() + ".png");
+    save_fbo(fbo, "test.png");
     // cout << "saving map legend...";
     // save_fbo(fbo, "legend.png");
 

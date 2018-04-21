@@ -1,3 +1,4 @@
+#include "globals.h"
 #include "vv_map_projections.h"
 
 //--------------------------------------------------------------
@@ -20,9 +21,9 @@ ofPoint vv_map_projections::spherical_to_cartesian(float lon, float lat, float r
 //--------------------------------------------------------------
 ofPoint vv_map_projections::mercator(float lon, float lat, float scale){
     
-    ofVec2f offset = ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2);
+    ofVec2f offset = ofVec2f(WIDTH / 2, HEIGHT / 2);
 
-    scale = ofGetWidth() / (2 * PI);
+    scale = WIDTH / (2 * PI);
 
     ofPoint position;
 

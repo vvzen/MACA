@@ -5,6 +5,7 @@
 #include "Firework.h"
 #include "SandLine.h"
 #include "vv_geojson.h"
+#include "globals.h"
 #include <time.h>
 
 class ofApp : public ofBaseApp{
@@ -22,6 +23,9 @@ class ofApp : public ofBaseApp{
 
 		void play_sound_for_nation(std::string nation);
 		void save_fbo(ofFbo * fbo, std::string path);
+
+		// FBO for the 3d environment
+		ofFbo threed_map_fbo;
 
 		// ARDUINO
 		ofArduino arduino;
