@@ -6,6 +6,10 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
 	ofSetFrameRate(60);
 
+    // CANVAS FOR THE GENERATIVE ARTWORK
+    sand_line.setup(ofGetWidth(), ofGetHeight(), 1, 35);
+    draw_artwork = false;
+
     // TYPE
     font.load("fonts/AndaleMono.ttf", 16, true, true, true, 1.0f);
     // tweet_font.load("fonts/AndaleMono.ttf", 10, true, true, true, 1.0f);
@@ -28,7 +32,6 @@ void ofApp::setup(){
     osc_receiver.setup(9000);
 
     // 3D
-    overall_rotation = ofVec3f(130, -6, -78);
     text_scale = 0.2f;
     // fireworks
     // firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
@@ -49,10 +52,10 @@ void ofApp::setup(){
     key_light_1.setDirectional();
 
     // CAMERA
-    cam.setDistance(80);
+    cam.setDistance(210);
     cam.setNearClip(0.5);
-    // camera placement settings
-    // movement
+    // camera movement and orientation settings
+    // cam_move_speed = 1.265f;
     cam_move_speed = 0.065f;
     cam_position = ofPoint(2.38566, -19.6323, 29.135);
     cam_move_velocity = ofVec3f(0, 0, 0);
@@ -64,13 +67,30 @@ void ofApp::setup(){
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
     // SOUND
-    fireworks_sound.load("sounds/fireworks_2.wav");
-    fireworks_sound.setVolume(0.5f);
-    fireworks_sound.setMultiPlay(true);
+    // chatting_sound_en.load("sounds/fill.wav");
+    // chatting_sound_jp.load("sounds/hihat_1.wav");
+    // chatting_sound_es.load("sounds/synth.wav");
+    // chatting_sound_fr.load("sounds/kick_1.wav");
+    chatting_sound_en.load("sounds/chatting_en.wav");
+    chatting_sound_jp.load("sounds/chatting_jp.wav");
+    chatting_sound_es.load("sounds/chatting_es.wav");
+    chatting_sound_fr.load("sounds/chatting_fr.wav");
+    chatting_sound_it.load("sounds/chatting_it.wav");
+    
+    chatting_sound_en.setVolume(0.5f);
+    // chatting_sound_en.setMultiPlay(true);
+    chatting_sound_jp.setVolume(0.5f);
+    // chatting_sound_jp.setMultiPlay(true);
+    chatting_sound_es.setVolume(0.5f);
+    // chatting_sound_es.setMultiPlay(true);
+    chatting_sound_fr.setVolume(0.5f);
+    chatting_sound_it.setVolume(0.5f);
+    // chatting_sound_fr.setMultiPlay(true);
 
     // GEOJSON
     geojson_scale = 400;
     std::string file_path = "world_cities_countries.geojson";
+    geoshape_bb = ofRectangle(ofPoint(-110, -70), 190, 120);
 
     // create the actual geojson meshes and return the centroid
     ofPoint geoshape_centroid = vv_geojson::create_geojson_map(file_path, font, poly_meshes, cities, geojson_scale);
@@ -88,11 +108,14 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
+    sand_line.update();
+
     for (int f = 0; f < fireworks.size(); f++){
         fireworks.at(f).update();
     }
 
     updateArduino();
+    // move and orient camera
     compute_cam_movement();
     compute_cam_orientation();
 
@@ -103,8 +126,10 @@ void ofApp::update(){
         if(m.getAddress() == "/twitter-app"){
 			current_tweeted_city = "#" + m.getArgAsString(0);
 			current_tweet_text = "#" + m.getArgAsString(1);
-            cout << "heard a tweet related to: " << current_tweeted_city << endl;
+			std::string current_tweet_nation = m.getArgAsString(2);
 
+            cout << "heard a tweet related to: " << current_tweeted_city << endl;
+            cout << "nation: " << current_tweet_nation << endl;
 
             // add the fireworks related to that city
 
@@ -128,11 +153,18 @@ void ofApp::update(){
                 // add a firework
                 Firework firework;
                 ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
+
                 firework.setup(city_pos, col);
                 fireworks.push_back(firework);
 
-                fireworks_sound.play();
-                fireworks_sound.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
+                play_sound_for_nation(current_tweet_nation);
+
+                // use that city in the artworktangle(ofPoint(0, 0), ofPoint(ofGetWidth(), ofGetHeight()));
+                // ofPoint screen_pos = cam.worldToScreen(city_pos);
+                ofPoint screen_pos;
+                screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
+                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), 0, ofGetHeight());
+                sand_line.add_point(screen_pos);
             }
             else {
                 cout << "!!!!!!ATTENTION!!!!!!" << endl;
@@ -148,9 +180,13 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    ofPushStyle();
+    
     ofBackground(255);
     ofSetColor(0);
     ofFill();
+
+    // 3D STUFF
 
     ofEnableDepthTest();
 
@@ -159,13 +195,17 @@ void ofApp::draw(){
 
     cam.begin();
     
-    key_light_1.enable();
-    key_light_1.setOrientation(cam_orientation);
+    // key_light_1.enable();
+    // key_light_1.setOrientation(cam_orientation);
 
     // ofDrawAxis(100);
 
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
+
+    ofSetColor(255, 0, 0);
+    ofDrawSphere(geoshape_bb.x, geoshape_bb.y, 0, 1);
+    ofDrawSphere(geoshape_bb.getWidth(), geoshape_bb.getHeight(), 0, 1);
 
     // draw the vbo meshes for the polygons
     ofSetColor(255, 0, 0);
@@ -187,8 +227,8 @@ void ofApp::draw(){
     }
 
     // fireworks
-    ofEnableAlphaBlending();
-    ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+    // ofEnableAlphaBlending();
+    // ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
     ofEnablePointSprites();
     ofSetColor(255);
 
@@ -201,7 +241,7 @@ void ofApp::draw(){
                 firework->initial_particle.position.x,
                 firework->initial_particle.position.y,
                 firework->initial_particle.position.z,
-                0.3);
+                0.23);
         }
         else {
             firework_texture.bind();
@@ -210,16 +250,35 @@ void ofApp::draw(){
         }
     }
 
-    ofDisableAlphaBlending();
-    ofDisableBlendMode();
+    // ofDisableAlphaBlending();
+    // ofDisableBlendMode();
     ofDisablePointSprites();
 
     cam.end();
-    key_light_1.disable();
+    // key_light_1.disable();
+
+    ofPopStyle();
 
     ofDisableDepthTest();
 
     // 2D STUFF
+
+    // ARTWORK
+    if (joystick_pressed){
+
+        ofPushStyle();
+        
+        ofFbo * art_fbo = sand_line.get_fbo_pointer();
+        // ofSetColor(255, 55);
+        art_fbo->draw(0, 0);
+        
+        ofPopStyle();
+    }
+
+    // draw_artwork = false;
+
+    // DATA 
+    ofPushStyle();
 
     ofSetColor(0);
     ofFill();
@@ -227,6 +286,7 @@ void ofApp::draw(){
     font.drawString(current_tweeted_city, 20, 30);
     font.drawString(current_tweet_text, ofGetWidth()/5, 30);
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
+    ofDrawBitmapString("drawing: " + ofToString(sand_line._enable_draw), 20, 90);
     if (!can_setup_arduino){
         ofDrawBitmapString("arduino not ready...\n", 20, 70);
     }
@@ -234,13 +294,15 @@ void ofApp::draw(){
         if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
         // ofDrawBitmapString(analog_status, 20, 90);
     }
+
+    ofPopStyle();
 }
 
+
+//--------------------------------------------------------------
+// CAMERA
 //--------------------------------------------------------------
 void ofApp::compute_cam_movement(){
-
-    // add joystick acceleration
-    cam_move_acceleration += joystick;
 
     float max_speed = 0.21f;
     
@@ -289,16 +351,99 @@ void ofApp::compute_cam_orientation(){
 }
 
 //--------------------------------------------------------------
+void ofApp::cam_zoom_in(){
+    cam_move_acceleration.z += cam_move_speed;
+}
+
+//--------------------------------------------------------------
+void ofApp::cam_zoom_out(){
+    cam_move_acceleration.z -= cam_move_speed;
+}
+
+//--------------------------------------------------------------
+void ofApp::cam_add_joystick(ofVec2f _joystick){
+    // add joystick acceleration
+    cam_move_acceleration += _joystick;
+}
+
+//--------------------------------------------------------------
+// SOUND
+//--------------------------------------------------------------
+void ofApp::play_sound_for_nation(std::string nation){
+    
+    // FIXME: play different sounds based on continent
+    bool is_orient = (nation == "Japan" || nation == "China");
+    bool is_french = (nation == "France");
+    bool is_english = (
+        nation == "United Kingdom" || 
+        nation == "United States" ||
+        nation == "Canada" ||
+        nation == "Ireland"
+    );
+    bool is_spanish = (nation == "Kingdom of Spain" || 
+        nation == "Portugal" ||
+        nation == "Nicaragua" ||
+        nation == "Ecuador" ||
+        nation == "Andorra"
+    );
+    bool is_italian = (nation == "Italy");
+
+    float speed = ofRandom(0.85, 1.1);
+    if (is_orient){
+        cout << "is orient" << endl;
+        // chatting_sound_jp.stop();
+        chatting_sound_jp.stop();
+        // chatting_sound_jp.setSpeed(speed);
+        // chatting_sound_jp.setPositionMS(ofRandom(32 * 1000));
+        chatting_sound_jp.play();
+        // chatting_sound_jp.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
+    }
+    else if (is_english){
+        cout << "is english" << endl;
+        // chatting_sound_en.stop();
+        chatting_sound_en.stop();
+        chatting_sound_en.setSpeed(speed);
+        chatting_sound_es.setPositionMS(ofRandom(120 * 1000));
+        chatting_sound_en.play();
+        // chatting_sound_en.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
+    }
+    else if (is_spanish) {
+        cout << "is spanish" << endl;
+        // chatting_sound_es.stop();
+        chatting_sound_es.stop();
+        chatting_sound_es.setSpeed(speed);
+        chatting_sound_es.setPositionMS(ofRandom(60 * 1000));
+        chatting_sound_es.play();
+        // chatting_sound_es.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
+    }
+    else if (is_french) {
+        cout << "is french" << endl;
+        chatting_sound_fr.stop();
+        chatting_sound_fr.setSpeed(speed);
+        chatting_sound_fr.play();
+        // chatting_sound_fr.setPan(ofMap(city_pos.x, 0, ofGetWidth(), -1, 1, true) );
+    }
+    else if (is_italian){
+        chatting_sound_it.stop();
+        chatting_sound_it.setSpeed(speed);
+        chatting_sound_it.setPositionMS(ofRandom(35 * 1000));
+        chatting_sound_it.play();
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+
     cout << "ofMap(mouseX, 0, ofGetWidth(), -90, 90): " << ofMap(mouseX, 0, ofGetWidth(), -90, 90) << endl;
     cout << "ofMap(mouseY, 0, ofGetHeight(), -90, 90): " << ofMap(mouseY, 0, ofGetHeight(), -90, 90) << endl;
-    cout << "overall_rotation: " << overall_rotation << endl;
     cout << "cam properties" << endl;
     cout << "cam.getGlobalPosition():    " << cam.getGlobalPosition() << endl;
     cout << "cam.getGlobalOrientation(): " << cam.getGlobalOrientation() << endl;
     cout << "cam.getDistance():          " << cam.getDistance() << endl;
     cout << "cam_orientation: " << cam_orientation << endl;
     cout << "cam_position:    " << cam_position << endl;
+
+    sand_line.add_point(ofPoint(x, y));
 }
 
 //--------------------------------------------------------------
@@ -307,11 +452,11 @@ void ofApp::keyPressed(int key){
     switch (key){
         // CAMERA MOVEMENTS
         case '[': {
-            cam_move_acceleration.z+=cam_move_speed;
+            cam_zoom_in();
             break;
         }
         case ']': {
-            cam_move_acceleration.z-=cam_move_speed;
+            cam_zoom_out();
             break;
         }
         // case OF_KEY_UP: {
@@ -331,30 +476,6 @@ void ofApp::keyPressed(int key){
         //     break;
         // }
         //
-        case 'q':{
-            cam_orient_acceleration.x -= cam_orient_speed;
-            break;
-        }
-        case 'w':{
-            cam_orient_acceleration.x += cam_orient_speed;
-            break;
-        }
-        case 'a':{
-            cam_orient_acceleration.y -= cam_orient_speed;
-            break;
-        }
-        case 's':{
-            cam_orient_acceleration.y += cam_orient_speed;
-            break;
-        }
-        case 'z':{
-            cam_orient_acceleration.z -= cam_orient_speed;
-            break;
-        }
-        case 'x':{
-            cam_orient_acceleration.z += cam_orient_speed;
-            break;
-        }
     }
 
 }
@@ -405,32 +526,47 @@ void ofApp::updateArduino(){
 // digital pin event handler, called whenever a digital pin value has changed
 //--------------------------------------------------------------
 void ofApp::digitalPinChanged(const int & pinNum) {
+
     if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
     // DEBUG
     if (joystick_pressed){
 
-        Firework firework;
-        firework.setup(ofVec3f(0, 0, 0), ofFloatColor(1.0, 0, 0));
-        fireworks.push_back(firework);
+        // Firework firework;
+        // firework.setup(ofVec3f(0, 0, 0), ofFloatColor(1.0, 0, 0));
+        // fireworks.push_back(firework);
     
-        fireworks_sound.play();
+        // chatting_sound.play();
+
+        draw_artwork = true;
     }
 }
 
 //--------------------------------------------------------------
 // analog pin event handler, called whenever an analog pin value has changed
+// it is used here to get the joystick movement on x and y axis
 //--------------------------------------------------------------
 void ofApp::analogPinChanged(const int & pinNum) {
+    
+    ofVec2f joystick;
     float joystick_speed_divider = 6.5f;
     switch(pinNum){
         case 0:{
-            joystick.y = ofMap(arduino.getAnalog(pinNum), 1023, 0, -cam_move_speed/joystick_speed_divider, cam_move_speed/joystick_speed_divider);
+            joystick.y = ofMap(
+                arduino.getAnalog(pinNum),
+                1023, 0,
+                -vv_smooth_cam::cam_move_speed/joystick_speed_divider, vv_smooth_cam::cam_move_speed/joystick_speed_divider
+            );
             break;
         }
         case 1:{
-            joystick.x = ofMap(arduino.getAnalog(pinNum), 1023, 0, -cam_move_speed/joystick_speed_divider, cam_move_speed/joystick_speed_divider);
+            joystick.x = ofMap(
+                arduino.getAnalog(pinNum),
+                1023, 0,
+                -vv_smooth_cam::cam_move_speed/joystick_speed_divider, vv_smooth_cam::cam_move_speed/joystick_speed_divider
+            );
             break;
         }
     }
+    cam_add_joystick(joystick);
     analog_status = "joystick x: " + ofToString(joystick.x) + ", y: " + ofToString(joystick.y);
 }

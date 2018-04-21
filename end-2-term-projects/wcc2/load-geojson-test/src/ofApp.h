@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxOsc.h"
 #include "Firework.h"
+#include "SandLine.h"
 #include "vv_geojson.h"
 
 class ofApp : public ofBaseApp{
@@ -15,12 +16,13 @@ class ofApp : public ofBaseApp{
 		void mousePressed(int x, int y, int button);
 		void keyPressed(int key);
 
+		void play_sound_for_nation(std::string nation);
+
 		// ARDUINO
 		ofArduino arduino;
 		bool can_setup_arduino; // flag variable for setting up arduino once
 		bool joystick_pressed;
     	string analog_status;
-		ofVec2f joystick;
 
 		// OSC
 		ofxOscReceiver osc_receiver;
@@ -29,28 +31,32 @@ class ofApp : public ofBaseApp{
 
 		// 3D
 		ofEasyCam cam;
-		ofPoint cam_position;
-		ofVec3f cam_move_velocity, cam_move_acceleration;
-		ofVec3f cam_orientation, cam_orient_velocity, cam_orient_acceleration;
-		float cam_move_speed, cam_orient_speed;
 		float text_scale;
 		// Firework firework;
 		deque <Firework> fireworks;
 		ofTexture firework_texture;
 		vector<ofFloatColor> fireworks_colors;
 
+		// camera
+		float cam_move_speed, cam_orient_speed;
+		ofPoint cam_position;
+		ofVec3f cam_move_velocity, cam_move_acceleration;
+		ofVec3f cam_orientation, cam_orient_velocity, cam_orient_acceleration;
 		void compute_cam_movement();
 		void compute_cam_orientation();
+		void cam_zoom_in();
+    	void cam_zoom_out();
+		void cam_add_joystick(ofVec2f _joystick);
 
 		ofLight key_light_1;
 
 		// used to compute the boundary
 		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
 		ofPoint geoshape_centroid; // overall shape centroid coordinates
-		ofVec3f overall_rotation;
 
 		// GEOJSON
 		float geojson_scale;
+		ofRectangle geoshape_bb;
 
 		//ofPoint spherical_to_cartesian(float lon, float lat, float radius);
 		ofxJSONElement geojson_map;
@@ -61,7 +67,15 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont font, tweet_font;
 
 		// SOUND
-		ofSoundPlayer fireworks_sound;
+		ofSoundPlayer chatting_sound_en;
+		ofSoundPlayer chatting_sound_jp;
+		ofSoundPlayer chatting_sound_es;
+		ofSoundPlayer chatting_sound_fr;
+		ofSoundPlayer chatting_sound_it;
+
+		// INTERNET ARTWORK
+		SandLine sand_line;
+		bool draw_artwork;
 
 	// ARDUINO METHODS
 	private:
