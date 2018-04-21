@@ -16,7 +16,7 @@ const T = new Twit({
 // setup osc
 const udp = dgram.createSocket("udp4");
 const osc_port = 9000;
-function send_osc_message(city, tweet){
+function send_osc_message(city, tweet, nation, lon, lat){
     let buffer;
     buffer = osc.toBuffer({
         address: "/twitter-app",
@@ -28,6 +28,18 @@ function send_osc_message(city, tweet){
             {
                 type: "string",
                 value: tweet
+            },
+            {
+                type: "string",
+                value: nation
+            },
+            {
+                type: "float",
+                value: lon
+            },
+            {
+                type: "float",
+                value: lat
             }
         ]
     });
@@ -37,33 +49,60 @@ function send_osc_message(city, tweet){
 const world_capitals = JSON.parse(fs.readFileSync('world_cities_countries.geojson'));
 
 const target_cities_for_streaming = [];
-world_capitals.features.forEach(function(city){
 
-    console.log(city);
+let cities_count = 0;
+world_capitals.features.forEach(function(feature){
 
-    let name = city.properties.NAME_EN;
+    // console.log(feature);
 
-    if (name){
-        name = name
-        .toLowerCase()
-        .replace(/ /g, '_')
-        .replace(/,/g, '')
-        .replace(/\'/, '');
+    try {
+        
+        let name = feature.properties.NAME_EN;
+        
+        let nation = feature.properties["SOV0NAME"];
+        
+        if (name && nation){
+            cities_count++;
+            console.log(name);
+            name = name
+            .toLowerCase()
+            .replace(/ /g, '_')
+            .replace(/,/g, '')
+            .replace(/\'/, '');
 
-        name = `#${name}`;
+            name = `#${name}`;
 
-        target_cities_for_streaming.push(name);
+            target_cities_for_streaming.push(
+                {
+                    name : name,
+                    nation: nation
+                }
+            );
+        }
+    }
+    catch (e){
+        console.log(e.message);
     }
 });
 
+console.log(`streaming on ${cities_count} cities`);
+
 // start streaming
-console.log(target_cities_for_streaming);
+// console.log(target_cities_for_streaming);
 
-const stream = T.stream('statuses/filter', {track: target_cities_for_streaming});
+const stream = T.stream('statuses/filter', {
+    track: target_cities_for_streaming.map((c) => { return c.name; })
+});
 
+fs.writeFile("nations.json", JSON.stringify(target_cities_for_streaming.map((c) => { return c.nation; })), (err) => {
+
+});
+
+console.log('started listening to tweets');
 stream.on('tweet', function (tweet) {
 
     let current_city;
+    let current_nation;
     let tweet_text;
 
     // check if tweet is a retweet
@@ -97,11 +136,15 @@ stream.on('tweet', function (tweet) {
         // find which city is the tweet about
         for (let city of target_cities_for_streaming){
             
-            var re = new RegExp(city.toLowerCase(), "g");
-
+            let city_name = city.name;
+            
+            var re = new RegExp(city_name.toLowerCase(), "g");
+            
             if (tweet_text.toLowerCase().match(re)){
-                console.log(`\ncurrent tweet city: ${city}`);
-                current_city = city.replace('#', '');
+                current_nation = city.nation;
+                console.log(`\ncurrent tweet nation: ${current_nation}`);
+                console.log(`\ncurrent tweet city: ${city_name}`);
+                current_city = city_name.replace('#', '');
             }
 
         }
@@ -109,7 +152,17 @@ stream.on('tweet', function (tweet) {
         tweet.entities.hashtags.forEach(function(hashtag){
             hashtags.push(hashtag.text);
         });
-        if (current_city) send_osc_message(current_city, hashtags.join(""));
+        let lon, lat;
+        if (tweet.coordinates){
+            // esample of santiago: { type: 'Point', coordinates: [ -71.2509046, -29.9032854 ]};
+            lon = tweet.coordinates.coordinates[0];
+            lat = tweet.coordinates.coordinates[1];
+        }
+        else {
+            lon = 0;
+            lat = 0;
+        }
+        if (current_city) send_osc_message(current_city, hashtags.join(""), current_nation, lon, lat);
         
     }
     console.log(tweet_text);

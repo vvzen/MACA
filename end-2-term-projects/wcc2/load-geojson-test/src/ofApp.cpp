@@ -15,10 +15,10 @@ void ofApp::setup(){
     // tweet_font.load("fonts/AndaleMono.ttf", 10, true, true, true, 1.0f);
 
     // ARDUINO
-    joystick = ofVec2f(0, 0);
     joystick_pressed = false;
     arduino.connect("/dev/tty.usbmodem1421", 57600);
     can_setup_arduino = false;
+    joystick = ofVec2f(0, 0);
 
     // listen for EInitialized notification. this indicates that
 	// the arduino is ready to receive commands and it is safe to
@@ -49,7 +49,7 @@ void ofApp::setup(){
 
     // LIGHTS
     // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
-    key_light_1.setDirectional();
+    // key_light_1.setDirectional();
 
     // CAMERA
     cam.setDistance(210);
@@ -123,13 +123,15 @@ void ofApp::update(){
 	while(osc_receiver.hasWaitingMessages()){
         ofxOscMessage m;
         osc_receiver.getNextMessage(m);
+
         if(m.getAddress() == "/twitter-app"){
+
 			current_tweeted_city = "#" + m.getArgAsString(0);
 			current_tweet_text = "#" + m.getArgAsString(1);
 			std::string current_tweet_nation = m.getArgAsString(2);
 
-            cout << "heard a tweet related to: " << current_tweeted_city << endl;
-            cout << "nation: " << current_tweet_nation << endl;
+            cout << "heard a tweet related to: " << current_tweeted_city;
+            cout << ", nation: " << current_tweet_nation << endl;
 
             // add the fireworks related to that city
 
@@ -164,11 +166,22 @@ void ofApp::update(){
                 ofPoint screen_pos;
                 screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
                 screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), 0, ofGetHeight());
-                sand_line.add_point(screen_pos);
+                // get the max offset from the second letter of the tweet (first char is the hashtag)
+                int max_offset;
+                try {
+                    max_offset = int(current_tweet_text.at(1)) * 0.5f;
+                }
+                catch (std::out_of_range &exc){
+                    max_offset = ofRandom(255);
+                }
+                // get the max radius from the length of the tweet
+                int max_radius = ofClamp(int(current_tweet_text.length()), 32, 64);
+                cout << "adding line with max offset: " << max_offset << endl;
+                sand_line.add_point(screen_pos, max_offset, max_radius);
             }
             else {
-                cout << "!!!!!!ATTENTION!!!!!!" << endl;
-                cout << "city " << current_tweeted_city << " not found!" << endl;
+                cerr << "!!!!!!ATTENTION!!!!!!" << endl;
+                cerr << "city " << current_tweeted_city << " not found!" << endl;
             }
 		}
     }
@@ -216,13 +229,22 @@ void ofApp::draw(){
     // draw the text of each city
     for (int i = 0; i < cities.size(); i++){
         ofPushMatrix();
-            ofTranslate(cities.at(i).position);
-            ofTranslate(0, 0, -0.1f);
-            ofRotateX(-90);
-            // ofScale(0.02, 0.02, 0.02);
-            for (int m = 0; m < cities.at(i).meshes.size(); m++){
-                cities.at(i).meshes.at(m).draw();
-            }
+
+            ofPoint city_screen_pos = cam.worldToScreen(cities.at(i).position);
+            // check if the city can actually be seen from the camera
+            // otherwise don't ever bother doing all this stuff
+            if (city_screen_pos.x > 0 && city_screen_pos.x < ofGetWidth()){
+                if (city_screen_pos.y > 0 && city_screen_pos.y < ofGetHeight()){
+            
+                    ofTranslate(cities.at(i).position);
+                    ofTranslate(0, 0, -0.1f);
+                    ofRotateX(-90);
+                    // ofScale(0.02, 0.02, 0.02);
+                    for (int m = 0; m < cities.at(i).meshes.size(); m++){
+                        cities.at(i).meshes.at(m).draw();
+                    }
+                }
+            } 
         ofPopMatrix();
     }
 
@@ -304,6 +326,9 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::compute_cam_movement(){
 
+    // add joystick acceleration
+    cam_move_acceleration += joystick;
+
     float max_speed = 0.21f;
     
     ofVec3f friction = cam_move_velocity;
@@ -360,11 +385,6 @@ void ofApp::cam_zoom_out(){
     cam_move_acceleration.z -= cam_move_speed;
 }
 
-//--------------------------------------------------------------
-void ofApp::cam_add_joystick(ofVec2f _joystick){
-    // add joystick acceleration
-    cam_move_acceleration += _joystick;
-}
 
 //--------------------------------------------------------------
 // SOUND
@@ -442,8 +462,6 @@ void ofApp::mousePressed(int x, int y, int button){
     cout << "cam.getDistance():          " << cam.getDistance() << endl;
     cout << "cam_orientation: " << cam_orientation << endl;
     cout << "cam_position:    " << cam_position << endl;
-
-    sand_line.add_point(ofPoint(x, y));
 }
 
 //--------------------------------------------------------------
@@ -547,14 +565,14 @@ void ofApp::digitalPinChanged(const int & pinNum) {
 //--------------------------------------------------------------
 void ofApp::analogPinChanged(const int & pinNum) {
     
-    ofVec2f joystick;
-    float joystick_speed_divider = 6.5f;
+    // float joystick_speed_divider = 6.5f;
+    float joystick_speed_mult = 0.1538f;
     switch(pinNum){
         case 0:{
             joystick.y = ofMap(
                 arduino.getAnalog(pinNum),
                 1023, 0,
-                -vv_smooth_cam::cam_move_speed/joystick_speed_divider, vv_smooth_cam::cam_move_speed/joystick_speed_divider
+                -cam_move_speed * joystick_speed_mult, cam_move_speed * joystick_speed_mult
             );
             break;
         }
@@ -562,11 +580,26 @@ void ofApp::analogPinChanged(const int & pinNum) {
             joystick.x = ofMap(
                 arduino.getAnalog(pinNum),
                 1023, 0,
-                -vv_smooth_cam::cam_move_speed/joystick_speed_divider, vv_smooth_cam::cam_move_speed/joystick_speed_divider
+                -cam_move_speed * joystick_speed_mult, cam_move_speed * joystick_speed_mult
             );
             break;
         }
     }
-    cam_add_joystick(joystick);
     analog_status = "joystick x: " + ofToString(joystick.x) + ", y: " + ofToString(joystick.y);
+}
+
+//--------------------------------------------------------------
+void ofApp::save_fbo(ofFbo * fbo, std::string path){
+    ofPixels pixels;
+    ofImage out_image;
+    fbo->getTexture().readToPixels(pixels);
+    out_image.setFromPixels(pixels);
+    out_image.save(path);
+}
+
+//--------------------------------------------------------------
+void ofApp::exit(){
+    cout << "saving...";
+    save_fbo(sand_line.get_fbo_pointer(), ofToString(ofGetFrameNum()) + ".png");
+    cout << " done, exiting" << endl;
 }

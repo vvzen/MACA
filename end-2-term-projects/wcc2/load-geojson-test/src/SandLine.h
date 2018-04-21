@@ -13,7 +13,7 @@ class SandLine {
 
         void setup(float w, float h, float max_size, float max_alpha);
         void update();
-        void add_point(ofVec3f p);
+        void add_point(ofVec3f p, int max_offset, int max_radius);
         ofFbo * get_fbo_pointer();
         
         void enable_draw(bool val);

@@ -40,7 +40,7 @@ void SandLine::update(){
 }
 
 //--------------------------------------------------------------
-void SandLine::add_point(ofVec3f p){
+void SandLine::add_point(ofVec3f p, int max_offset, int max_radius){
 
     _enable_draw = true;
 
@@ -64,15 +64,16 @@ void SandLine::add_point(ofVec3f p){
 
         // cout << "main_sand_points.size(): " << main_sand_points.size() << endl;
 
-        float radius = ofRandom(32, 64);
+        float radius_1 = ofRandom(max_radius*0.5, max_radius);
+        float radius_2 = ofRandom(max_radius, max_radius*2);
         float angle = ofMap(ofRandomf(), 0, 1, -PI*2, PI*2);
 
         // create a bezier curve using randomly generated handles
         ofPoint start_p = main_sand_points.at(0);
-        ofPoint anchor_1 = ofPoint(cos(angle) * radius, sin(angle) * radius);
+        ofPoint anchor_1 = ofPoint(cos(angle) * radius_1, sin(angle) * radius_1);
         anchor_1 += start_p;
         ofPoint end_p = main_sand_points.at(1);
-        ofPoint anchor_2 = ofPoint(cos(angle) * radius, sin(angle) * radius);
+        ofPoint anchor_2 = ofPoint(cos(angle) * radius_2, sin(angle) * radius_2);
         anchor_2 += end_p;
 
         // remove the first element, we don't need it anymore
@@ -90,7 +91,7 @@ void SandLine::add_point(ofVec3f p){
         // the standard deviation is randomised so we got more variety in the guassian curve shape
         float center_value = 0;
         float stdev = ofRandom(0.035, 0.115);
-        float max_offset = 32;
+        // float max_offset = 64;
 
         for (float f = 0; f < 1.0f; f+=0.005){
             for (int i = 0; i < 8; i++){

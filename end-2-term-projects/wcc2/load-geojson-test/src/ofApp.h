@@ -12,17 +12,20 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+		void exit();
 
 		void mousePressed(int x, int y, int button);
 		void keyPressed(int key);
 
 		void play_sound_for_nation(std::string nation);
+		void save_fbo(ofFbo * fbo, std::string path);
 
 		// ARDUINO
 		ofArduino arduino;
 		bool can_setup_arduino; // flag variable for setting up arduino once
 		bool joystick_pressed;
     	string analog_status;
+		ofVec2f joystick;
 
 		// OSC
 		ofxOscReceiver osc_receiver;
@@ -46,9 +49,8 @@ class ofApp : public ofBaseApp{
 		void compute_cam_orientation();
 		void cam_zoom_in();
     	void cam_zoom_out();
-		void cam_add_joystick(ofVec2f _joystick);
 
-		ofLight key_light_1;
+		// ofLight key_light_1;
 
 		// used to compute the boundary
 		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
