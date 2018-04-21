@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include <algorithm>
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -72,7 +73,7 @@ void ofApp::setup(){
     chatting_sound_es.load("sounds/chatting_es.wav");
     chatting_sound_fr.load("sounds/chatting_fr.wav");
     chatting_sound_it.load("sounds/chatting_it.wav");
-    sound_else.load("sounds/synth.wav");
+    // sound_else.load("sounds/kick_1.wav");
     
     chatting_sound_en.setVolume(0.5f);
     // chatting_sound_en.setMultiPlay(true);
@@ -82,12 +83,13 @@ void ofApp::setup(){
     // chatting_sound_es.setMultiPlay(true);
     chatting_sound_fr.setVolume(0.5f);
     chatting_sound_it.setVolume(0.5f);
+    sound_else.setVolume(0.25f);
     // chatting_sound_fr.setMultiPlay(true);
 
     // GEOJSON
     geojson_scale = 400;
     std::string file_path = "world_cities_countries.geojson";
-    geoshape_bb = ofRectangle(ofPoint(-110, -70), 190, 120);
+    geoshape_bb = ofRectangle(ofPoint(-120, -36), 170, 80);
 
     // create the actual geojson meshes and return the centroid
     ofPoint geoshape_centroid = vv_geojson::create_geojson_map(file_path, font, poly_meshes, cities, geojson_scale);
@@ -460,9 +462,10 @@ void ofApp::play_sound_for_nation(std::string nation){
         chatting_sound_it.play();
     }
     else {
-        sound_else.stop();
-        sound_else.setSpeed(speed);
-        sound_else.play();
+        // TODO:
+        // sound_else.stop();
+        // sound_else.setSpeed(speed);
+        // sound_else.play();
     }
 }
 
@@ -599,9 +602,10 @@ void ofApp::save_fbo(ofFbo * fbo, std::string path){
     out_image.save(path);
 }
 
-// used to save the image
+//--------------------------------------------------------------
+// used to save the image with the current time
 // grabbed from https://stackoverflow.com/questions/997946/how-to-get-current-time-and-date-in-c
-// gets current date/time: format is YYYY-MM-DD.HH:mm:ss
+//--------------------------------------------------------------
 std::string ofApp::current_date_time() {
     time_t     now = time(0);
     struct tm  tstruct;
@@ -609,7 +613,8 @@ std::string ofApp::current_date_time() {
     tstruct = *localtime(&now);
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
-    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    // strftime(buf, sizeof(buf), "%Y-%m-%d-%H:%M:%S", &tstruct);
+    strftime(buf, sizeof(buf), "%Y-%m-%d_%H-%M-%S", &tstruct);
 
     return buf;
 }
@@ -622,7 +627,7 @@ void ofApp::exit(){
     fbo->begin();
 
     // add the names of the cities on the fbo
-    ofSetColor(255, 75);
+    ofSetColor(255, 65);
     for (int i = 0; i < cities.size(); i++){
 
         ofPoint screen_pos;
