@@ -5,6 +5,7 @@
 #include "Firework.h"
 #include "SandLine.h"
 #include "vv_geojson.h"
+#include <time.h>
 
 class ofApp : public ofBaseApp{
 
@@ -13,6 +14,8 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 		void exit();
+
+		std::string current_date_time();
 
 		void mousePressed(int x, int y, int button);
 		void keyPressed(int key);
@@ -30,7 +33,7 @@ class ofApp : public ofBaseApp{
 		// OSC
 		ofxOscReceiver osc_receiver;
 		std::string current_tweeted_city;
-		std::string current_tweet_text;
+		std::string current_tweet_hashtags;
 
 		// 3D
 		ofEasyCam cam;
@@ -66,7 +69,7 @@ class ofApp : public ofBaseApp{
 		vector <ofVboMesh> poly_meshes; // stores the geojson shapes
 		vector <vv_geojson::city> cities; // stores the extruded names of the cities
 
-		ofTrueTypeFont font, tweet_font;
+		ofTrueTypeFont font, legend_font;
 
 		// SOUND
 		ofSoundPlayer chatting_sound_en;
@@ -74,6 +77,7 @@ class ofApp : public ofBaseApp{
 		ofSoundPlayer chatting_sound_es;
 		ofSoundPlayer chatting_sound_fr;
 		ofSoundPlayer chatting_sound_it;
+		ofSoundPlayer sound_else;
 
 		// INTERNET ARTWORK
 		SandLine sand_line;

@@ -11,8 +11,8 @@ void ofApp::setup(){
     draw_artwork = false;
 
     // TYPE
-    font.load("fonts/AndaleMono.ttf", 16, true, true, true, 1.0f);
-    // tweet_font.load("fonts/AndaleMono.ttf", 10, true, true, true, 1.0f);
+    font.load("fonts/AndaleMono.ttf", 15, true, true, true, 1.0f);
+    legend_font.load("fonts/AndaleMono.ttf", 8, true, true, true, 1.0f);
 
     // ARDUINO
     joystick_pressed = false;
@@ -28,7 +28,7 @@ void ofApp::setup(){
 
     // OSC
     current_tweeted_city = "";
-    current_tweet_text = "";
+    current_tweet_hashtags = "";
     osc_receiver.setup(9000);
 
     // 3D
@@ -46,10 +46,6 @@ void ofApp::setup(){
     fireworks_colors.push_back(ofFloatColor(0, 0.188, 1));
     fireworks_colors.push_back(ofFloatColor(1, 0.968, 0));
     fireworks_colors.push_back(ofFloatColor(0, 0.925, 1));
-
-    // LIGHTS
-    // key_light_1.setAttenuation(1.0f, 0.f, 0.001f);
-    // key_light_1.setDirectional();
 
     // CAMERA
     cam.setDistance(210);
@@ -76,6 +72,7 @@ void ofApp::setup(){
     chatting_sound_es.load("sounds/chatting_es.wav");
     chatting_sound_fr.load("sounds/chatting_fr.wav");
     chatting_sound_it.load("sounds/chatting_it.wav");
+    sound_else.load("sounds/synth.wav");
     
     chatting_sound_en.setVolume(0.5f);
     // chatting_sound_en.setMultiPlay(true);
@@ -95,11 +92,10 @@ void ofApp::setup(){
     // create the actual geojson meshes and return the centroid
     ofPoint geoshape_centroid = vv_geojson::create_geojson_map(file_path, font, poly_meshes, cities, geojson_scale);
     
-    // let the cam start at the centroid of the shape
+    // let the cam look at the centroid of the shape
     cam.lookAt(geoshape_centroid);
 
     cout << "overall centroid: " << geoshape_centroid << endl;
-
     cout << "ended parsing of file" << endl;
     cout << "poly_meshes.size(): " << poly_meshes.size() << endl;
     cout << "cities.size(): " << cities.size() << endl;
@@ -108,8 +104,10 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
+    // update the artwork
     sand_line.update();
 
+    // update the dataviz
     for (int f = 0; f < fireworks.size(); f++){
         fireworks.at(f).update();
     }
@@ -127,56 +125,72 @@ void ofApp::update(){
         if(m.getAddress() == "/twitter-app"){
 
 			current_tweeted_city = "#" + m.getArgAsString(0);
-			current_tweet_text = "#" + m.getArgAsString(1);
+            // if there's no text, we'll have an empty string, otherwise prepend an hashtag
+			current_tweet_hashtags = m.getArgAsString(1).length() == 0 ? "" : "#" + m.getArgAsString(1);
 			std::string current_tweet_nation = m.getArgAsString(2);
+			float lon = m.getArgAsFloat(3);
+			float lat = m.getArgAsFloat(4);
 
             cout << "heard a tweet related to: " << current_tweeted_city;
-            cout << ", nation: " << current_tweet_nation << endl;
-
-            // add the fireworks related to that city
+            cout << ", nation: " << current_tweet_nation;
+            cout << ", coordinates: " << lon << ", " << lat << endl;
 
             ofVec3f city_pos;
             bool found = false;
 
-            for (int i = 0; i < cities.size(); i++){
-                
-                if (cities.at(i).name == current_tweeted_city){
-                    city_pos = cities.at(i).position;
-                    found = true;
-                }
+            // if the tweet has the coordinates embedded, use them
+            if (lon != -1 && lat != -1){
+                city_pos = vv_map_projections::mercator(lon, lat, geojson_scale);
+                found = true;
+            }
+            // otherwise we will find them by ourselves
+            else {
+                for (int i = 0; i < cities.size(); i++){
+                    
+                    if (cities.at(i).name == current_tweeted_city){
+                        city_pos = cities.at(i).position;
+                        found = true;
+                    }
 
-                if (found) break;
+                    if (found) break;
+                }
             }
 
             if (found){
                 if (fireworks.size() > 15){
                     fireworks.pop_front();
                 }
-                // add a firework
+                // VISUALIZATION
+                // add a firework to visualize the tweet
                 Firework firework;
                 ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
-
                 firework.setup(city_pos, col);
                 fireworks.push_back(firework);
 
+                // SOUND
                 play_sound_for_nation(current_tweet_nation);
 
-                // use that city in the artworktangle(ofPoint(0, 0), ofPoint(ofGetWidth(), ofGetHeight()));
-                // ofPoint screen_pos = cam.worldToScreen(city_pos);
+                // DRAWING
+                // use that city in the artwork
                 ofPoint screen_pos;
                 screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
-                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), 0, ofGetHeight());
+                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), ofGetHeight(), 0);
                 // get the max offset from the second letter of the tweet (first char is the hashtag)
                 int max_offset;
                 try {
-                    max_offset = int(current_tweet_text.at(1)) * 0.5f;
+                    max_offset = int(current_tweet_hashtags.at(1)) * 0.5f;
                 }
                 catch (std::out_of_range &exc){
                     max_offset = ofRandom(255);
                 }
                 // get the max radius from the length of the tweet
-                int max_radius = ofClamp(int(current_tweet_text.length()), 32, 64);
-                cout << "adding line with max offset: " << max_offset << endl;
+                int max_radius = ofClamp(int(current_tweet_hashtags.length()), 32, 64);
+                // cout << "adding line with max offset: " << max_offset << endl;
+
+                // pick a random drawing bode, for the moment
+                int drawing_mode = (ofRandom(1) > 0.75 ? SandLine::ATTRACTOR_MODE : SandLine::BEZIER_MODE);
+                sand_line.set_mode(drawing_mode);
+                sand_line.set_target(screen_pos);
                 sand_line.add_point(screen_pos, max_offset, max_radius);
             }
             else {
@@ -207,11 +221,8 @@ void ofApp::draw(){
     cam.setOrientation(cam_orientation);
 
     cam.begin();
-    
-    // key_light_1.enable();
-    // key_light_1.setOrientation(cam_orientation);
 
-    // ofDrawAxis(100);
+    // ofDrawAxis(100); // for debugging
 
     // move shape to the center of the world
     ofTranslate(-geoshape_centroid);
@@ -306,9 +317,8 @@ void ofApp::draw(){
     ofFill();
     // ofDrawBitmapString(current_tweeted_city, 20, 30);
     font.drawString(current_tweeted_city, 20, 30);
-    font.drawString(current_tweet_text, ofGetWidth()/5, 30);
+    font.drawString(current_tweet_hashtags, ofGetWidth()/5, 30);
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
-    ofDrawBitmapString("drawing: " + ofToString(sand_line._enable_draw), 20, 90);
     if (!can_setup_arduino){
         ofDrawBitmapString("arduino not ready...\n", 20, 70);
     }
@@ -449,6 +459,11 @@ void ofApp::play_sound_for_nation(std::string nation){
         chatting_sound_it.setPositionMS(ofRandom(35 * 1000));
         chatting_sound_it.play();
     }
+    else {
+        sound_else.stop();
+        sound_else.setSpeed(speed);
+        sound_else.play();
+    }
 }
 
 //--------------------------------------------------------------
@@ -467,6 +482,7 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+    // FOR DEBUGGING when the arduino is not plugged
     switch (key){
         // CAMERA MOVEMENTS
         case '[': {
@@ -506,14 +522,6 @@ void ofApp::setupArduino(const int & version) {
 	
 	// remove listener because we don't need it anymore
 	ofRemoveListener(arduino.EInitialized, this, &ofApp::setupArduino);
-
-    /* // a little blink to start
-    for (int i = 0; i < 5; i++){
-	    arduino.sendDigital(13, ARD_LOW);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	    arduino.sendDigital(13, ARD_HIGH);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    } */
     
     // it is now safe to send commands to the Arduino
     can_setup_arduino = true;
@@ -546,15 +554,8 @@ void ofApp::updateArduino(){
 void ofApp::digitalPinChanged(const int & pinNum) {
 
     if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
-    // DEBUG
-    if (joystick_pressed){
-
-        // Firework firework;
-        // firework.setup(ofVec3f(0, 0, 0), ofFloatColor(1.0, 0, 0));
-        // fireworks.push_back(firework);
     
-        // chatting_sound.play();
-
+    if (joystick_pressed){
         draw_artwork = true;
     }
 }
@@ -590,6 +591,7 @@ void ofApp::analogPinChanged(const int & pinNum) {
 
 //--------------------------------------------------------------
 void ofApp::save_fbo(ofFbo * fbo, std::string path){
+
     ofPixels pixels;
     ofImage out_image;
     fbo->getTexture().readToPixels(pixels);
@@ -597,9 +599,43 @@ void ofApp::save_fbo(ofFbo * fbo, std::string path){
     out_image.save(path);
 }
 
+// used to save the image
+// grabbed from https://stackoverflow.com/questions/997946/how-to-get-current-time-and-date-in-c
+// gets current date/time: format is YYYY-MM-DD.HH:mm:ss
+std::string ofApp::current_date_time() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+    return buf;
+}
+
 //--------------------------------------------------------------
 void ofApp::exit(){
-    cout << "saving...";
-    save_fbo(sand_line.get_fbo_pointer(), ofToString(ofGetFrameNum()) + ".png");
+
+    ofFbo * fbo = sand_line.get_fbo_pointer();
+    
+    fbo->begin();
+
+    // add the names of the cities on the fbo
+    ofSetColor(255, 75);
+    for (int i = 0; i < cities.size(); i++){
+
+        ofPoint screen_pos;
+        screen_pos.x = ofMap(cities.at(i).position.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, ofGetWidth());
+        screen_pos.y = ofMap(cities.at(i).position.y, geoshape_bb.y, geoshape_bb.getHeight(), ofGetHeight(), 0);
+        legend_font.drawString(cities.at(i).name, screen_pos.x, screen_pos.y);
+    }
+    fbo->end();
+
+    cout << "saving fbo...";
+    save_fbo(fbo, current_date_time() + ".png");
+    // cout << "saving map legend...";
+    // save_fbo(fbo, "legend.png");
+
     cout << " done, exiting" << endl;
 }
