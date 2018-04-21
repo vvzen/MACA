@@ -159,10 +159,10 @@ stream.on('tweet', function (tweet) {
             lat = tweet.coordinates.coordinates[1];
         }
         else {
-            lon = 0;
-            lat = 0;
+            lon = -1;
+            lat = -1;
         }
-        if (current_city) send_osc_message(current_city, hashtags.join(""), current_nation, lon, lat);
+        if (current_city) send_osc_message(current_city, hashtags.join(" #"), current_nation, lon, lat);
         
     }
     console.log(tweet_text);
