@@ -43,14 +43,7 @@ void ofApp::setup(){
     // don't use the normal gl texture
 	ofDisableArbTex();
     ofLoadImage(firework_texture, "solid_dot.png");
-    glPointSize(8);
-    fireworks_colors.push_back(ofFloatColor(1, 0, 0.780));
-    fireworks_colors.push_back(ofFloatColor(1, 0, 0.094));
-    fireworks_colors.push_back(ofFloatColor(0.282, 1, 0));
-    fireworks_colors.push_back(ofFloatColor(1, 0.494, 0));
-    fireworks_colors.push_back(ofFloatColor(0, 0.188, 1));
-    fireworks_colors.push_back(ofFloatColor(1, 0.968, 0));
-    fireworks_colors.push_back(ofFloatColor(0, 0.925, 1));
+    glPointSize(5);
 
     // CAMERA
     // cam.setDistance(610);
@@ -176,7 +169,6 @@ void ofApp::update(){
                 // VISUALIZATION
                 // add a firework to visualize the tweet
                 Firework firework;
-                // ofFloatColor col = fireworks_colors.at(ofRandom(fireworks_colors.size()));
                 ofFloatColor col = ofFloatColor(0.0f);
                 firework.setup(city_pos, col);
                 fireworks.push_back(firework);
@@ -610,6 +602,7 @@ void ofApp::save_fbo(ofFbo * fbo, std::string path){
     ofImage out_image;
     fbo->getTexture().readToPixels(pixels);
     out_image.setFromPixels(pixels);
+    out_image.resize(WIDTH,HEIGHT*2);
     out_image.save(path);
 }
 

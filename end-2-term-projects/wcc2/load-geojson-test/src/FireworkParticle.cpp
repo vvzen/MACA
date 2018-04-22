@@ -32,6 +32,9 @@ void FireworkParticle::update(){
     position += velocity;
     // reset acceleration
     acceleration = ofVec3f(0, 0, 0);
+
+    // when z velocity reaches 0 it means the particles
+    // is changing its direction
     if (velocity.z <= 0 && _is_initial){
         _is_active = false;
     }

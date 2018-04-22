@@ -45,7 +45,6 @@ class ofApp : public ofBaseApp{
 		// Firework firework;
 		deque <Firework> fireworks;
 		ofTexture firework_texture;
-		vector<ofFloatColor> fireworks_colors;
 
 		// camera
 		float cam_move_speed, cam_orient_speed;
