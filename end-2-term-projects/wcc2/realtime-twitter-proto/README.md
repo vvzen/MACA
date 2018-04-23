@@ -1,5 +1,7 @@
 # README
 
+IMPORTANT--> Use the **popup-installation** branch, which contains the latest changes.
+
 Tested with node version v9.11.1, npm version 5.6.0.<br>
 This small app sends OSC messages using [osc-min](https://github.com/russellmcc/node-osc-min).<br>
 It streams tweets from twitter using [twit](https://github.com/ttezel/twit).
