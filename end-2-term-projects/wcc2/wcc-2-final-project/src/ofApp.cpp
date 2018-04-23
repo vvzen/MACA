@@ -545,16 +545,17 @@ void ofApp::mousePressed(int x, int y, int button){
 void ofApp::keyPressed(int key){
 
     // FOR DEBUGGING when the arduino is not plugged
+    // (movements are not as smooth as with the joystick, but still)
     switch (key){
         // CAMERA MOVEMENTS
-        case '[': {
-            cam_zoom_in();
-            break;
-        }
-        case ']': {
-            cam_zoom_out();
-            break;
-        }
+        // case '[': {
+        //     cam_zoom_in();
+        //     break;
+        // }
+        // case ']': {
+        //     cam_zoom_out();
+        //     break;
+        // }
         // case OF_KEY_UP: {
         //     cam_move_acceleration.y+=cam_move_speed;
         //     break;
