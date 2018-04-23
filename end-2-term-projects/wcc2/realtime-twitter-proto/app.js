@@ -3,8 +3,9 @@ const fs = require('fs');
 const osc = require('osc-min');
 const dgram = require("dgram");
 
+let twitter_auth;
 try {
-    const twitter_auth = JSON.parse(fs.readFileSync('auth.json', 'utf-8'));
+    twitter_auth = JSON.parse(fs.readFileSync('auth.json', 'utf-8'));
 }
 catch (e){
     console.error("ERROR:\nYou need to provide a auth.json file.\nSee the readme on how to get one.\nSee you soon.\n");
