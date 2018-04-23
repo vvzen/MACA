@@ -60,11 +60,11 @@ Originally responsible for creating the 3d text for each city's name. I'm now us
 ### vv_geojson.cpp/h
 
 Parses the [GeoJSON](https://en.wikipedia.org/wiki/GeoJSON) file and creates the polygonal outline of the geographical shapes necessary for the map.
-Also creates the text for each city by calling the method from `vv_extrude_font.cpp`. Internally utilizes ofVboMesh.
+Also creates the text for each city by calling the method from `vv_extrude_font.cpp`.
 There is already an [addon](https://github.com/moxuse/ofxGeoJSON) for parsing GeoJSON files but  don't know why it was failing on my files, so I wrote my own parser which supports also the *Point* feature type and uses *ofVboMesh*, which should generally be faster (if you're not modifying the mesh after creating it). I'd love to PR the original repo when this will be mature enough.
 
 ### vv_map_projections.cpp/h
 
 The methods inside those files could have been inside *vv_geojson*, but I decided to keep them separated since they are more generalised and are easier to reuse.
-They simply convert coordinates from a geographical projection (spherical or mercator) to a cartesian space.
+They simply convert coordinates from a geographical projection (*spherical* or *mercator*) to a cartesian space.
 
