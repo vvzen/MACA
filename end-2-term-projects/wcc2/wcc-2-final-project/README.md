@@ -8,7 +8,8 @@ The installation also requires [this other custom app](https://github.com/vvzen/
 
 ## Concept
 
-See [this pdf](https://vvzen.github.io/assets/works/vv_wcc2_popup_proposal_art.pdf).
+See [this pdf](https://vvzen.github.io/assets/works/vv_wcc2_popup_proposal_art.pdf).<br>
+Thanks to [Nick Briz](https://duckduckgo.com/?q=nick+briz&bext=msl&atb=v71-5__&ia=web) for his videos and [R. Luke DuBois](https://en.wikipedia.org/wiki/R._Luke_DuBois) for his ideas.
 
 ## Compiling
 
