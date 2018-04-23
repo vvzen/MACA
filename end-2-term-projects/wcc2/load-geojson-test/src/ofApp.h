@@ -24,6 +24,10 @@ class ofApp : public ofBaseApp{
 		void play_sound_for_nation(std::string nation);
 		void save_fbo(ofFbo * fbo, std::string path);
 
+		bool show_intro_screen;
+		bool final_greet;
+		int arduino_digital_events_counter;
+
 		// FBO for the 3d environment
 		ofFbo threed_map_fbo;
 
@@ -56,8 +60,6 @@ class ofApp : public ofBaseApp{
 		void cam_zoom_in();
     	void cam_zoom_out();
 
-		// ofLight key_light_1;
-
 		// used to compute the boundary
 		ofVboMesh poly_meshes_centroids; // mesh with the centroids for each polygon
 		ofPoint geoshape_centroid; // overall shape centroid coordinates
@@ -80,11 +82,13 @@ class ofApp : public ofBaseApp{
 		ofSoundPlayer chatting_sound_es;
 		ofSoundPlayer chatting_sound_fr;
 		ofSoundPlayer chatting_sound_it;
-		ofSoundPlayer sound_else;
+		ofSoundPlayer chatting_sound_gr;
+		ofSoundPlayer chatting_sound_de;
+		ofSoundPlayer thanks_sound;
 
 		// INTERNET ARTWORK
 		SandLine sand_line;
-		bool draw_artwork;
+		bool save_artwork;
 
 	// ARDUINO METHODS
 	private:

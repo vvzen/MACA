@@ -56,7 +56,7 @@ ofPoint vv_geojson::create_geojson_map(std::string path, ofTrueTypeFont & font, 
             city_name = std::regex_replace(city_name, std::regex(","), "");
             city_name = "#" + city_name;
 
-            cout << "current city: " << city_name << endl;
+            // cout << "current city: " << city_name << endl;
 
             // excluding some cities for aesthetic reasons
             if (city_name != "#vatican city"){

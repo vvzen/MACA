@@ -23,6 +23,7 @@ class SandLine {
         void set_target(ofVec2f target);
         void set_mode(int mode);
         void enable_draw(bool val);
+        void reset(); // used after saving an artwork
 
         ofFbo fbo;
         int current_mode;

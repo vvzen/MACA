@@ -187,3 +187,24 @@ void SandLine::set_mode(int mode){
     // cout << "SandLine::set_mode: " << mode << endl;
     current_mode = mode;
 }
+
+//--------------------------------------------------------------
+void SandLine::reset(){
+
+    current_mode = BEZIER_MODE;
+
+    _enable_draw = false;
+
+    // used in attractor mode
+    acceleration = ofVec2f(0.0f, 0.0f);
+    velocity = ofVec2f(0.0f, 0.0f);
+    position = ofVec2f(0.0f, 0.0f);
+    
+    // initial cleaning of the fbo
+    fbo.begin();
+    
+    ofClear(0);
+    ofBackground(0);
+
+    fbo.end();
+}

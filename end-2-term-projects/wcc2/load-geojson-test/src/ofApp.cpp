@@ -9,11 +9,14 @@ void ofApp::setup(){
 
     ofHideCursor();
 
+    show_intro_screen = true;
+    final_greet = false;
+    arduino_digital_events_counter = 0;
+
     // FBO FOR THE 3D ENVIRONMENT 
     threed_map_fbo.allocate(WIDTH/2, HEIGHT, GL_RGBA, 8);
     // CANVAS FOR THE GENERATIVE ARTWORK
     sand_line.setup(WIDTH/2, HEIGHT, 1, 35);
-    draw_artwork = false;
 
     // TYPE
     font.load("fonts/AndaleMono.ttf", 15, true, true, true, 1.0f);
@@ -38,8 +41,6 @@ void ofApp::setup(){
 
     // 3D
     text_scale = 0.2f;
-    // fireworks
-    // firework.setup(ofVec3f(0,0,0), ofFloatColor(1.0, 0, 0));
     // don't use the normal gl texture
 	ofDisableArbTex();
     ofLoadImage(firework_texture, "solid_dot.png");
@@ -50,7 +51,7 @@ void ofApp::setup(){
     cam.setNearClip(0.5);
     // cam.setFarClip(1200);
     // camera movement and orientation settings
-    // cam_move_speed = 1.265f;
+    // cam_move_speed = 1.265f; // on the macbook air
     cam_move_speed = 0.065f;
     cam_position = ofPoint(0, -212, 512);
     cam_move_velocity = ofVec3f(0, 0, 0);
@@ -62,27 +63,23 @@ void ofApp::setup(){
     cam_orient_acceleration = ofVec3f(0, 0, 0);
 
     // SOUND
-    // chatting_sound_en.load("sounds/fill.wav");
-    // chatting_sound_jp.load("sounds/hihat_1.wav");
-    // chatting_sound_es.load("sounds/synth.wav");
-    // chatting_sound_fr.load("sounds/kick_1.wav");
+    // load samples for background noise
     chatting_sound_en.load("sounds/chatting_en.wav");
     chatting_sound_jp.load("sounds/chatting_jp.wav");
     chatting_sound_es.load("sounds/chatting_es.wav");
     chatting_sound_fr.load("sounds/chatting_fr.wav");
+    chatting_sound_de.load("sounds/chatting_de.wav");
+    chatting_sound_gr.load("sounds/chatting_gr.wav");
     chatting_sound_it.load("sounds/chatting_it.wav");
-    // sound_else.load("sounds/kick_1.wav");
-    
+    thanks_sound.load("sounds/thanks.wav");
+    // set volumes
     chatting_sound_en.setVolume(0.5f);
-    // chatting_sound_en.setMultiPlay(true);
     chatting_sound_jp.setVolume(0.5f);
-    // chatting_sound_jp.setMultiPlay(true);
     chatting_sound_es.setVolume(0.5f);
-    // chatting_sound_es.setMultiPlay(true);
     chatting_sound_fr.setVolume(0.5f);
+    chatting_sound_de.setVolume(0.5f);
     chatting_sound_it.setVolume(0.5f);
-    sound_else.setVolume(0.25f);
-    // chatting_sound_fr.setMultiPlay(true);
+    chatting_sound_gr.setVolume(0.5f);
 
     // GEOJSON
     geojson_scale = 400;
@@ -110,19 +107,47 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    // update the artwork
-    sand_line.update();
+    updateArduino();
 
-    // update the dataviz
-    for (int f = 0; f < fireworks.size(); f++){
-        fireworks.at(f).update();
+    if (joystick_pressed && arduino_digital_events_counter > 2){
+
+        if (final_greet){
+
+            cout << "thank you" << endl;
+            ofFbo * fbo = sand_line.get_fbo_pointer();
+
+            thanks_sound.play();
+                
+            // save artwork
+            save_fbo(fbo, current_date_time() + ".png");
+
+            // get ready to start again
+            sand_line.reset();
+            show_intro_screen = true;
+            final_greet = false;
+        }
+        else {
+            show_intro_screen = false;
+            final_greet = true;
+        }
     }
 
-    updateArduino();
-    // move and orient camera
-    compute_cam_movement();
-    compute_cam_orientation();
+    if(!show_intro_screen){
 
+        // update the artwork
+        sand_line.update();
+
+        // update the dataviz
+        for (int f = 0; f < fireworks.size(); f++){
+            fireworks.at(f).update();
+        }
+        
+        // move and orient camera
+        compute_cam_movement();
+        compute_cam_orientation();
+    }
+
+    
     // check for osc messages
 	while(osc_receiver.hasWaitingMessages()){
         ofxOscMessage m;
@@ -149,7 +174,7 @@ void ofApp::update(){
                 city_pos = vv_map_projections::mercator(lon, lat, geojson_scale);
                 found = true;
             }
-            // otherwise we will find them by ourselves
+            // otherwise we will find them by ourselves by looping through our cities
             else {
                 for (int i = 0; i < cities.size(); i++){
                     
@@ -162,10 +187,15 @@ void ofApp::update(){
                 }
             }
 
+            // we found the coordinates! well, let's then create a puff of smoke
+            // and a stroke on the artwork
             if (found){
+
+                // keep this deque clean
                 if (fireworks.size() > 15){
                     fireworks.pop_front();
                 }
+
                 // VISUALIZATION
                 // add a firework to visualize the tweet
                 Firework firework;
@@ -178,27 +208,30 @@ void ofApp::update(){
 
                 // DRAWING
                 // use that city in the artwork
-                ofPoint screen_pos;
-                ofFbo * fbo = sand_line.get_fbo_pointer();
-                screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, fbo->getWidth());
-                screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), fbo->getHeight(), 0);
-                // get the max offset from the second letter of the tweet (first char is the hashtag)
-                int max_offset;
-                try {
-                    max_offset = int(current_tweet_hashtags.at(1)) * 0.5f;
-                }
-                catch (std::out_of_range &exc){
-                    max_offset = ofRandom(255);
-                }
-                // get the max radius from the length of the tweet
-                int max_radius = ofClamp(int(current_tweet_hashtags.length()), 32, 64);
-                // cout << "adding line with max offset: " << max_offset << endl;
+                if (!show_intro_screen){
 
-                // pick a random drawing bode, for the moment
-                int drawing_mode = (ofRandom(1) > 0.75 ? SandLine::ATTRACTOR_MODE : SandLine::BEZIER_MODE);
-                sand_line.set_mode(drawing_mode);
-                sand_line.set_target(screen_pos);
-                sand_line.add_point(screen_pos, max_offset, max_radius);
+                    ofPoint screen_pos;
+                    ofFbo * fbo = sand_line.get_fbo_pointer();
+                    screen_pos.x = ofMap(city_pos.x, geoshape_bb.x, geoshape_bb.getWidth(),  0, fbo->getWidth());
+                    screen_pos.y = ofMap(city_pos.y, geoshape_bb.y, geoshape_bb.getHeight(), fbo->getHeight(), 0);
+                    // get the max offset from the second letter of the tweet (first char is the hashtag)
+                    int max_offset;
+                    try {
+                        max_offset = int(current_tweet_hashtags.at(1)) * 0.5f;
+                    }
+                    catch (std::out_of_range &exc){
+                        max_offset = ofRandom(255);
+                    }
+                    // get the max radius from the length of the tweet
+                    int max_radius = ofClamp(int(current_tweet_hashtags.length()), 32, 64);
+                    // cout << "adding line with max offset: " << max_offset << endl;
+
+                    // pick a random drawing mode
+                    int drawing_mode = (ofRandom(1) > 0.75 ? SandLine::ATTRACTOR_MODE : SandLine::BEZIER_MODE);
+                    sand_line.set_mode(drawing_mode);
+                    sand_line.set_target(screen_pos);
+                    sand_line.add_point(screen_pos, max_offset, max_radius);
+                }
             }
             else {
                 cerr << "!!!!!!ATTENTION!!!!!!" << endl;
@@ -209,132 +242,140 @@ void ofApp::update(){
 
     // update the sound playing system
 	ofSoundUpdate();
+
+    joystick_pressed = false;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    threed_map_fbo.begin();
-
-    ofPushStyle();
-    
-    ofBackground(255);
-    ofSetColor(0);
-    ofFill();
-
-    // 3D STUFF
-
-    ofEnableDepthTest();
-
-    cam.setPosition(cam_position); // see compute_cam_movement()
-    cam.setOrientation(cam_orientation);
-
-    cam.begin();
-
-    // ofDrawAxis(320); // for debugging
-    
-    // move shape to the center of the world
-    ofTranslate(-geoshape_centroid);
-
-    // for debugging
-    // ofSetColor(255, 0, 0);
-    // ofDrawSphere(geoshape_bb.x, geoshape_bb.y, 0, 8);
-    // ofDrawSphere(geoshape_bb.getWidth(), geoshape_bb.getHeight(), 0, 8);
-
-    // draw the vbo meshes for the polygons
-    ofSetColor(255, 0, 0);
-    for (int i = 0; i < poly_meshes.size(); i++){
-        poly_meshes.at(i).draw();
-    }
-
-    // draw the text of each city
-    for (int i = 0; i < cities.size(); i++){
-        ofPushMatrix();
-
-            ofPoint city_screen_pos = cam.worldToScreen(cities.at(i).position);
-            // check if the city can actually be seen from the camera
-            // otherwise don't even bother doing all this stuff (this saves a good 20-30fps)
-            if (city_screen_pos.x > 0 && city_screen_pos.x < WIDTH/2){
-                if (city_screen_pos.y > 0 && city_screen_pos.y < HEIGHT){
-            
-                    ofTranslate(cities.at(i).position);
-                    ofTranslate(0, 0, -0.1f);
-                    ofRotateX(-90);
-                    // ofScale(0.02, 0.02, 0.02);
-                    for (int m = 0; m < cities.at(i).meshes.size(); m++){
-                        cities.at(i).meshes.at(m).draw();
-                    }
-                }
-            } 
-        ofPopMatrix();
-    }
-
-    // fireworks
-    // ofEnableAlphaBlending();
-    // ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
-    ofEnablePointSprites();
-    ofSetColor(255);
-
-    for (int f = 0; f < fireworks.size(); f++){
+    if (show_intro_screen){
         
-        Firework * firework = &fireworks.at(f);
+        ofPushStyle();
+        
+        ofBackground(0);
+        ofSetColor(255);
+        ofFill();
 
-        if (!firework->exploded()){
-            ofDrawSphere(
-                firework->initial_particle.position.x,
-                firework->initial_particle.position.y,
-                firework->initial_particle.position.z,
-                0.23);
-        }
-        else {
-            // all points drawed after the bind will be displayed
-            // as the texture instead
-            firework_texture.bind();
-            firework->mesh.draw();
-            firework_texture.unbind();
-        }
-    }
+        std::stringstream description;
+        description << "Put on the headphones.\n\n";
+        description << "When you're ready, press the joystick button to start.\n\n";
+        description << "If you want, you'll have the chance to explore the map using the joystick.\n\n";
+        description << "Watch the artwork unfolding and when you're too bored/excited\n\npress the joystick again to save the current image.\n\n";
+        description << "All of the images picked up by the audience will be later displayed on my website.\n\n";
+        font.drawString(description.str(), WIDTH/3, HEIGHT/4);
 
-    // ofDisableAlphaBlending();
-    // ofDisableBlendMode();
-    ofDisablePointSprites();
-
-    cam.end();
-    // key_light_1.disable();
-
-    ofPopStyle();
-
-    ofDisableDepthTest();
-
-    // 2D STUFF
-
-    // DATA 
-    ofPushStyle();
-
-    ofSetColor(0);
-    ofFill();
-    // ofDrawBitmapString(current_tweeted_city, 20, 30);
-    font.drawString(current_tweeted_city, 20, 30);
-    font.drawString(current_tweet_hashtags, WIDTH/5, 30);
-    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50);
-    ofDrawBitmapString("mouse screen coords to world: " + ofToString(cam.screenToWorld(ofPoint(mouseX, mouseY))), 20, 90);
-    if (!can_setup_arduino){
-        ofDrawBitmapString("arduino not ready...\n", 20, 70);
+        ofPopStyle();
     }
     else {
-        if (joystick_pressed) ofDrawBitmapString("joystick pressed!", 20, 70);
-        // ofDrawBitmapString(analog_status, 20, 90);
+
+        threed_map_fbo.begin();
+
+        ofPushStyle();
+        
+        ofBackground(255);
+        ofSetColor(0);
+        ofFill();
+
+        // 3D STUFF
+
+        ofEnableDepthTest();
+
+        cam.setPosition(cam_position); // see compute_cam_movement()
+        cam.setOrientation(cam_orientation);
+
+        cam.begin();
+
+        // ofDrawAxis(320); // useful for debugging
+        
+        // move shape to the center of the world
+        ofTranslate(-geoshape_centroid);
+
+        // draw the vbo meshes for the polygons
+        ofSetColor(255, 0, 0);
+        for (int i = 0; i < poly_meshes.size(); i++){
+            poly_meshes.at(i).draw();
+        }
+
+        // draw the text of each city
+        for (int i = 0; i < cities.size(); i++){
+            ofPushMatrix();
+
+                // check if the city can actually be seen from the camera
+                // otherwise don't even bother doing all this stuff (this saves a good 20-30fps)
+                ofPoint city_screen_pos = cam.worldToScreen(cities.at(i).position);
+                if (city_screen_pos.x > 0 && city_screen_pos.x < WIDTH/2){
+                    if (city_screen_pos.y > 0 && city_screen_pos.y < HEIGHT){
+                
+                        ofTranslate(cities.at(i).position);
+                        ofTranslate(0, 0, -0.1f);
+                        ofRotateX(-90);
+                        // ofScale(0.02, 0.02, 0.02);
+                        for (int m = 0; m < cities.at(i).meshes.size(); m++){
+                            cities.at(i).meshes.at(m).draw();
+                        }
+                    }
+                } 
+            ofPopMatrix();
+        }
+
+        // FIREWORKS
+        ofEnablePointSprites();
+        ofSetColor(255);
+
+        for (int f = 0; f < fireworks.size(); f++){
+            
+            Firework * firework = &fireworks.at(f);
+
+            // draw a small sphere before the puff explosion
+            if (!firework->exploded()){
+                ofDrawSphere(
+                    firework->initial_particle.position.x,
+                    firework->initial_particle.position.y,
+                    firework->initial_particle.position.z,
+                    0.23);
+            }
+            else {
+                // all points drawed after the bind will be displayed
+                // as the texture instead
+                firework_texture.bind();
+                firework->mesh.draw();
+                firework_texture.unbind();
+            }
+        }
+
+        ofDisablePointSprites();
+
+        cam.end();
+
+        ofPopStyle();
+
+        ofDisableDepthTest();
+
+        // 2D STUFF
+
+        // DATA 
+        ofPushStyle();
+
+        ofSetColor(0);
+        ofFill();
+        font.drawString(current_tweeted_city, 20, 30);
+        font.drawString(current_tweet_hashtags, WIDTH/6, 30);
+        // ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 20, 50); // for debugging
+        
+        if (joystick_pressed) ofDrawBitmapString("saving artwork!", 20, 70);
+        
+        ofPopStyle();
+
+        threed_map_fbo.end();
+
+        // ARTWORK        
+        ofFbo * art_fbo = sand_line.get_fbo_pointer();
+        art_fbo->draw(WIDTH/2, 0);
+
+        // DRAW THE 3D ENVIRONMENT
+        threed_map_fbo.draw(0, 0);
     }
-    ofPopStyle();
-
-    threed_map_fbo.end();
-
-    // ARTWORK        
-    ofFbo * art_fbo = sand_line.get_fbo_pointer();
-    art_fbo->draw(WIDTH/2, 0);
-
-    // DRAW THE 3D ENVIRONMENT
-    threed_map_fbo.draw(0, 0);
 }
 
 
@@ -346,7 +387,8 @@ void ofApp::compute_cam_movement(){
     // add joystick acceleration
     cam_move_acceleration += joystick;
 
-    float max_speed = 0.21f;
+    // float max_speed = 0.21f;
+    float max_speed = 0.71f; // final installation
     
     ofVec3f friction = cam_move_velocity;
     friction.normalize();
@@ -402,13 +444,12 @@ void ofApp::cam_zoom_out(){
     cam_move_acceleration.z -= cam_move_speed;
 }
 
-
 //--------------------------------------------------------------
 // SOUND
 //--------------------------------------------------------------
 void ofApp::play_sound_for_nation(std::string nation){
     
-    // FIXME: play different sounds based on continent
+    // We're not respecting all the language minorities but this kinda works
     bool is_orient = (nation == "Japan" || nation == "China");
     bool is_french = (nation == "France");
     bool is_english = (
@@ -424,6 +465,8 @@ void ofApp::play_sound_for_nation(std::string nation){
         nation == "Andorra"
     );
     bool is_italian = (nation == "Italy");
+    bool is_german = (nation == "Germany");
+    bool is_greek = (nation == "Greece");
 
     float speed = ofRandom(0.85, 1.1);
     if (is_orient){
@@ -456,17 +499,23 @@ void ofApp::play_sound_for_nation(std::string nation){
         chatting_sound_fr.setSpeed(speed);
         chatting_sound_fr.play();
     }
+    else if (is_german){
+        chatting_sound_de.stop();
+        chatting_sound_de.setSpeed(speed);
+        chatting_sound_de.setPositionMS(ofRandom(35 * 1000));
+        chatting_sound_de.play();
+    }
+    else if (is_greek){
+        chatting_sound_gr.stop();
+        chatting_sound_gr.setSpeed(speed);
+        chatting_sound_gr.setPositionMS(ofRandom(35 * 1000));
+        chatting_sound_gr.play();
+    }
     else if (is_italian){
         chatting_sound_it.stop();
         chatting_sound_it.setSpeed(speed);
         chatting_sound_it.setPositionMS(ofRandom(35 * 1000));
         chatting_sound_it.play();
-    }
-    else {
-        // TODO:
-        // sound_else.stop();
-        // sound_else.setSpeed(speed);
-        // sound_else.play();
     }
 }
 
@@ -560,10 +609,8 @@ void ofApp::updateArduino(){
 void ofApp::digitalPinChanged(const int & pinNum) {
 
     if (pinNum == 2) joystick_pressed = !arduino.getDigital(pinNum);
-    
-    if (joystick_pressed){
-        draw_artwork = true;
-    }
+
+    arduino_digital_events_counter++;
 }
 
 //--------------------------------------------------------------
@@ -628,6 +675,9 @@ void ofApp::exit(){
 
     ofFbo * fbo = sand_line.get_fbo_pointer();
     
+    cout << "saving fbo...";
+    save_fbo(fbo, current_date_time() + ".png");
+
     fbo->begin();
 
     // add the names of the cities on the fbo
@@ -641,11 +691,8 @@ void ofApp::exit(){
     }
     fbo->end();
 
-    cout << "saving fbo...";
-    // save_fbo(fbo, current_date_time() + ".png");
-    save_fbo(fbo, "test.png");
-    // cout << "saving map legend...";
-    // save_fbo(fbo, "legend.png");
+    cout << " saving legend...";
+    save_fbo(fbo, "legend.png");
 
     cout << " done, exiting" << endl;
 }
