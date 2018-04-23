@@ -1,6 +1,6 @@
 # README
 
-IMPORTANT--> Use the **popup-installation** branch, which contains the latest changes.
+IMPORTANT: A full copy of this repo is avaible [on github at this branch](https://github.com/vvzen/MACA/tree/popup-installation/end-2-term-projects/wcc2/wcc-2-final-project) for easier navigation.
 
 This project was tested under macOS Sierra 10.12.6, gcc version 4.2.1, openframeworks version 0.9.8 using the **make** build system.<br>It should work also on Linux. <br>
 The Arduino used for moving in the 3d space needs to run the standard firmata firmware, as explained [here](http://openframeworks.cc/documentation/communication/ofArduino/).<br>
