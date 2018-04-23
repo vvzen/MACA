@@ -6,6 +6,10 @@ This project was tested under macOS Sierra 10.12.6, gcc version 4.2.1, openframe
 The Arduino used for moving in the 3d space needs to run the standard firmata firmware, as explained [here](http://openframeworks.cc/documentation/communication/ofArduino/).<br>
 The installation also requires [this other custom app](https://github.com/vvzen/MACA/tree/popup-installation/end-2-term-projects/wcc2/realtime-twitter-proto) to be running, see below for more infos.
 
+## Concept
+
+See [this pdf](https://vvzen.github.io/assets/works/vv_wcc2_popup_proposal_art.pdf).
+
 ## Compiling
 
 There are two ways to build this project.
