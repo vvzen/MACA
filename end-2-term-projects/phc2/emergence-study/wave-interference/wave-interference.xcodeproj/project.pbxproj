@@ -9,6 +9,206 @@
 		<string>46</string>
 		<key>objects</key>
 		<dict>
+			<key>CCDC6F9CCF925CC402160B85</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>AA5277A4A3418E2B6E405287</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>src</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>0F0AB119A6EF19B1C21C81AD</key>
+			<dict>
+				<key>fileRef</key>
+				<string>AA5277A4A3418E2B6E405287</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>AA5277A4A3418E2B6E405287</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>jsoncpp.cpp</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/src/jsoncpp.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>CC62F813547C0E1116F08086</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>json.h</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json/json.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>58AD3BD71B781D9BC25763C8</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>6FD303FB867AB889818B9EC4</string>
+					<string>CC62F813547C0E1116F08086</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>json</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>D486FC87F063317BB47E9FAC</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>58AD3BD71B781D9BC25763C8</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>include</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>977A836DD2C489CCC5E330FF</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>D486FC87F063317BB47E9FAC</string>
+					<string>CCDC6F9CCF925CC402160B85</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>jsoncpp</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>F40E80CB2D443CBA9581DD03</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>977A836DD2C489CCC5E330FF</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>libs</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>6FD303FB867AB889818B9EC4</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>json-forwards.h</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json/json-forwards.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>980CD2C017A55EF70CF8BFC9</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxJSONElement.h</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src/ofxJSONElement.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>17CAE65B8660FEFE0518880B</key>
+			<dict>
+				<key>fileRef</key>
+				<string>70C84AFB8F6ECB359DA7A003</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>70C84AFB8F6ECB359DA7A003</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxJSONElement.cpp</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src/ofxJSONElement.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>292AF6148769654D0DF26018</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>23BCBD7E659BADC0FBEB7E12</string>
+					<string>70C84AFB8F6ECB359DA7A003</string>
+					<string>980CD2C017A55EF70CF8BFC9</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>src</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>2865DAEF86B1907A704CA70B</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>292AF6148769654D0DF26018</string>
+					<string>F40E80CB2D443CBA9581DD03</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>ofxJSON</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>23BCBD7E659BADC0FBEB7E12</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxJSON.h</string>
+				<key>path</key>
+				<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src/ofxJSON.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
 			<key>2B0861A839303DED17351A84</key>
 			<dict>
 				<key>explicitFileType</key>
@@ -504,6 +704,80 @@
 				<key>sourceTree</key>
 				<string>SOURCE_ROOT</string>
 			</dict>
+			<key>E52D25B77FD2F5E99F040B72</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>vv_map_projections.h</string>
+				<key>path</key>
+				<string>src/vv_map_projections.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>CD40C488D126229EFB533560</key>
+			<dict>
+				<key>fileRef</key>
+				<string>E3C1E02459FD1C928D0BDFF1</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>E3C1E02459FD1C928D0BDFF1</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>vv_map_projections.cpp</string>
+				<key>path</key>
+				<string>src/vv_map_projections.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>7017F1DE5AE04F8C76005C9F</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>vv_geojson.h</string>
+				<key>path</key>
+				<string>src/vv_geojson.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>28CD0BCECB66441448FCAC59</key>
+			<dict>
+				<key>fileRef</key>
+				<string>D8118911422A52C84102EA35</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>D8118911422A52C84102EA35</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>vv_geojson.cpp</string>
+				<key>path</key>
+				<string>src/vv_geojson.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
 			<key>6948EE371B920CB800B5AC1A</key>
 			<dict>
 				<key>children</key>
@@ -520,6 +794,7 @@
 				<key>children</key>
 				<array>
 					<string>768C3255AF2F3E1A78DC4DF4</string>
+					<string>2865DAEF86B1907A704CA70B</string>
 				</array>
 				<key>isa</key>
 				<string>PBXGroup</string>
@@ -678,6 +953,12 @@
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui/src</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src</string>
 					</array>
 					<key>CONFIGURATION_BUILD_DIR</key>
 					<string>$(SRCROOT)/bin/</string>
@@ -740,6 +1021,12 @@
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui/src</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src</string>
 					</array>
 					<key>CONFIGURATION_BUILD_DIR</key>
 					<string>$(SRCROOT)/bin/</string>
@@ -796,6 +1083,8 @@
 				<array>
 					<string>E4B69E200A3A1BDC003C02F2</string>
 					<string>E4B69E210A3A1BDC003C02F2</string>
+					<string>28CD0BCECB66441448FCAC59</string>
+					<string>CD40C488D126229EFB533560</string>
 					<string>94CD461B0EE2F0BAE228A47B</string>
 					<string>6CC5D0394DD234CFE89C2D55</string>
 					<string>F6B1BC91A5D408D10394D4D8</string>
@@ -805,6 +1094,8 @@
 					<string>7C2BB274F8B92A1660B0B5CA</string>
 					<string>4F6C5B0EC3D1B008F9722557</string>
 					<string>4A273C53660CACDD4510FFE8</string>
+					<string>17CAE65B8660FEFE0518880B</string>
+					<string>0F0AB119A6EF19B1C21C81AD</string>
 				</array>
 				<key>isa</key>
 				<string>PBXSourcesBuildPhase</string>
@@ -893,6 +1184,12 @@
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui/src</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src</string>
 					</array>
 					<key>COMBINE_HIDPI_IMAGES</key>
 					<string>YES</string>
@@ -945,6 +1242,12 @@
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/libs/imgui/src</string>
 						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxImGui/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/include/json</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/libs/jsoncpp/src</string>
+						<string>../../../../../c++/of_v0.9.8_osx_release/addons/ofxJSON/src</string>
 					</array>
 					<key>COMBINE_HIDPI_IMAGES</key>
 					<string>YES</string>
@@ -990,6 +1293,10 @@
 					<string>E4B69E1D0A3A1BDC003C02F2</string>
 					<string>E4B69E1E0A3A1BDC003C02F2</string>
 					<string>E4B69E1F0A3A1BDC003C02F2</string>
+					<string>D8118911422A52C84102EA35</string>
+					<string>7017F1DE5AE04F8C76005C9F</string>
+					<string>E3C1E02459FD1C928D0BDFF1</string>
+					<string>E52D25B77FD2F5E99F040B72</string>
 				</array>
 				<key>isa</key>
 				<string>PBXGroup</string>

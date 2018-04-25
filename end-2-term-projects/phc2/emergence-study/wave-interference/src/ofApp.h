@@ -35,4 +35,5 @@ class ofApp : public ofBaseApp{
 		int GUI_resolution_x, GUI_resolution_y;
 		int GUI_num_random_points;
 		float GUI_frequency, GUI_amp_factor;
+		bool GUI_draw_wireframe;
 };

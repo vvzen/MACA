@@ -22,6 +22,7 @@ void ofApp::setup(){
     GUI_frequency = 16;
     GUI_amp_factor = 1;
     GUI_num_random_points = 4;
+    GUI_draw_wireframe = false;
 }
 
 //--------------------------------------------------------------
@@ -55,7 +56,7 @@ void ofApp::draw(){
     ofSetColor(59, 147, 143);
     waves_primitive.draw();
     ofSetColor(0);
-    waves_primitive.drawWireframe();
+    if(GUI_draw_wireframe) waves_primitive.drawWireframe();
 
     ofPopMatrix();
 
@@ -124,7 +125,7 @@ void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amp
 
             ofPoint mesh_point = plane.getVertex(i);
             
-            float current_distance = ofDist(random_point.x, random_point.y, mesh_point.x, mesh_point.y);
+            float current_distance = ofDist(random_point.x, random_point.y, random_point.z, mesh_point.x, mesh_point.y, mesh_point.z);
             // amp gets weaker the more distant it is from the point
             float amp_strength = ofMap(current_distance, 0, max_distance, 0.5, 0);
             float current_amplitude = sin(current_distance * frequency) * amp_strength * amplify_factor;
@@ -171,6 +172,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
     if (ImGui::Button("Generate Mesh")) regenerate_mesh = true;
     if (ImGui::Button("Generate Points")) regenerate_points = true;
+    if (ImGui::Button("Wireframe")) GUI_draw_wireframe = !GUI_draw_wireframe;
 
     if (ImGui::SliderInt("Resolution X", &GUI_resolution_x, 4, 256)) regenerate_mesh = true;
     if (ImGui::SliderInt("Resolution Y", &GUI_resolution_y, 4, 256)) regenerate_mesh = true;
