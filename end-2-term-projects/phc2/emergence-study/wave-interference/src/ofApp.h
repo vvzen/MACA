@@ -1,9 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxImGui.h"
 
-#define WIDTH 16
-#define HEIGHT 16
+#define MESH_WIDTH 128
+#define MESH_HEIGHT 128
 
 class ofApp : public ofBaseApp{
 
@@ -13,25 +14,21 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
 
-		void generate_mesh(ofVboMesh &mesh);
-		void generate_mesh_2(ofVboMesh &mesh);
-		ofVec3f getNormalFromTriangleVertices(vector<ofVec3f> triangleVertices);
+		void generate_mesh(int num_cols, int num_rows, float frequency, float amp_factor);
+		void drawImGui();
 
-		ofVboMesh mesh;
+		of3dPrimitive waves_primitive;
+
 		ofEasyCam cam;
 		
 		ofLight light;
 
 		vector <ofPoint> random_points;
+
+		// GUI
+		ofxImGui::Gui gui;
+		int GUI_resolution_x, GUI_resolution_y;
+		float GUI_frequency, GUI_amp_factor;
 };

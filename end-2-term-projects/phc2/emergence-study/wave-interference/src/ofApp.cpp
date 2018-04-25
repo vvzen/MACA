@@ -5,103 +5,84 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-    light.setPosition(ofPoint(0, 0, 50));
-    light.setPointLight();
+    // 3D
+    light.setPosition(ofPoint(0, 0, 150));
+    light.setDirectional();
+
+    light.lookAt(ofPoint(0, 0, 0));
+    light.setOrientation(ofVec3f(219.727, 0, 0));
+
     cam.setDistance(80);
+
+    // GUI
+    gui.setup(); //required call
+    GUI_resolution_x = 32;
+    GUI_resolution_y = 32;
+    GUI_frequency = 16;
+    GUI_amp_factor = 1;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    // light.setOrientation(ofPoint(ofMap(mouseX, 0, ofGetWidth(), 0, 360), 0, 0));
 
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    ofBackground(0);
+    ofBackground(255);
+
+    // 3D STUFF
+    ofEnableDepthTest();
 
     cam.begin();
     
-    ofDrawAxis(100);
+    ofDrawAxis(100); // for debugging
     
-    light.enable();
+    // light.enable();
 
     ofPushMatrix();
-    ofTranslate(-WIDTH/2, -HEIGHT/2);
+    // ofTranslate(-MESH_WIDTH/2, -MESH_HEIGHT/2);
 
-    ofSetColor(255, 0, 0);
+    ofSetColor(255, 255, 0);
     // visualize the random "dropped" points
     for (int i = 0; i < random_points.size(); i++){
-        ofDrawSphere(random_points.at(i).x, random_points.at(i).y, 2, 2);
+        ofDrawSphere(random_points.at(i).x, random_points.at(i).y, 1, 1);
     }
 
-    ofSetColor(255);
-    mesh.draw();  
-    // mesh.drawWireframe();
+    ofSetColor(255, 120, 40);
+    waves_primitive.draw();  
+    ofSetColor(0);
+    waves_primitive.drawWireframe();
 
     ofPopMatrix();
 
-    light.disable();
+    // light.disable();
     
     cam.end();
+
+    // 2D STUFF
+    ofDisableDepthTest();
+
+    drawImGui();
 }
 
 //--------------------------------------------------------------
-void ofApp::generate_mesh_2(ofVboMesh &mesh){
+void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amplify_factor){
 
-    vector<ofPoint> points;
-    
-    int cols = 8;  
-	int rows = 8;  
+    waves_primitive.getMesh().clear();
 
-    // Mesh indices  
-    int totalQuads		= (cols-1) * (rows-1);  
-    int totalTriangles	= totalQuads * 2;  
-    int totalIndices	= (cols*2) * (rows-1);  
-    cout << "total number of quads: " << totalQuads << endl;  
-    cout << "total number of triangles: " << totalTriangles << endl;  
-    cout << "total number of indices: " << totalIndices << endl;  
-        
-    bool isGoingBackwards = false;  
-    int n	= 0;  
-    int colSteps = cols * 2;  
-    int rowSteps = rows - 1;  
-    vector<int> indices;  
-    for ( int r = 0; r < rowSteps; r++ ) {  
-        for ( int c = 0; c < colSteps; c++ ) {  
-            int t = c + r * colSteps;  
-            
-            if ( c == colSteps - 1 ) {  
-                indices.push_back( n );  
-            }  
-            else {  
-                indices.push_back( n );  
-            
-                ( t%2 == 0 ) ? n += cols : (r%2 == 0) ? n -= (cols-1) : n -= (cols+1);  
-            }  
-        }  
-    }
+    // generate a plane thanks to OF api
+    ofVboMesh plane = ofMesh::plane(MESH_WIDTH, MESH_HEIGHT, num_rows, num_cols);
 
-    for (int a = 0; a < indices.size(); a++){  
-        mesh.addIndex( indices[a] );  
-    }
-
-    int spaceX = 100;  
-	int spaceY = 100;  
-
-    // Points positions  
-    for (int y = 0; y < rows; y++){  
-        for ( int x = 0; x < cols; x++){  
-            ofVec2f point( x * spaceX, y * spaceY );  
-            points.push_back( point );  
-            mesh.addVertex( point );  
-        }  
-    }
+    cout << "generated mesh with " << waves_primitive.getMesh().getNumVertices() << " vertices" << endl;
 
     int num_random_points = 4;
     float max_distance = 0;
-    float frequency = 4;
-    float overall_multiplier = 2;
+
+    random_points.clear();
 
     cout << "generating random points" << endl;
     // 2.1 find the max distance between the vertices
@@ -109,12 +90,12 @@ void ofApp::generate_mesh_2(ofVboMesh &mesh){
     // TODO: optimize using sort()
     for (int i = 0; i < num_random_points; i++){
         
-        ofPoint random_point = ofPoint(ofRandom(WIDTH), ofRandom(HEIGHT));
+        ofPoint random_point = ofPoint(ofRandom(-MESH_WIDTH/2, MESH_WIDTH/2), 0, ofRandom(-MESH_HEIGHT/2, MESH_HEIGHT/2));
         random_points.push_back(random_point);
 
-        for (int p = 0; p < mesh.getNumVertices(); p++){
+        for (int p = 0; p < plane.getNumVertices(); p++){
 
-            ofPoint mesh_point = ofPoint(mesh.getVertex(p));
+            ofPoint mesh_point = ofPoint(plane.getVertex(p));
 
             float current_distance = ofDist(random_point.x, random_point.y, mesh_point.x, mesh_point.y);
             if (current_distance > max_distance){
@@ -129,173 +110,65 @@ void ofApp::generate_mesh_2(ofVboMesh &mesh){
         
         ofPoint random_point = random_points.at(r);
 
-        for (int i = 0; i < mesh.getNumVertices(); i++){
+        for (int i = 0; i < plane.getNumVertices(); i++){
 
-            ofPoint mesh_point = mesh.getVertex(i);
+            ofPoint mesh_point = plane.getVertex(i);
             
             float current_distance = ofDist(random_point.x, random_point.y, mesh_point.x, mesh_point.y);
             // amp gets weaker the more distant it is from the point
             float amp_strength = ofMap(current_distance, 0, max_distance, 0.5, 0);
-            float current_amplitude = sin(current_distance * frequency) * amp_strength * overall_multiplier;
+            float current_amplitude = sin(current_distance * frequency) * amp_strength * amplify_factor;
             mesh_point.z += current_amplitude;
             
-            mesh.setVertex(i, mesh_point);
+            plane.setVertex(i, mesh_point);
         }
     }
 
-    mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+   // rotate it so that y is up
+    waves_primitive.resetTransform();
+    waves_primitive.rotate(90, 1, 0, 0);
+
+    waves_primitive.getMesh() = plane;
 }
-
-//--------------------------------------------------------------
-void ofApp::generate_mesh(ofVboMesh &mesh){
-
-    mesh.clear();
-
-    // 1. generate a grid with a triangle strip
-    for (int x = 0; x < WIDTH; x++){
-        for (int y = 0; y < HEIGHT; y++){
-            mesh.addVertex(ofPoint(x, y));
-            mesh.addColor(ofFloatColor(0.5));
-        }
-    }
-
-    for (int y = 0; y < HEIGHT-1; y++){
-        for (int x = 0; x < WIDTH-1; x++){
-            mesh.addIndex(x+y*WIDTH);         // 0
-            mesh.addIndex((x+1)+y*WIDTH);     // 1
-            mesh.addIndex(x+(y+1)*WIDTH);     // 10
-
-            mesh.addIndex((x+1)+y*WIDTH);     // 1
-            mesh.addIndex((x+1)+(y+1)*WIDTH); // 11
-            mesh.addIndex(x+(y+1)*WIDTH);     // 10
-        }
-    }
-
-    int num_random_points = 4;
-    float max_distance = 0;
-    float frequency = 4;
-    float overall_multiplier = 2;
-
-    cout << "generating random points" << endl;
-    // 2.1 find the max distance between the vertices
-    // and some random chosen points on the grid
-    // TODO: optimize using sort()
-    for (int i = 0; i < num_random_points; i++){
-        
-        ofPoint random_point = ofPoint(ofRandom(WIDTH), ofRandom(HEIGHT));
-        random_points.push_back(random_point);
-
-        for (int p = 0; p < mesh.getNumVertices(); p++){
-
-            ofPoint mesh_point = ofPoint(mesh.getVertex(p));
-
-            float current_distance = ofDist(random_point.x, random_point.y, mesh_point.x, mesh_point.y);
-            if (current_distance > max_distance){
-                max_distance = current_distance;
-            }
-        }
-    }
-
-    cout << "applying amplitude" << endl;
-    // 2.2 apply the amplitude to the y axis of the vertex
-    for (int r = 0; r < random_points.size(); r++){
-        
-        ofPoint random_point = random_points.at(r);
-
-        for (int i = 0; i < mesh.getNumVertices(); i++){
-
-            ofPoint mesh_point = mesh.getVertex(i);
-            
-            float current_distance = ofDist(random_point.x, random_point.y, mesh_point.x, mesh_point.y);
-            // amp gets weaker the more distant it is from the point
-            float amp_strength = ofMap(current_distance, 0, max_distance, 0.5, 0);
-            float current_amplitude = sin(current_distance * frequency) * amp_strength * overall_multiplier;
-            mesh_point.z += current_amplitude;
-            
-            mesh.setVertex(i, mesh_point);
-        }
-    }
-
-    mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-
-}
-//--------------------------------------------------------------
-ofVec3f ofApp::getNormalFromTriangleVertices(vector<ofVec3f> triangleVertices){
-
-    // now is same as RedBook (OpenGL Programming Guide)  
-    ofVec3f u = triangleVertices[0] - triangleVertices[1];  
-    ofVec3f v = triangleVertices[1] - triangleVertices[2];  
-	  
-	/*cout << " triangleVertices[0].x: " << triangleVertices[0].x << " triangleVertices[0].y: " << triangleVertices[0].y << " triangleVertices[0].z: " << triangleVertices[0].z << endl;  
-	cout << " triangleVertices[1].x: " << triangleVertices[1].x << " triangleVertices[1].y: " << triangleVertices[1].y << " triangleVertices[1].z: " << triangleVertices[1].z << endl;  
-	cout << " triangleVertices[2].x: " << triangleVertices[2].x << " triangleVertices[2].y: " << triangleVertices[2].y << " triangleVertices[2].z: " << triangleVertices[2].z << endl;  
-	  
-	  
-	cout << " u.x: " << u.x << " u.y: " << u.y << " u.z: " << u.z << endl;  
-	cout << " v.x: " << v.x << " v.y: " << v.y << " v.z: " << v.z << endl;*/  
-	  
-	ofVec3f normal = u.getPerpendicular(v);  
-	//cout << " normal.x: " << normal.x << " normal.y: " << normal.y << " normal.z: " << normal.z << endl;  
-    return normal;  
-}  
-
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     if (key == 'g'){
-        generate_mesh_2(mesh);
+        generate_mesh(GUI_resolution_x, GUI_resolution_y, GUI_frequency, GUI_amp_factor);
     }
     if (key == 's'){
-        mesh.save("interference.ply");
+        waves_primitive.getMesh().save("interference.ply");
     }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+    // cout << "ofMap(mouseX, 0, ofGetWidth(), 0, 360): " << ofMap(mouseX, 0, ofGetWidth(), 0, 360) << endl;
+}
+
+//--------------------------------------------------------------
+ void ofApp::drawImGui(){
+     
+    gui.begin();
+ 	
+    auto main_settings = ofxImGui::Settings();
+    main_settings.windowPos = ofVec2f(10, 600); // set position 
+    main_settings.windowSize = ofVec2f(0.0f, 0.0f); // auto resize based on parameters dimensions
+ 
+    ofxImGui::BeginWindow("GUI", main_settings, false);
+
+    // generate mesh on click or when a slider is moved
+    bool regenerate_mesh = false;
     
-}
+    if (ImGui::Button("Generate Mesh")) regenerate_mesh = true;
 
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
+    if (ImGui::SliderInt("Resolution X", &GUI_resolution_x, 4, 128)) regenerate_mesh = true;
+    if (ImGui::SliderInt("Resolution Y", &GUI_resolution_y, 4, 128)) regenerate_mesh = true;
+    if (ImGui::SliderFloat("Frequency", &GUI_frequency, 0.0f, 32.0f)) regenerate_mesh = true;
+    if (ImGui::SliderFloat("Amplification", &GUI_amp_factor, 0.1f, 10.0f)) regenerate_mesh = true;
+    
+    if (regenerate_mesh) generate_mesh(GUI_resolution_x, GUI_resolution_y, GUI_frequency, GUI_amp_factor);
 
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
+    ofxImGui::EndWindow(main_settings);
+    gui.end();
 }
