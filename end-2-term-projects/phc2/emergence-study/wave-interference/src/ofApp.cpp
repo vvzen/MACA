@@ -26,9 +26,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    
     // light.setOrientation(ofPoint(ofMap(mouseX, 0, ofGetWidth(), 0, 360), 0, 0));
-
 }
 
 //--------------------------------------------------------------
@@ -92,7 +90,7 @@ void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amp
     waves_primitive.getMesh().clear();
 
     // generate a plane thanks to OF api
-    ofVboMesh plane = ofMesh::plane(MESH_WIDTH, MESH_HEIGHT, num_rows, num_cols);
+    ofVboMesh plane = ofMesh::plane(MESH_WIDTH, MESH_HEIGHT, num_rows, num_cols, OF_PRIMITIVE_TRIANGLES);
 
     cout << "generated mesh with " << waves_primitive.getMesh().getNumVertices() << " vertices" << endl;
 
