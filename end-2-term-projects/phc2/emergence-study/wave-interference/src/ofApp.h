@@ -12,10 +12,12 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+		void exit();
 
 		void keyPressed(int key);
 		void mousePressed(int x, int y, int button);
 
+		void generate_random_points(int num);
 		void generate_mesh(int num_cols, int num_rows, float frequency, float amp_factor);
 		void drawImGui();
 
@@ -26,9 +28,11 @@ class ofApp : public ofBaseApp{
 		ofLight light;
 
 		vector <ofPoint> random_points;
+		int num_random_points;
 
 		// GUI
 		ofxImGui::Gui gui;
 		int GUI_resolution_x, GUI_resolution_y;
+		int GUI_num_random_points;
 		float GUI_frequency, GUI_amp_factor;
 };
