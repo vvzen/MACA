@@ -43,7 +43,7 @@ class ofApp : public ofBaseApp{
 		ofxImGui::Gui gui;
 		int GUI_res_x, GUI_res_y;
 		int GUI_num_random_points;
-		float GUI_frequency, GUI_amp_factor;
+		float GUI_frequency, GUI_amp_factor, GUI_weight_multiplier;
 		bool GUI_draw_wireframe;
 		bool GUI_draw_target_points;
 };

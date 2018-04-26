@@ -19,6 +19,7 @@ void ofApp::setup(){
     GUI_res_y = 64;
     GUI_frequency = 2;
     GUI_amp_factor = 1;
+    GUI_weight_multiplier = 2.0f;
     GUI_num_random_points = 4;
     GUI_draw_wireframe = false;
     GUI_draw_target_points = true;
@@ -161,11 +162,11 @@ ofVec3f ofApp::load_points_from_csv(std::string path, ofVboMesh &influence_mesh,
         i++;
 	}
     cout << endl;
-    // compute the points weights knowing the min and max values of population
+    // normalize the points weights knowing the min and max values of population
     for (int i = 0; i < influence_points.size(); i++){
 
         float current_pop = influence_points.at(i).population;
-        float weight = ofMap(current_pop, min_population, max_population, 1, 20, true);
+        float weight = ofMap(current_pop, min_population, max_population, 0, 1, true);
         influence_points.at(i).weight = weight;
         
         cout << "name: " << influence_points.at(i).name << endl;
@@ -232,43 +233,53 @@ void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amp
 
     float max_distance = 0;
 
-    for (int i = 0; i < influence_points.size(); i++){
+    // an array that will store all the distances from the mesh to our points
+    // float distances[plane.getNumVertices() * influence_points.size()]; // width * height
+
+    vector <vector <float>> distances;
+
+    for (int p = 0; p < plane.getNumVertices(); p++){
         
-        ofPoint influence_point_pos = influence_points.at(i).pos;
-
-        for (int p = 0; p < borders_mesh.getNumVertices(); p++){
-
-            ofPoint mesh_point = ofPoint(borders_mesh.getVertex(p));
-
-            // use dist squared to save some processing since we don't need the exact value but just what's the biggest one (sqrt takes more time)
-            float current_distance = ofDistSquared(influence_point_pos.x, influence_point_pos.y, influence_point_pos.z, mesh_point.x, mesh_point.y, mesh_point.z);
-
-            if (current_distance > max_distance) max_distance = current_distance;
-        }
-    }
-
-    // 2.2 apply the amplitude to the y axis of the vertex
-    for (int i = 0; i < influence_points.size(); i++){
+        ofPoint mesh_point = ofPoint(plane.getVertex(p));
+        vector <float> current_point_distances;
         
-        ofPoint influence_point_pos = influence_points.at(i).pos;
+        for (int i = 0; i < influence_points.size(); i++){
 
-        for (int p = 0; p < plane.getNumVertices(); p++){
+            ofPoint influence_point_pos = influence_points.at(i).pos;
 
-            ofPoint mesh_point = plane.getVertex(p);
-            
             float current_distance = ofDist(influence_point_pos.x, influence_point_pos.y, influence_point_pos.z, mesh_point.x, mesh_point.y, mesh_point.z);
 
-            // amp gets weaker the more distant it is from the point
-            float amp_strength = ofMap(current_distance, 0, max_distance, 1, 0);
+            if (current_distance > max_distance) max_distance = current_distance;
             
-            // amp gets stronger based on the weight of the point
-            // amp_strength *= influence_points.at(i).weight;
+            // add the current distance to our vector
+            // distances[p + i * plane.getNumVertices()] = current_distance;
+            current_point_distances.push_back(current_distance);
+        }
 
-            float current_amplitude = sin(current_distance * frequency) * amp_strength * amplify_factor;
-            // float current_amplitude = sin(ofGetElapsedTimef() * 0.01) * amp_strength * amplify_factor;
-            mesh_point.z += current_amplitude;
-            
-            plane.setVertex(p, mesh_point);
+        distances.push_back(current_point_distances);
+    }
+
+    cout << "max distance: " << max_distance << endl;
+
+    ofVec3f * plane_vertices = plane.getVerticesPointer();
+
+    // 2.2 apply the amplitude to the y axis of the vertex
+    for (int p = 0; p < plane.getNumVertices(); p++){
+        
+        // ofPoint * mesh_point = plane.getVertex(p);
+
+        // recover the distances for this point
+        vector <float> current_distances = distances.at(p);
+
+        float current_amplitude = 0;
+
+        for (int i = 0; i < current_distances.size(); i++){
+
+            float strength = ofMap(current_distances.at(i), 0, max_distance*0.25, 1, 0, true);
+            strength += influence_points.at(i).weight * GUI_weight_multiplier;
+            current_amplitude += sin(current_distances.at(i) * frequency) * strength * amplify_factor;
+
+            plane_vertices[p].z += current_amplitude;
         }
     }
 
@@ -301,13 +312,14 @@ void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amp
     
     if (ImGui::Button("Generate Mesh")) regenerate_mesh = true;
     // if (ImGui::Button("Generate Points")) regenerate_points = true;
-    if (ImGui::Button("Wireframe")) GUI_draw_wireframe = !GUI_draw_wireframe;
-    if (ImGui::Button("Draw Points")) GUI_draw_target_points = !GUI_draw_target_points;
+    if (ImGui::Button("Toggle Wireframe")) GUI_draw_wireframe = !GUI_draw_wireframe;
+    if (ImGui::Button("Toggle Points")) GUI_draw_target_points = !GUI_draw_target_points;
 
     if (ImGui::SliderInt("Resolution X", &GUI_res_x, 4, 256)) regenerate_mesh = true;
     if (ImGui::SliderInt("Resolution Y", &GUI_res_y, 4, 256)) regenerate_mesh = true;
     if (ImGui::SliderFloat("Frequency", &GUI_frequency, 0.001f, 2.0f)) regenerate_mesh = true;
-    if (ImGui::SliderFloat("Amplification", &GUI_amp_factor, 0.01f, 6.0f)) regenerate_mesh = true;
+    if (ImGui::SliderFloat("Amplification", &GUI_amp_factor, 0.01f, 4.0f)) regenerate_mesh = true;
+    if (ImGui::SliderFloat("Weight Bias", &GUI_weight_multiplier, 0.1f, 16.0f)) regenerate_mesh = true;
     // if (ImGui::SliderInt("Num of Points", &GUI_num_random_points, 1, 32)) regenerate_points = true;
     
     static char filename[24] = {};
@@ -322,7 +334,6 @@ void ofApp::generate_mesh(int num_cols, int num_rows, float frequency, float amp
     ofxImGui::EndWindow(main_settings);
     gui.end();
 }
-
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
