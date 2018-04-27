@@ -2,7 +2,11 @@
 #include "vv_map_projections.h"
 
 //--------------------------------------------------------------
-// converts a pair of lon, lat coordinates in cartesian space using the spherical equation
+// @short: converts a pair of lon, lat coordinates in cartesian space using the spherical equation
+// @args:   lon: longitude
+//          lat: latitude
+//          radius: a float value representing the radius of the earth
+// @return: the point in cartesian space
 //--------------------------------------------------------------
 ofPoint vv_map_projections::spherical_to_cartesian(float lon, float lat, float radius){
 
@@ -20,7 +24,11 @@ ofPoint vv_map_projections::spherical_to_cartesian(float lon, float lat, float r
 
 //--------------------------------------------------------------
 // taken and edited from the ofxGeoJSON addon by moxuse
-// converts a pair of lon, lat coordinates in cartesian space using the mercator projection
+// @short: converts a pair of lon, lat coordinates in cartesian space using the mercator projection
+// @args:   lon: longitude
+//          lat: latitude
+//          radius: a float value representing the radius of the earth
+// @return: the point in cartesian space
 //--------------------------------------------------------------
 ofPoint vv_map_projections::mercator(float lon, float lat, float scale){
     

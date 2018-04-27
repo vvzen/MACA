@@ -4,6 +4,7 @@
 #include "ofxImGui.h"
 #include "globals.h"
 #include "vv_map_projections.h"
+#include "vv_geojson.h"
 
 struct InfluencePoint {
 	std::string name;
@@ -33,6 +34,7 @@ class ofApp : public ofBaseApp{
 		of3dPrimitive waves_primitive; // the actual wavy mesh
 		ofVboMesh influence_points_mesh; // a series of influence points stored in a mesh
 		ofVboMesh border_points_mesh; // the actual borders of the wavy mesh
+		vector <ofVboMesh> world_meshes; // a vector containing the meshes of the world
 		ofEasyCam cam;
 		ofLight light;
 
@@ -44,6 +46,8 @@ class ofApp : public ofBaseApp{
 		int GUI_res_x, GUI_res_y;
 		int GUI_num_random_points;
 		float GUI_frequency, GUI_amp_factor, GUI_weight_multiplier;
+		float GUI_falloff_decay;
 		bool GUI_draw_wireframe;
 		bool GUI_draw_target_points;
+		bool GUI_draw_world_meshes;
 };
