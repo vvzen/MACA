@@ -7,51 +7,23 @@ void ofApp::setup(){
 
     // 1. generate equally spaced points on a circle
     float radius = 128;
-    int num_points = 4;
+    int num_points = 12;
     float increment = 2*PI / num_points;
 
     cout << "creating nodes" << endl;
 
-    int c = 0;
     for (float i = 0; i < PI*2; i+=increment){
 
         float x = cos(i) * radius;
         float y = sin(i) * radius;
 
-        Node node;
-        node.pos = ofPoint(x, y);
-        node.id = i;
-
-        cout << "------ " << nodes.size() << endl;
-        cout << "c: " << c << endl;
-        cout << "nodes.size(): " << nodes.size() << endl;
-
-        cout << "current pos:  " << node.pos << endl;
-        cout << "current id:   " << node.id << endl;
-
-        // if (c > 0 && c < num_points-1){
-        //     node.next = &nodes.at(c+1);
-        //     cout << "next pos: " << node.next->pos << endl;
-        // }
-
-        nodes.push_back(node);
-
-        c++;
+        nodelist.append_node(ofPoint(x, y));
     }
 
-    cout << "nodes.size(): " << nodes.size() << endl;
-
-    std::list<Node>::iterator it;
-    // draw a line connecting each node to its previous
-    for (auto it = nodes.begin(); it != nodes.end(); ++it){
-        
-        Node current_node = *it;
-        ofPoint current_pos = current_node.pos;
-
-        cout << "current point: " << current_pos << endl;
-        
-        // ofDrawLine(x,y, prev_x, prev_y);
-    }
+    cout << "nodes.size(): " << nodelist.size() << endl;
+    
+    // build the line required to draw the connected points
+    nodelist.build_line();
 
     glPointSize(4);
 }
@@ -59,35 +31,36 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    if (evolve) offset_points();
+    if (evolve){
+        nodelist.grow_points();
+        nodelist.build_line();
+    }
 
     evolve = false;
-    ofBackground(255);
-    ofSetBackgroundAuto(false);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-    //ofBackground(255);
-    ofSetColor(0);
+    ofBackground(255);
 
     cam.begin();
 
     ofDrawAxis(10);
 
-    // cout << "nodes.size(): " << nodes.size() << endl;
+    ofSetColor(0);
+
+    nodelist.get_line_ptr()->draw();
 
     cam.end();
 
-    ofDrawBitmapString("nodes.size(): " + ofToString(nodes.size()), 20, 20);
+    ofDrawBitmapString("nodelist.size(): " + ofToString(nodelist.size()), 20, 20);
 }
 
 //--------------------------------------------------------------
 void ofApp::offset_points(){
     
-    /*
-    // float min_threshold = 5;
+    /* // float min_threshold = 5;
     float max_threshold = 50;
 
     int num_attempts = 0;
@@ -195,8 +168,7 @@ void ofApp::offset_points(){
             
             // cout << "num_attempts: " << num_attempts << endl;
         }
-    }
-    */
+    } */
 
     // 3. smooth the resulting path
 

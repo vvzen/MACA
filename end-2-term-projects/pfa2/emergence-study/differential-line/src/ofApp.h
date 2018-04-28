@@ -1,13 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-
-struct Node {
-	ofPoint pos;
-	int id;
-	Node * previous;
-	Node * next;
-};
+#include "NodeList.h"
 
 class ofApp : public ofBaseApp{
 
@@ -35,7 +29,7 @@ class ofApp : public ofBaseApp{
 
 		ofMesh mesh;
 
-		std::list <Node> nodes;
+		NodeList nodelist;
 
 		bool evolve;
 		
