@@ -6,8 +6,8 @@ void ofApp::setup(){
     evolve = false;
 
     // 1. generate equally spaced points on a circle
-    float radius = 128;
-    int num_points = 12;
+    float radius = 16;
+    int num_points = 16;
     float increment = 2*PI / num_points;
 
     cout << "creating nodes" << endl;
@@ -23,7 +23,11 @@ void ofApp::setup(){
     cout << "nodes.size(): " << nodelist.size() << endl;
     
     // build the line required to draw the connected points
-    nodelist.build_line();
+    // nodelist.build_line();
+
+    cam.setDistance(30);
+    cam.setNearClip(0.5);
+    cam.setFarClip(5000);
 
     glPointSize(4);
 }
@@ -32,8 +36,9 @@ void ofApp::setup(){
 void ofApp::update(){
 
     if (evolve){
-        nodelist.grow_points();
-        nodelist.build_line();
+        nodelist.grow();
+        nodelist.differentiate();
+        // nodelist.build_line();
     }
 
     evolve = false;
@@ -50,7 +55,10 @@ void ofApp::draw(){
 
     ofSetColor(0);
 
-    nodelist.get_line_ptr()->draw();
+    // ofPolyline * polyline = nodelist.get_line_ptr();
+    // polyline->draw();
+
+    nodelist.draw(true, true);
 
     cam.end();
 

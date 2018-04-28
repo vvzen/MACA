@@ -33,13 +33,18 @@ class NodeList {
 		Node * tail;
 
 		int nodes_count;
-        ofPolyline line;
+        // ofPolyline line;
+
+        float min_distance = 40;
+        float max_distance = 60;
+        float subdivide_threshold = max_distance / 2;
 
         //--------------------------------------------------------------
 		NodeList(){
 			head = NULL;
 			tail = NULL;
 			nodes_count = 0;
+            // line.clear();
 		}
 
         ~NodeList(){
@@ -72,31 +77,32 @@ class NodeList {
         //--------------------------------------------------------------
 		void append_node(ofPoint point){
 			
-			cout << "append_node()" << endl;
+			// cout << "append_node()" << endl;
 			
             Node * node = new Node(point, nodes_count+1);
             node->next = NULL;
 
 			if (head == NULL){
-				cout << "adding first element! " << node->id << endl;
-				
+				// cout << "adding first element! " << node->id << endl;
                 head = node;
                 tail = node;
 			}
 			else {
-				cout << "\tadding new node: " << node->id << endl;
-				cout << "\tprevious tail:   " << tail->id << endl;
-				cout << "\tcurrent head:    " << head->id << endl;
+				// cout << "\tadding new node: " << node->id << endl;
+				// cout << "\tprevious tail:   " << tail->id << endl;
+				// cout << "\tcurrent head:    " << head->id << endl;
 				tail->next = node;
 				tail = tail->next;
 			}
+            // line.addVertex(node->pos);
+            // line.close();
 			nodes_count++;
 		}
 
         //--------------------------------------------------------------
 		void insert_node(ofPoint point, int target_index){
 
-			cout << "insert_node() at index: " << target_index << endl;
+			// cout << "insert_node() at index: " << target_index << endl;
 
             if (target_index == 0 && nodes_count == 0){
                 append_node(point);
@@ -111,7 +117,7 @@ class NodeList {
                 while (current_index < target_index-1){
 
                     // cout << "\tcurrent index: " << current_index << endl;
-                    cout << "\tcurrent node:  " << current->id << endl;
+                    // cout << "\tcurrent node:  " << current->id << endl;
                     
                     if (current->next != NULL){
                         current = current->next;
@@ -123,90 +129,155 @@ class NodeList {
                         break;
                     }
                 }
-                cout << "\tinserting " << new_node->id << endl;
+                // cout << "\tinserting " << new_node->id << endl;
                 Node * tmp = current->next;
                 current->next = new_node;
                 new_node->next = tmp;
-                
+
+                // line.insertVertex(new_node->pos, target_index);
                 nodes_count++;
             }
 		}
 
         //--------------------------------------------------------------
-        void build_line(){
+        void draw(bool draw_vertices, bool draw_line){
 
-            cout << "build_line()" << endl;
+            cout << "draw()" << endl;
 
-            line.clear();
+            // line.clear();
 
             Node * current = head;
 
-            while (current->next != NULL){
-                cout << "\tcurrent node:  " << current->id << endl;
-                line.addVertex(ofPoint(current->pos));
+            ofVboMesh vertices_mesh;
+            vertices_mesh.setMode(OF_PRIMITIVE_POINTS);
+            ofMesh lines_mesh;
+            lines_mesh.setMode(OF_PRIMITIVE_LINE_LOOP);
+
+            while (current != NULL){
+
+                if (draw_vertices) vertices_mesh.addVertex(current->pos);
+                if (draw_line) lines_mesh.addVertex(current->pos);
+
                 current = current->next;
             }
-            line.addVertex(ofPoint(current->pos));
-            line.close();
+
+            if (draw_vertices) vertices_mesh.draw();
+            if (draw_line) lines_mesh.draw();
+
+            // line.addVertex(ofPoint(current->pos));
+            // line.close();
         }
         
         //--------------------------------------------------------------
-        // Spaces points apart until a certain threshold
+        // Randomly introduce new nodes between pairs of existing nodes
         //--------------------------------------------------------------
-        void grow_points(){
-
-            // float min_threshold = 5;
-            float max_distance = 40;
+        void grow(){
 
             Node * current = head;
 
             int i = 0;
             // loop inside the points
-            while (current->next != NULL){
+            while (current != NULL){
 
-                int num_attempts = 0;
+                // 1 check if the next point is still inside our threshold values for min and max distance
+                float distance;
+                
+                if (current->next != NULL){
+                    distance = ofDist(current->pos.x, current->pos.y, current->next->pos.x, current->next->pos.y);
+                }
+                else {
+                    distance = ofDist(current->pos.x, current->pos.y, head->pos.x, head->pos.y);
+                }
+                // cout << "distance: " << distance << endl;
 
-                // 2.1 move each point until it reaches a set distance from its next point
-                bool point_is_fine = false;
-
-                // 2.1.1. move the point of a random quantity in a certain direction
-                ofVec2f random_dir = ofVec2f(ofRandom(-1, 1), ofRandom(-1, 1));
-                random_dir.normalize();
-                random_dir *= ofRandom(20);
-                current->pos.x += random_dir.x;
-                current->pos.y += random_dir.y;
-
-                // 2.1.2 check if the next point is still inside our threshold values for min and max distance
-                float distance = ofDist(current->pos.x, current->pos.y, current->next->pos.x, current->next->pos.y);
-                cout << "distance: " << distance << endl;
-
-                // 3. add a new point if the distance is greater than our threshold
-                if (distance > max_distance){
+                // 2. add a new if distance is over threshold
+                if (ofRandom(1.0) > 0.97){
+                // if (distance > subdivide_threshold){
                     
-                    cout << "list before inserting" << endl;
-                    print_list();
-
-                    ofPoint mid_position = current->pos.getInterpolated(current->next->pos, 0.5);
-                    cout << "inserting node with id: " << nodes_count + 1 << endl;
-                    
-                    insert_node(mid_position, i+1);
-                    
-                    // cout << "list after inserting" << endl;
+                    // cout << "list before inserting" << endl;
                     // print_list();
 
-                    build_line();
+                    ofPoint mid_position;
+                    
+                    if (current->next != NULL){
+                        mid_position = current->pos.getInterpolated(current->next->pos, 0.5);
+                    }
+                    else {
+                        mid_position = current->pos.getInterpolated(head->pos, 0.5);
+                    }
+                    mid_position += ofVec2f(ofRandom(-0.3, 0.3), ofRandom(-0.3, 0.3));
+                    insert_node(mid_position, i+1);
                 }
 
                 i++;
                 // go to the next point
                 current = current->next;
             }
+
+            // build_line();
         }
 
         //--------------------------------------------------------------
-        ofPolyline * get_line_ptr(){
-            return &line;  
-        }        
+        // Push points apart if they're too close
+        // From inconvergent's website:
+        // They want to be close, but not too close, to their two neighbors. 
+        // At the same time they want to be as far away as possible from all
+        // other nodes within a certain distance.
+        //--------------------------------------------------------------
+        void differentiate(){
+
+            //TODO: push nodes apart if their distance is too low
+
+            Node * current = head;
+
+            // 1. loop inside each point
+            while (current != NULL){
+                
+                Node * current_inner = head;
+                
+                // 2. and loop inside every other point
+                while (current_inner != NULL){
+                    
+                    float distance = ofDist(current->pos.x, current->pos.y, current_inner->pos.x, current_inner->pos.y);
+                    
+                    float distance_of_interest = max_distance * 4;
+
+                    if (distance < distance_of_interest){
+
+                        // 3. check if the distance is lower than our min threshold
+                        if (distance <= min_distance){
+                            
+                            // 3.1 move the point away
+                            ofVec2f repulsion_force = current->pos - current_inner->pos;
+                            // repulsion_force.normalize();
+                            repulsion_force *= 0.01;
+                            current->pos += repulsion_force;
+                        }
+
+
+                        // 4. check if the distance is greater than our max threshold 
+                        if (distance > max_distance){
+                            
+                            // 3.2 move the point closer
+                            ofVec2f attraction_force = current_inner->pos - current->pos;
+                            // attraction_force.normalize();
+                            attraction_force *= 0.01;
+                            current->pos += attraction_force;
+                        }
+                    }
+
+
+                    current_inner = current_inner->next;
+                }
+
+                current = current->next;
+            }
+        }
+
+        //--------------------------------------------------------------
+        // ofPolyline * get_line_ptr(){
+        //     return &line;  
+        // }        
 
         //--------------------------------------------------------------
         int size(){
