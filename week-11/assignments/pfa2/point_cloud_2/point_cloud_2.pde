@@ -134,7 +134,3 @@ void keyPressed(){
         }
     }
 }
-        case 'e':{
-            dna.export("dna");
-            fingerprint.export("fingerprint");
-        }
