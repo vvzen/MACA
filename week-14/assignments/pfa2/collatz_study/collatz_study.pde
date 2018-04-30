@@ -6,6 +6,7 @@
 
 import peasy.*;
 import controlP5.*;
+import nervoussystem.obj.*; // for obj export
 
 PeasyCam cam;
 ControlP5 cp5;
@@ -34,6 +35,7 @@ int branch_length = 8;
 int max_iterations = 30;
 
 void setup(){
+
     size(1280, 720, P3D);
     ortho();
 
@@ -72,40 +74,66 @@ void setup(){
 }
 
 void draw(){
+    
     background(bg_color);
-    
-    strokeWeight(stroke_width);
 
-    y_rotation += y_rotation_speed;
-
-    float rad_angle_x = radians(angle_x); 
-    float rad_angle_y = radians(angle_y); 
-
-    pushMatrix();
-    
-    translate(translate_x, translate_y, 0);
-    rotateY(y_rotation);
-
-    //draw_axis();
-    pushStyle();
-    for (int i = 0; i < input_numbers.size(); i++){
-        pushMatrix();
-            collatz(input_numbers.get(i), branch_length, rad_angle_x, rad_angle_y);
-        popMatrix();
-    }
-    popStyle();
-
-    popMatrix();
+    draw_collatz(this.g);
 
     draw_GUI();
 }
 
+
+void draw_collatz(PGraphics pg){
+    
+    pg.strokeWeight(stroke_width);
+
+    y_rotation += y_rotation_speed;
+
+    float rad_angle_x = radians(angle_x); 
+    float rad_angle_y = radians(angle_y);
+
+    pushMatrix();
+    
+    pg.translate(translate_x, translate_y, 0);
+    pg.rotateY(y_rotation);
+
+    //draw_axis();
+    pg.pushStyle();
+    for (int i = 0; i < input_numbers.size(); i++){
+        pg.pushMatrix();
+            collatz(pg, input_numbers.get(i), branch_length, rad_angle_x, rad_angle_y);
+        pg.popMatrix();
+    }
+    pg.popStyle();
+
+    popMatrix();
+}
+
+void export(String name){
+    
+    MeshExport mesh_output = (MeshExport) createGraphics(10, 10, "nervoussystem.obj.OBJExport", name + ".obj");
+    
+    beginRecord("nervoussystem.obj.OBJExport", name);
+    
+    mesh_output.beginDraw();
+    
+    this.draw_collatz(mesh_output);
+
+    mesh_output.endDraw();
+    mesh_output.dispose();
+    
+    endRecord();
+
+    println("export finished");
+}
+
 // Using while approach instead of recursion
-ArrayList<Integer> collatz(int n, float branchLength, float radAngleX, float radAngleY){
+ArrayList<Integer> collatz(PGraphics pg, int n, float branchLength, float radAngleX, float radAngleY){
 
     ArrayList <Integer> collatz_numbers = new ArrayList<Integer>();
 
-    beginShape(POINTS);
+    // pg.beginShape(POINTS);
+    pg.beginShape(LINE_STRIP);
 
     while(true){
 
@@ -115,26 +143,26 @@ ArrayList<Integer> collatz(int n, float branchLength, float radAngleX, float rad
         float blue = 255 - collatz_numbers.size();
         float red = map(collatz_numbers.size(), 0, 100, 0, 255);
         
-        stroke(red, 0, blue);
+        pg.stroke(red, 0, blue);
         // make the first line
-        line(0, 0, 0, 0, -branchLength, 0);
+        pg.line(0, 0, 0, 0, -branchLength, 0);
         // move at the end of it
-        translate(0, -branchLength, 0);
+        pg.translate(0, -branchLength, 0);
 
         // if we reached one we're done
         if (n == 1){
-            endShape();
+            pg.endShape();
             return collatz_numbers;
         }
         // turn left or right depending on number parity
         else if (n % 2 == 0){
-            rotateX(radAngleX);
-            rotateY(radAngleY);
+            pg.rotateX(radAngleX);
+            pg.rotateY(radAngleY);
             n = n / 2;
         }
         else {
-            rotateX(-radAngleX);
-            rotateY(-radAngleY);
+            pg.rotateX(-radAngleX);
+            pg.rotateY(-radAngleY);
             n = n * 3 + 1;
         }
     }
@@ -214,4 +242,17 @@ void draw_GUI() {
 ////////////////// EVENTS //////////////////
 void mousePressed(){
     println("mouse : " + map(mouseX, 0, width, -90, 90));
+}
+
+void keyPressed(){
+
+    switch (key){
+        case 's':{
+            saveFrame("vv_collatz.png");
+            break;
+        }
+        case 'e':{
+            export("collatz");
+        }
+    }
 }
