@@ -46,6 +46,23 @@ class Fingerprint {
         }
     }
 
+    // draws the points of the fingerprint
+    void draw(PGraphics pg){
+
+        pg.pushStyle();
+
+        pg.beginShape(POINTS);
+        for (int i = 0; i < fingerprint.spiral_vertices.size(); i++){
+            Vertex vertex = fingerprint.spiral_vertices.get(i);
+            pg.stroke(vertex.col);
+            pg.strokeWeight(vertex.size);
+            pg.vertex(vertex.position.x, vertex.position.y, vertex.position.z);
+        }
+        pg.endShape();
+
+        pg.popStyle();
+    }
+
     // shake the vertices a bit
     void update(){
 
@@ -64,5 +81,24 @@ class Fingerprint {
             vertex.position.x += displacement_x + random(-0.05, 0.05);
             vertex.position.z += displacement_z;
         }
+    }
+
+    void export(String name){
+
+        beginRecord("nervoussystem.obj.OBJExport", name);
+        
+        // Save the DNA mesh
+        MeshExport output = (MeshExport) createGraphics(10, 10, "nervoussystem.obj.OBJExport", name + ".obj");
+        
+        output.beginDraw();
+
+        this.draw(output);
+        
+        output.endDraw();
+        output.dispose();
+
+        println(name + " export complete.");
+
+        endRecord();
     }
 }

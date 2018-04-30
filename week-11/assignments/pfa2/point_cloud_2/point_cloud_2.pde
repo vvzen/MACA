@@ -10,6 +10,7 @@
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 import peasy.*;
+import nervoussystem.obj.*; // for obj export
 
 // PeasyCam cam;
 
@@ -72,7 +73,7 @@ void draw(){
         rotateY(-fingerprint_rotation_y);
         rotateZ(fingerprint_rotation_z);
         // draw_axis();
-        draw_fingerprint();
+        fingerprint.draw(this.g);
     popMatrix();
 
     translate(-330, 390, 0);
@@ -83,57 +84,12 @@ void draw(){
         rotateX(dna_rotation_x);
         rotateY(0.12);
         rotateZ(dna_rotation);
-        draw_dna();
+        dna.draw(this.g);
     popMatrix();
     
     popMatrix();
 
     dna_rotation += rotation_speed;
-}
-
-// draws the points of the dna spirals
-void draw_dna(){
-
-    pushStyle();
-
-    beginShape(POINTS);
-    // two spirals
-    for (int i = 0; i < dna.spiral_vertices.size(); i++){
-        Vertex vertex = dna.spiral_vertices.get(i);
-        stroke(vertex.col);
-        strokeWeight(vertex.size);
-        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
-    }
-    endShape();
-
-    beginShape(POINTS);
-    // center vertices
-    for (int i = 0; i < dna.inner_vertices.size(); i++){
-        Vertex vertex = dna.inner_vertices.get(i);
-        stroke(vertex.col);
-        strokeWeight(vertex.size);
-        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
-    }
-    endShape();
-    popStyle();
-}
-
-// draws the points of the fingerprint
-void draw_fingerprint(){
-
-    pushStyle();
-
-    beginShape(POINTS);
-    for (int i = 0; i < fingerprint.spiral_vertices.size(); i++){
-        Vertex vertex = fingerprint.spiral_vertices.get(i);
-        stroke(vertex.col);
-        strokeWeight(vertex.size);
-        vertex(vertex.position.x, vertex.position.y, vertex.position.z);
-    }
-    endShape();
-
-    popStyle();
-
 }
 
 // draw xyz reference axis
@@ -171,6 +127,10 @@ void keyPressed(){
         case 's':{
             saveFrame("vv_pcloud_random.png");
             break;
+        }
+        case 'e':{
+            dna.export("dna");
+            fingerprint.export("fingerprint");
         }
     }
 }
