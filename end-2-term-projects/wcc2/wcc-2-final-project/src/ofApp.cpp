@@ -26,7 +26,7 @@ void ofApp::setup(){
     joystick_pressed = false;
     zoom_in_pressed = false;
     zoom_out_pressed = false;
-    arduino.connect("/dev/tty.usbmodem11", 57600);
+    arduino.connect("/dev/tty.usbmodem21", 57600);
     can_setup_arduino = false;
     joystick = ofVec2f(0, 0);
 
@@ -263,11 +263,13 @@ void ofApp::draw(){
         ofFill();
 
         std::stringstream description;
-        description << "Put on the headphones.\n\n";
-        description << "When you're ready, press the joystick button to start.\n\n";
-        description << "If you want, you'll have the chance to explore the map using the joystick.\n\n";
-        description << "Watch the artwork unfolding and when you're too bored/excited\n\npress the joystick again to save the current image.\n\n";
-        description << "All of the images picked up by the audience will be later displayed on my website.\n\n";
+        description << "Welcome.\n\n";
+        description << "On the right side of the screen you will see a drawing generated\n";
+        description << "from a real time stream of people tweeting stuff about different cities.\n\n";
+        description << "On the left side, you have the chance explore a map of those tweets\n";
+        description << "using the joystick and the buttons.\n\n";
+        description << "When you're ready, press the joystick to start.";
+
         font.drawString(description.str(), WIDTH/3, HEIGHT/4);
 
         ofPopStyle();
@@ -380,6 +382,12 @@ void ofApp::draw(){
 
         // DRAW THE 3D ENVIRONMENT
         threed_map_fbo.draw(0, 0);
+
+        ofPushStyle();
+        ofSetColor(255);
+        std::string caption = "Press the joystick to save the current image and exit.";
+        legend_font.drawString(caption, WIDTH - legend_font.getStringBoundingBox(caption, 0, 0).getWidth() - WIDTH/8, HEIGHT-HEIGHT/16);
+        ofPopStyle();
     }
 }
 
@@ -543,37 +551,6 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
-    // FOR DEBUGGING when the arduino is not plugged
-    // (movements are not as smooth as with the joystick, but still)
-    switch (key){
-        // CAMERA MOVEMENTS
-        // case '[': {
-        //     cam_zoom_in();
-        //     break;
-        // }
-        // case ']': {
-        //     cam_zoom_out();
-        //     break;
-        // }
-        // case OF_KEY_UP: {
-        //     cam_move_acceleration.y+=cam_move_speed;
-        //     break;
-        // }
-        // case OF_KEY_DOWN: {
-        //     cam_move_acceleration.y-=cam_move_speed;
-        //     break;
-        // }
-        // case OF_KEY_RIGHT: {
-        //     cam_move_acceleration.x+=cam_move_speed;
-        //     break;
-        // }
-        // case OF_KEY_LEFT: {
-        //     cam_move_acceleration.x-=cam_move_speed;
-        //     break;
-        // }
-        //
-    }
 
 }
 
