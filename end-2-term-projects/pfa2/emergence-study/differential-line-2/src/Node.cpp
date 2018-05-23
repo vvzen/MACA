@@ -1,18 +1,18 @@
 #include "Node.h"
 
 //--------------------------------------------------------------
-void Node::apply_force(ofVec3f &force){
+void Node::apply_force(ofVec2f &force){
     acc += force;
 }
 
 //--------------------------------------------------------------
 void Node::flock(vector <Node*> &nodes){
     // add separation
-    ofVec3f separation_force = get_separation(nodes);
+    ofVec2f separation_force = get_separation(nodes);
     separation_force *= DESIRED_SEPARATION;
     apply_force(separation_force);
     // add cohesion
-    ofVec3f cohesion_force = get_cohesion(nodes);
+    ofVec2f cohesion_force = get_cohesion(nodes);
     cohesion_force *= DESIRED_COHESION;
     apply_force(cohesion_force);
 }
@@ -32,15 +32,15 @@ void Node::update(vector <Node*> &nodes){
 
     // cout << "vel.length(): " << ofToString(vel.length() > 1.0) << endl;
 
-    acc = ofVec3f(0, 0, 0);
+    acc = ofVec2f(0, 0);
 }
 
 //--------------------------------------------------------------
 // "Leave me alone!" said the node
 //--------------------------------------------------------------
-ofVec3f Node::get_separation(vector <Node*> &nodes){
+ofVec2f Node::get_separation(vector <Node*> &nodes){
 
-    ofVec3f steer(0, 0, 0);
+    ofVec2f steer(0, 0);
     int nodes_count = 0;
 
     // for each node, check if it's too close
@@ -54,7 +54,7 @@ ofVec3f Node::get_separation(vector <Node*> &nodes){
         if (distance > 0 && distance < SEPARATION_DISTANCE){
 
             // get the vector pointing away from this one
-            ofVec3f separation_force = pos - other_node->pos;
+            ofVec2f separation_force = pos - other_node->pos;
             // weight the force by the distance and add it to the steer
             separation_force.normalize();
             separation_force /= distance;
@@ -81,12 +81,12 @@ ofVec3f Node::get_separation(vector <Node*> &nodes){
 //--------------------------------------------------------------
 // "We want to stick together!" said another node
 //--------------------------------------------------------------
-ofVec3f Node::get_cohesion(vector <Node*> &nodes){
+ofVec2f Node::get_cohesion(vector <Node*> &nodes){
 
     // minimum distance required to be a neighbour node
     float neighbour_distance = SEPARATION_DISTANCE / 2.0f;
 
-    ofVec3f cohesion_force(0, 0, 0);
+    ofVec2f cohesion_force(0, 0);
     int nodes_count = 0;
 
     for (int i = 0; i < nodes.size(); i++){
@@ -108,18 +108,18 @@ ofVec3f Node::get_cohesion(vector <Node*> &nodes){
         return seek(cohesion_force);
     }
     else {
-        return ofVec3f(0, 0, 0);
+        return ofVec2f(0, 0);
     }
 
 }
 
 //--------------------------------------------------------------
-ofVec3f Node::seek(ofVec3f &target){
+ofVec2f Node::seek(ofVec2f &target){
     
-    ofVec3f desired_force = target - pos;
+    ofVec2f desired_force = target - pos;
     desired_force.normalize();
     desired_force *= MAX_SPEED;
-    ofVec3f steer = desired_force - vel;
+    ofVec2f steer = desired_force - vel;
     steer.limit(max_force);
 
     return steer;

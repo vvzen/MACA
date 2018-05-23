@@ -32,7 +32,7 @@ void DifferentialLine::grow(){
         
         if (distance > MAX_EDGE_LENGTH && nodes.size() < MAX_NODES_NUM){
             // int index = nodes.find(n2);
-            ofVec3f mid_position = node_1->pos.getInterpolated(node_2->pos, 0.5f);
+            ofVec2f mid_position = node_1->pos.getInterpolated(node_2->pos, 0.5f);
             
             Node * new_node = new Node(mid_position);
             nodes.insert(nodes.begin()+i+1, new_node);
